@@ -1,0 +1,89 @@
+import os
+import pandas as pd
+import global_setting.global_dic as glv
+import sys
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
+import datetime
+from setup_logger.logger_setup import setup_logger
+
+inputpath_score=glv.get('input_score')
+outputpath_score=glv.get('output_score')
+inputpath_score_config=glv.get('score_mode')
+
+class rrScore_update:
+    def __init__(self,start_date,end_date):
+        self.start_date=start_date
+        self.end_date=end_date
+        self.logger = setup_logger('Score_update')
+        self.logger.info('\n' + '*'*50 + '\nSCORE UPDATE PROCESSING\n' + '*'*50)
+
+    def raw_rr_time_checking(self,score_date, target_date):
+        today=datetime.date.today()
+        today=gt.strdate_transfer(today)
+        if target_date>today:
+            available_date2 = gt.last_weeks_lastday2(target_date)
+            if target_date > available_date2 and score_date != available_date2:
+                self.logger.warning(f'请注意rr_score的最近更新日期是: {score_date} 上周最后一个工作日的日期是 {available_date2}, 已经自动用上上周的score进行更新！')
+        
+    def raw_rr_updating(self,mode_type):
+        self.logger.info(f'\nProcessing RR score update for mode type: {mode_type}')
+        df_config = pd.read_excel(inputpath_score_config)
+        mode_name = df_config[df_config['score_mode'] == mode_type]['mode_name'].tolist()[0]
+        outputpath_score3 = os.path.join(outputpath_score, mode_name)
+        gt.folder_creator2(outputpath_score3)
+        inputpath_score2 = os.path.join(inputpath_score, 'rr_score')
+        outputpath_score2 = os.path.join(outputpath_score, 'rr_' + str(mode_type))
+        try:
+            inputlist = os.listdir(outputpath_score2)
+        except:
+            inputlist = []
+        if len(inputlist)==0:
+            self.start_date='2024-01-01'
+            self.logger.info('No existing files found, setting start date to 2024-01-01')
+        rr_list = os.listdir(inputpath_score2)
+        df_rr = pd.DataFrame()
+        df_rr['rr'] = rr_list
+        df_rr = df_rr[df_rr.rr.str.contains(str(mode_type))]
+        df_rr['rr2'] = df_rr['rr'].apply(lambda x: str(x)[:8])
+        df_rr = df_rr[df_rr['rr2'] == 'ThisWeek']
+        df_rr.sort_values(by='rr')
+        file_name = df_rr['rr'].tolist()[0]
+        gt.folder_creator2(outputpath_score2)
+        inputpath_score4 = os.path.join(inputpath_score2, 'W' + str(mode_type) + '_his_Ranking.xlsx')
+        df_score = pd.read_excel(inputpath_score4, header=None)
+        df_score.columns = ['valuation_date', 'code']
+        inputpath_score3 = os.path.join(inputpath_score2, file_name)
+        df_score_this = pd.read_excel(inputpath_score3, header=None)
+        df_score_this.columns = ['valuation_date', 'code']
+        df_score=pd.concat([df_score,df_score_this])
+        working_day_list = gt.working_days_list(self.start_date, self.end_date)
+        for date in working_day_list:
+            self.logger.info(f'Processing date: {date}')
+            available_date = gt.last_workday_calculate(date)
+            available_date2=gt.intdate_transfer(available_date)
+            slice_df_score = df_score[df_score['valuation_date'] <= available_date]
+            date3=slice_df_score['valuation_date'].unique().tolist()[-1]
+            self.raw_rr_time_checking(date3, date)
+            slice_df_score = df_score[df_score['valuation_date'] == date3]
+            slice_df_score = gt.rr_score_processing(slice_df_score)
+            slice_df_score['valuation_date'] = date
+            outputpath_saving = os.path.join(outputpath_score2, 'rr_' + str(available_date2) + '.csv')
+            outputpath_saving2 = os.path.join(outputpath_score3, 'rr_' + str(available_date2) + '.csv')
+            slice_df_score.to_csv(outputpath_saving, index=False)
+            slice_df_score.to_csv(outputpath_saving2, index=False)
+            self.logger.info(f'Successfully saved RR score data for date: {available_date2}')
+
+    def rr_update_main(self):
+        self.logger.info('\nStarting RR score update main process...')
+        df_config = pd.read_excel(inputpath_score_config)
+        df_config['score_type2'] = df_config['score_type'].apply(lambda x: str(x)[:2])
+        mode_type_using_list = df_config[df_config['score_type2'] == 'rr']['score_mode'].tolist()
+        for mode_type in mode_type_using_list:
+            self.raw_rr_updating(mode_type)
+        self.logger.info('Completed RR score update process')
+
+
+
+

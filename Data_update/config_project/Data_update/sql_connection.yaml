@@ -1,0 +1,7 @@
+# MySQL数据库连接配置
+database:
+  host: rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com
+  port: 3306
+  database: data_prepared_new
+  user: kai
+  password: Abcd1234# 

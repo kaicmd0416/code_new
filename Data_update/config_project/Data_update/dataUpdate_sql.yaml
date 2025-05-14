@@ -1,0 +1,131 @@
+VIX:
+    table_name: "data_vix"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'vix_type'
+      - 'organization'
+indexData:
+    table_name: "data_index"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+indexComponent:
+    table_name: "data_indexcomponent"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'organization'
+stockData:
+    table_name: "data_stock"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+futureData:
+    table_name: "data_future"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+optionData:
+    table_name: "data_option"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+etfData:
+    table_name: "data_etf"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+lhbData:
+    table_name: "data_lhb"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+convertibleBondData:
+    table_name: "data_convertibleBond"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorExposrue:
+    table_name: "data_factorexposure"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorReturn:
+    table_name: "data_factorreturn"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+FactorPool:
+    table_name: "data_factorpool"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorCov:
+    table_name: "data_factorcov"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'factor_name'
+FactorSpecificrisk:
+    table_name: "data_factorspecificrisk"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorIndexExposure:
+    table_name: "data_factorindexexposure"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'organization'
+
+#  ChinaDevelopmentBankBonds:
+#    directories: "\\Data_prepared_new\\data_macro\\ChinaDevelopmentBankBonds"
+#    table_name: "ChinaDevelopmentBankBonds"
+#    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared_new"
+#    pattern_config: "config/Data_prepared_new/file_patterns.yaml"
+#    mapping_config: "config/Data_prepared_new/column_mappings.yaml"
+#    chunk_size: 20000
+#    workers: 4
+#    today_only: false  # 只处理当天的文件
+
