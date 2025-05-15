@@ -10,9 +10,20 @@ import global_tools as gt
 from L4Data_update.tools_func import tools_func
 from L4Data_update.L4Data_processing import L4Data_processing
 from setup_logger.logger_setup import setup_logger
-
+import io
+import contextlib
+def capture_file_withdraw_output(func, *args, **kwargs):
+    """捕获file_withdraw的输出并记录到日志"""
+    logger = setup_logger('L4info_update_sql')
+    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        result = func(*args, **kwargs)
+        output = buf.getvalue()
+        if output.strip():
+            logger.info(output.strip())
+    return result
 class L4Info_update:
-    def __init__(self,product_code,available_date,df):
+    def __init__(self,product_code,available_date,df,is_sql):
+        self.is_sql=is_sql
         self.logger = setup_logger('L4Data_update')
         self.logger.info('\n' + '*'*50 + '\nL4 INFO UPDATE PROCESSING\n' + '*'*50)
         self.logger.info(f"Initializing L4Info_update - Product code: {product_code}, Date: {available_date}")
@@ -109,6 +120,9 @@ class L4Info_update:
         df = df[fixed_columns]
         return df
     def L4Info_processing(self):
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm=gt.sqlSaving_main(inputpath_configsql,'L4InfoData')
         """处理L4信息数据"""
         self.logger.info(f"Starting L4 info processing - Product: {self.product_name}, Date: {self.available_date}")
         status = 'save'
@@ -126,4 +140,6 @@ class L4Info_update:
             result=self.standardize_column_names(result)
             result.to_csv(result_path,index=False)
             self.logger.info(f"L4 info processing completed, saved to: {result_path}")
+            if self.is_sql == True:
+                capture_file_withdraw_output(sm.df_to_sql, result)
 

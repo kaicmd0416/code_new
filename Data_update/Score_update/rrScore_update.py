@@ -11,9 +11,20 @@ from setup_logger.logger_setup import setup_logger
 inputpath_score=glv.get('input_score')
 outputpath_score=glv.get('output_score')
 inputpath_score_config=glv.get('score_mode')
-
+import io
+import contextlib
+def capture_file_withdraw_output(func, *args, **kwargs):
+    """捕获file_withdraw的输出并记录到日志"""
+    logger = setup_logger('Score_update_sql')
+    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        result = func(*args, **kwargs)
+        output = buf.getvalue()
+        if output.strip():
+            logger.info(output.strip())
+    return result
 class rrScore_update:
-    def __init__(self,start_date,end_date):
+    def __init__(self,start_date,end_date,is_sql):
+        self.is_sql=is_sql
         self.start_date=start_date
         self.end_date=end_date
         self.logger = setup_logger('Score_update')
@@ -59,6 +70,9 @@ class rrScore_update:
         df_score_this.columns = ['valuation_date', 'code']
         df_score=pd.concat([df_score,df_score_this])
         working_day_list = gt.working_days_list(self.start_date, self.end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Score')
         for date in working_day_list:
             self.logger.info(f'Processing date: {date}')
             available_date = gt.last_workday_calculate(date)
@@ -69,6 +83,8 @@ class rrScore_update:
             slice_df_score = df_score[df_score['valuation_date'] == date3]
             slice_df_score = gt.rr_score_processing(slice_df_score)
             slice_df_score['valuation_date'] = date
+            slice_df_score2=slice_df_score.copy()
+            slice_df_score['score_name']='rr_'+mode_type
             outputpath_saving = os.path.join(outputpath_score2, 'rr_' + str(available_date2) + '.csv')
             outputpath_saving2 = os.path.join(outputpath_score3, 'rr_' + str(available_date2) + '.csv')
             slice_df_score.to_csv(outputpath_saving, index=False)

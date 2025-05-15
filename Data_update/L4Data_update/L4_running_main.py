@@ -41,7 +41,7 @@ def target_date_decision_L4():
     logger.info(f"Target date determined: {available_date}")
     return available_date
 
-def L4_running_main(product_code_list,start_date,end_date):
+def L4_running_main(product_code_list,start_date,end_date,is_sql):
     """L4数据更新主函数"""
     logger.info('\n' + '*'*50 + '\nL4 RUNNING MAIN PROCESS\n' + '*'*50)
     logger.info(f"Starting L4 update process from {start_date} to {end_date}")
@@ -63,8 +63,8 @@ def L4_running_main(product_code_list,start_date,end_date):
                 daily_df=pd.DataFrame()
             if len(daily_df)!=0:
                 logger.info(f"Processing data for {product_code} on {available_date}")
-                lh = L4Holding_update(product_code, available_date2, daily_df)
-                li = L4Info_update(product_code, available_date2, daily_df)
+                lh = L4Holding_update(product_code, available_date2, daily_df,is_sql)
+                li = L4Info_update(product_code, available_date2, daily_df,is_sql)
                 available_date_yes=gt.last_workday_calculate(available_date)
                 available_date_yes=gt.intdate_transfer(available_date_yes)
                 lh.L4Holding_processing()
@@ -82,10 +82,10 @@ def L4_update_main():
     for i in range(3):
          target_date2=gt.last_workday_calculate(target_date2)
     logger.info(f"Processing data from {target_date2} to {target_date}")
-    L4_running_main(product_code_list, target_date2, target_date)
+    L4_running_main(product_code_list, target_date2, target_date,is_sql=True)
     logger.info("L4 update main process completed")
 
-def L4_history_main(mode,product_name_list,start_date,end_date):
+def L4_history_main(mode,product_name_list,start_date,end_date,is_sql):
     """L4历史数据更新主函数"""
     logger.info('\n' + '*'*50 + '\nL4 HISTORY UPDATE PROCESS\n' + '*'*50)
     logger.info(f"Starting L4 history update process from {start_date} to {end_date}")
@@ -105,8 +105,8 @@ def L4_history_main(mode,product_name_list,start_date,end_date):
             start_date='2025-02-27'
             logger.warning(f"Start date adjusted to {start_date}")
     logger.info(f"Processing {len(product_code_list)} products")
-    L4_running_main(product_code_list, start_date, end_date)
+    L4_running_main(product_code_list, start_date, end_date,is_sql)
     logger.info("L4 history update process completed")
 
 if __name__ == '__main__':
-    L4_history_main('all',[], '2025-01-30','2025-05-08')
+    L4_history_main('all',[], '2025-05-06','2025-05-08',True)

@@ -10,9 +10,20 @@ import global_tools as gt
 from L4Data_update.tools_func import tools_func
 from L4Data_update.L4Data_processing import L4Data_processing
 from setup_logger.logger_setup import setup_logger
-
+import io
+import contextlib
+def capture_file_withdraw_output(func, *args, **kwargs):
+    """捕获file_withdraw的输出并记录到日志"""
+    logger = setup_logger('L4holding_update_sql')
+    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        result = func(*args, **kwargs)
+        output = buf.getvalue()
+        if output.strip():
+            logger.info(output.strip())
+    return result
 class L4Holding_update:
-    def __init__(self,product_code,available_date,df):
+    def __init__(self,product_code,available_date,df,is_sql):
+        self.is_sql=is_sql
         self.logger = setup_logger('L4Data_update')
         self.logger.info('\n' + '*'*50 + '\nL4 HOLDING UPDATE PROCESSING\n' + '*'*50)
         self.logger.info(f"Initializing L4Holding_update - Product code: {product_code}, Date: {available_date}")
@@ -90,9 +101,9 @@ class L4Holding_update:
         # 只保留在映射字典中定义的列
         columns_to_keep = [col for col in df.columns if col in standardized_columns]
         df = df[columns_to_keep]
-        df['assetType']=type
+        df['asset_type']=type
         # 定义固定的列顺序
-        fixed_columns = ['valuation_date','product_code','assetType','code','quantity','price','unit_cost','mkt_value']
+        fixed_columns = ['valuation_date','product_code','asset_type','code','quantity','price','unit_cost','mkt_value']
         # 对于不存在的列，创建并填充空值
         for col in fixed_columns:
             if col not in df.columns:
@@ -115,6 +126,9 @@ class L4Holding_update:
 
     def L4Holding_processing(self):
         """处理L4持仓数据"""
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm=gt.sqlSaving_main(inputpath_configsql,'L4HoldingData')
         self.logger.info(f"Starting L4 holding processing - Product: {self.product_name}, Date: {self.available_date}")
         status='save'
         product_name=self.product_name
@@ -174,6 +188,9 @@ class L4Holding_update:
             df_final=pd.concat([result,result1,result2,result3,result4,result5])
             df_final.to_csv(result_path,index=False)
             self.logger.info(f"L4 holding processing completed, saved to: {result_path}")
+            if self.is_sql == True:
+                capture_file_withdraw_output(sm.df_to_sql, df_final)
+
 
 
 

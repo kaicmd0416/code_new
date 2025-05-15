@@ -262,6 +262,32 @@ Indexygfactorexposure:
       - "valuation_date"
       - 'type'
       - 'organization'
+L4HoldingData:
+    table_name: "data_l4holding"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'product_code'
+      - 'code'
+L4InfoData:
+    table_name: "data_l4info"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'product_code'
+Score:
+    table_name: "data_score"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'score_name'
 
 #  ChinaDevelopmentBankBonds:
 #    directories: "\\Data_prepared_new\\data_macro\\ChinaDevelopmentBankBonds"
