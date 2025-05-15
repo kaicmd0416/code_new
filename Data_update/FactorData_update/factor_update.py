@@ -260,6 +260,7 @@ class FactorData_update:
                     self.logger.warning(f'index_yg_indexexposure{available_date}更新有问题')
                 else:
                     df_final['valuation_date'] = available_date
+                    df_final['type']='eg'
                     df_final = df_final[['valuation_date'] + df_final.columns.tolist()[:-1]]
                     df_final.to_csv(outputpath_daily, index=False)
                     self.logger.info(f'Successfully saved yg factor exposure data for date: {available_date}')

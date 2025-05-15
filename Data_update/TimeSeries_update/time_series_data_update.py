@@ -112,12 +112,12 @@ class timeSeries_data_update:
             inputpath_file=os.path.join(inputpath,name+'.csv')
             if os.path.exists(inputpath_file):
                 df=pd.read_csv(inputpath_file)
-                start_date=gt.intdate_transfer(self.start_date)
-                end_date=gt.intdate_transfer(self.end_date)
-                sql=f"SELECT valuation_date, code, {type2} as value FROM index_data WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
+                start_date=gt.strdate_transfer(self.start_date)
+                end_date=gt.strdate_transfer(self.end_date)
+                sql=f"SELECT valuation_date, code, {type2} as value FROM data_index WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
             else:
                 df=pd.DataFrame()
-                sql=f"SELECT valuation_date, code, {type2} as value FROM index_data"
+                sql=f"SELECT valuation_date, code, {type2} as value FROM data_index"
             df_add=self.execute_sql_to_df(sql)
             if df_add.empty:
                 self.logger.info(f"index_data没有找到{name}数据")
@@ -173,8 +173,8 @@ class timeSeries_data_update:
             inputpath_file = os.path.join(inputpath, name + '.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
                 sql = f"SELECT valuation_date, code, {type2} as value FROM data_stock WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
             else:
                 df = pd.DataFrame()
@@ -222,23 +222,17 @@ class timeSeries_data_update:
     def indexOtherData_update(self):
         inputpath = os.path.join(self.output_path, 'index_data')
         gt.folder_creator2(inputpath)
-        for type in ['FutureDifference','RrScoreDifference','YgData']:
+        for type in ['FutureDifference','rrIndexScore','YgData']:
             name = 'Index' + str(type)
             inputpath_file = os.path.join(inputpath, name + '.csv')
-            if type=='FutureDifference':
-                base_sheet='index_futuredifference'
-            elif type=='RrScoreDifference':
-                base_sheet='index_scoredifference'
-            else:
-                base_sheet='index_ygfactorexposure'
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
-                sql = f"SELECT * FROM {base_sheet} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
+                sql = f"SELECT * FROM data_indexother WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
             else:
                 df = pd.DataFrame()
-                sql = f"SELECT * FROM {base_sheet}"
+                sql = f"SELECT * FROM data_indexother"
             df_add = self.execute_sql_to_df(sql)
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
@@ -267,16 +261,16 @@ class timeSeries_data_update:
             inputpath_file = os.path.join(inputpath, name + '.csv')
             if os.path.exists(inputpath_file):
                 df = gt.readcsv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
-                sql = f"SELECT * FROM index_exposure WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND organization = '{type}' "
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
+                sql = f"SELECT * FROM data_factorindexexposure WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND organization = '{type}' "
             else:
                 df = pd.DataFrame()
-                sql = f"SELECT * FROM index_exposure WHERE organization = '{type}'"
+                sql = f"SELECT * FROM data_factorindexexposure WHERE organization = '{type}'"
             df_add = self.execute_sql_to_df(sql)
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['id', 'metadata_id', 'organization'], inplace=True)
+            df_add.drop(columns=['organization'], inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}因子暴露没有找到{name}数据")
                 continue
@@ -302,8 +296,8 @@ class timeSeries_data_update:
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
                 if type!='Shibor':
                       sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
                 else:
@@ -347,8 +341,8 @@ class timeSeries_data_update:
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
                 sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
             else:
                 df = pd.DataFrame()
@@ -383,8 +377,8 @@ class timeSeries_data_update:
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
                 sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND type = '{'CLOSE'}'"
             else:
                 df = pd.DataFrame()
@@ -392,7 +386,7 @@ class timeSeries_data_update:
             df_add = self.execute_sql_to_df(sql)
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['id', 'metadata_id','type'], inplace=True)
+            df_add.drop(columns=['type'], inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}_data没有找到{name}数据")
                 continue
@@ -412,20 +406,17 @@ class timeSeries_data_update:
     def VIXData_update(self):
         inputpath = os.path.join(self.output_path, 'vix_data')
         gt.folder_creator2(inputpath)
-        for type in ['Time weighted','Volume weighted']:
-            if type=='Time weighted':
-                name='timeWeighted'
-            else:
-                name='volumeWeighted'
+        for type in ['TimeWeighted','VolumeWeighted']:
+            name=type
             inputpath_file = os.path.join(inputpath, 'vix_'+name + '.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
-                sql = f"SELECT valuation_date,index_code,CH_VIX as value FROM data_vix WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND VIX_Type = '{type}'"
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
+                sql = f"SELECT valuation_date,organization,ch_vix as value FROM data_vix WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND vix_type = '{type}'"
             else:
                 df = pd.DataFrame()
-                sql = f"SELECT valuation_date,index_code,CH_VIX as value FROM data_vix WHERE VIX_Type = '{type}'"
+                sql = f"SELECT valuation_date,organization,ch_vix as value FROM data_vix WHERE vix_type = '{type}'"
             df_add = self.execute_sql_to_df(sql)
             if df_add.empty:
                 self.logger.info(f"{type}_vixdata没有找到{name}数据")
@@ -467,14 +458,14 @@ class timeSeries_data_update:
     def FactorData_update(self):
         inputpath = os.path.join(self.output_path, 'factor_data')
         gt.folder_creator2(inputpath)
-        for type in ['factor_return']:
+        for type in ['data_factorreturn']:
             type2 = type.lower()
             name='lnmodel'
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
                 df = gt.readcsv(inputpath_file)
-                start_date = gt.intdate_transfer(self.start_date)
-                end_date = gt.intdate_transfer(self.end_date)
+                start_date = gt.strdate_transfer(self.start_date)
+                end_date = gt.strdate_transfer(self.end_date)
                 sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
             else:
                 df = pd.DataFrame()
@@ -482,7 +473,6 @@ class timeSeries_data_update:
             df_add = self.execute_sql_to_df(sql)
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['id', 'metadata_id'], inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}_data没有找到{name}数据")
                 continue
@@ -504,8 +494,8 @@ class timeSeries_data_update:
         self.stockMktData_update()
         self.VIXData_update()
     def Factordata_update_main(self):
-        self.indexFactorData_update()
-        self.FactorData_update()
+        # self.indexFactorData_update()
+        # self.FactorData_update()
         self.indexOtherData_update()
     def macrodata_update_main(self):
         self.MktData_update()
@@ -513,6 +503,6 @@ class timeSeries_data_update:
         self.USData_update()
 
 if __name__ == "__main__":
-    ts=timeSeries_data_update('2025-01-01','2025-05-09')
-    ts.FactorData_update()
+    ts=timeSeries_data_update('2025-05-01','2025-05-09')
+    ts.Factordata_update_main()
     
