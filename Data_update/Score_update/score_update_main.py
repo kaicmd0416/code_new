@@ -6,13 +6,15 @@ import os
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
-def score_update_main(score_type,start_date,end_date): #这里面的date是target_date
-    rr=rrScore_update(start_date,end_date)
-    su=scorePortfolio_update(start_date,end_date)
-    cu=combineScore_update(start_date,end_date)
+def score_update_main(score_type,start_date,end_date,is_sql): #这里面的date是target_date
+    rr=rrScore_update(start_date,end_date,is_sql)
+    su=scorePortfolio_update(start_date,end_date,is_sql)
+    cu=combineScore_update(start_date,end_date,is_sql)
     if score_type=='fm':
-          rr.rr_update_main()
+          #rr.rr_update_main()
           su.scorePortfolio_update_main()
-          cu.score_combination_main()
+          #cu.score_combination_main()
     else:
         print('非生产时间段')
+if __name__ == '__main__':
+    score_update_main('fm', '2025-04-01', '2025-05-05',True)

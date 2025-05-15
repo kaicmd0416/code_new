@@ -6,9 +6,20 @@ path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 from setup_logger.logger_setup import setup_logger
-
+import io
+import contextlib
+def capture_file_withdraw_output(func, *args, **kwargs):
+    """捕获file_withdraw的输出并记录到日志"""
+    logger = setup_logger('Portfolio_update_sql')
+    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        result = func(*args, **kwargs)
+        output = buf.getvalue()
+        if output.strip():
+            logger.info(output.strip())
+    return result
 class scorePortfolio_update:
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date,is_sql):
+        self.is_sql=is_sql
         self.start_date = start_date
         self.end_date = end_date
         self.logger = setup_logger('ScorePortfolio_update')
@@ -33,6 +44,9 @@ class scorePortfolio_update:
             start_date = '2024-01-06'
             self.logger.info('No existing files found, setting start date to 2024-01-06')
         working_list = gt.working_days_list(start_date, end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
         for date in working_list:
             self.logger.info(f'Processing date: {date}')
             date2 = gt.intdate_transfer(date)
@@ -55,8 +69,17 @@ class scorePortfolio_update:
                 slice_a3['weight'] = slice_a3['final_score'] / slice_a3['final_score'].sum()
                 slice_a1 = slice_a1[['code', 'weight']]
                 slice_a3 = slice_a3[['code', 'weight']]
+                slice_a1['portfolio_name']='a1_top'+ str(number)
+                slice_a1['valuation_date']=date
+                slice_a3['portfolio_name']='a3_top'+ str(number)
+                slice_a3['valuation_date']=date
+                slice_a1=slice_a1[['valuation_date','portfolio_name','code','weight']]
+                slice_a3 = slice_a3[['valuation_date', 'portfolio_name', 'code', 'weight']]
                 slice_a1.to_csv(daily_outputpath_a1, index=False)
                 slice_a3.to_csv(daily_outputpath_a3, index=False)
+                if self.is_sql==True:
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a1)
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a3)
                 self.logger.info(f'Successfully saved top {number} portfolio data for date: {date2}')
         self.logger.info('Completed RR top portfolio update')
     def rr_hs300_top_update_main(self):
@@ -74,6 +97,9 @@ class scorePortfolio_update:
             start_date = '2024-01-06'
             self.logger.info('No existing files found, setting start date to 2024-01-06')
         working_list = gt.working_days_list(start_date, end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
         for date in working_list:
             self.logger.info(f'Processing date: {date}')
             yes=gt.last_workday_calculate(date)
@@ -103,9 +129,19 @@ class scorePortfolio_update:
                 slice_a1['weight'] = slice_a1['final_score'] / slice_a1['final_score'].sum()
                 slice_a3['weight'] = slice_a3['final_score'] / slice_a3['final_score'].sum()
                 slice_a1 = slice_a1[['code', 'weight']]
+                slice_a1['valuation_date']=date
                 slice_a3 = slice_a3[['code', 'weight']]
+                slice_a3['valuation_date']=date
+                slice_a1['portfolio_name']='a1_hs300_top' + str(number)
+                slice_a3['portfolio_name']='a1_hs300_top' + str(number)
+                slice_a1=slice_a1[['valuation_date','portfolio_name','code','weight']]
+                slice_a3 = slice_a3[['valuation_date', 'portfolio_name', 'code', 'weight']]
+                if self.is_sql==True:
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a1)
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a3)
                 slice_a1.to_csv(daily_outputpath_a1, index=False)
                 slice_a3.to_csv(daily_outputpath_a3, index=False)
+
                 self.logger.info(f'Successfully saved HS300 top {number} portfolio data for date: {date2}')
         self.logger.info('Completed RR HS300 top portfolio update')
     def ubp_top_update_main(self):
@@ -125,6 +161,9 @@ class scorePortfolio_update:
             start_date = self.se_date_withdraw(input_list2)
             self.logger.info(f'No existing files found, setting start date to {start_date}')
         working_days_list = gt.working_days_list(start_date, end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
         for date in working_days_list:
             self.logger.info(f'Processing date: {date}')
             date2 = gt.intdate_transfer(date)
@@ -140,9 +179,14 @@ class scorePortfolio_update:
                 df.columns = ['code', 'chiname', 'weight']
                 df = df[df['weight'] != 0]
                 df = df[['code', 'weight']]
+                df['valuation_date'] = date
+                df['portfolio_name'] = 'ubp500'
+                df = df[['valuation_date', 'portfolio_name', 'code', 'weight']]
                 daily_outputpath = os.path.join(outputpath, 'UBP500alpha_' + str(date2) + '.csv')
                 df.to_csv(daily_outputpath, index=False)
                 self.logger.info(f'Successfully saved UBP top portfolio data for date: {date2}')
+                if self.is_sql==True:
+                    capture_file_withdraw_output(sm.df_to_sql, df)
             else:
                 self.logger.warning(f'ubp_500 {date} 暂时没有数据')
         self.logger.info('Completed UBP top portfolio update')
@@ -155,6 +199,9 @@ class scorePortfolio_update:
         start_date = gt.strdate_transfer(self.start_date)
         end_date = gt.strdate_transfer(self.end_date)
         working_days_list = gt.working_days_list(start_date, end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
         for date in working_days_list:
             self.logger.info(f'Processing date: {date}')
             available_date=gt.last_workday_calculate(date)
@@ -171,9 +218,15 @@ class scorePortfolio_update:
                 df['weight']=df['市值']/df['市值'].sum()
                 df=df[['代码','市价','weight']]
                 df.columns=['code','price','weight']
-                df['code']=df['code'].apply(lambda x: str(x)+'.ETF')
+                df=gt.code_transfer(df)
+                df=df[['code','weight']]
+                df['valuation_date'] = date
+                df['portfolio_name'] = 'gms'
+                df = df[['valuation_date', 'portfolio_name', 'code', 'weight']]
                 df.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved ETF portfolio data for date: {date2}')
+                if self.is_sql==True:
+                    capture_file_withdraw_output(sm.df_to_sql, df)
             else:
                 self.logger.warning(f'ubpETF {date} ETF_tracking 为空')
         self.logger.info('Completed ETF portfolio update')

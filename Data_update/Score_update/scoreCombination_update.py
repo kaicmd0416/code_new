@@ -6,9 +6,20 @@ path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 from setup_logger.logger_setup import setup_logger
-
+import io
+import contextlib
+def capture_file_withdraw_output(func, *args, **kwargs):
+    """捕获file_withdraw的输出并记录到日志"""
+    logger = setup_logger('Score_update_sql')
+    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        result = func(*args, **kwargs)
+        output = buf.getvalue()
+        if output.strip():
+            logger.info(output.strip())
+    return result
 class combineScore_update:
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date,is_sql):
+        self.is_sql=is_sql
         self.start_date = start_date
         self.end_date = end_date
         self.logger = setup_logger('Score_update')
@@ -36,6 +47,8 @@ class combineScore_update:
         inputpath_a3 = gt.file_withdraw(inputpath_a3, available_date)
         df_a1 = gt.readcsv(inputpath_a1)
         df_a3 = gt.readcsv(inputpath_a3)
+        df_a1.drop(columns='score_name',inplace=True)
+        df_a3.drop(columns='score_name', inplace=True)
         self.logger.info('Successfully retrieved raw scores')
         return df_a1, df_a3
 
@@ -85,14 +98,20 @@ class combineScore_update:
         else:
             start_date=self.start_date
         working_days_list = gt.working_days_list(start_date, self.end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Score')
         for target_date in working_days_list:
             self.logger.info(f'Processing date: {target_date}')
             available_date = gt.intdate_transfer(gt.last_workday_calculate(target_date))
             outputpath_1 = os.path.join(outputpath, 'Combine_' + str(available_date) + '.csv')
             try:
                 df_result = self.score_processing(target_date, '中证500')
+                df_result['score_name']='combine_zz500'
                 df_result.to_csv(outputpath_1, index=False)
                 self.logger.info(f'Successfully saved combined scores for date: {available_date}')
+                if self.is_sql==True:
+                    capture_file_withdraw_output(sm.df_to_sql, df_result)
             except:
                 self.logger.warning(f'index_component没有更新导致{target_date}的combine_zz500没有更新')
         self.logger.info('Completed score combination process')

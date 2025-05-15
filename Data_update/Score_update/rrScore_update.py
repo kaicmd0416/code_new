@@ -84,12 +84,19 @@ class rrScore_update:
             slice_df_score = gt.rr_score_processing(slice_df_score)
             slice_df_score['valuation_date'] = date
             slice_df_score2=slice_df_score.copy()
-            slice_df_score['score_name']='rr_'+mode_type
+            slice_df_score2['score_name']=mode_name
+            slice_df_score['score_name']='rr_'+str(mode_type)
             outputpath_saving = os.path.join(outputpath_score2, 'rr_' + str(available_date2) + '.csv')
             outputpath_saving2 = os.path.join(outputpath_score3, 'rr_' + str(available_date2) + '.csv')
-            slice_df_score.to_csv(outputpath_saving, index=False)
-            slice_df_score.to_csv(outputpath_saving2, index=False)
-            self.logger.info(f'Successfully saved RR score data for date: {available_date2}')
+            if len(slice_df_score) > 0 and len(slice_df_score2) > 0:
+                slice_df_score.to_csv(outputpath_saving, index=False)
+                slice_df_score2.to_csv(outputpath_saving2, index=False)
+                self.logger.info(f'Successfully saved RR score data for date: {available_date2}')
+                if self.is_sql==True:
+                    capture_file_withdraw_output(sm.df_to_sql, slice_df_score)
+                    capture_file_withdraw_output(sm.df_to_sql, slice_df_score2)
+
+
 
     def rr_update_main(self):
         self.logger.info('\nStarting RR score update main process...')

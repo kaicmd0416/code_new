@@ -288,6 +288,15 @@ Score:
       - "valuation_date"
       - 'code'
       - 'score_name'
+Portfolio:
+    table_name: "portfolio"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'portfolio_name'
 
 #  ChinaDevelopmentBankBonds:
 #    directories: "\\Data_prepared_new\\data_macro\\ChinaDevelopmentBankBonds"
