@@ -221,10 +221,17 @@ class timeSeries_data_update:
 
     def indexOtherData_update(self):
         inputpath = os.path.join(self.output_path, 'index_data')
+        inputpath2=os.path.join(self.output_path,'mkt_data')
         gt.folder_creator2(inputpath)
-        for type in ['FutureDifference','rrIndexScore','YgData']:
-            name = 'Index' + str(type)
-            inputpath_file = os.path.join(inputpath, name + '.csv')
+        for type in ['FutureDifference','rrIndexScore','eg','LargeOrderInflow','NetLeverageBuying']:
+            if type in ['FutureDifference','rrIndexScore']:
+                 name = 'Index' + str(type)
+            elif type=='eg':
+                name='IndexygData'
+            else:
+                name=type
+
+
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
                 start_date = gt.strdate_transfer(self.start_date)
