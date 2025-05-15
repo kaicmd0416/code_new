@@ -118,6 +118,150 @@ FactorIndexExposure:
     private_keys:
       - "valuation_date"
       - 'organization'
+USDollar:
+    table_name: "data_us"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+USIndex:
+    table_name: "data_us"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+M1M2:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+Shibor:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+CPI:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+PPI:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+PMI:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+ChinaGovernmentBonds:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+ChinaDevelopmentBankBonds:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+ChinaMediumTermNotes:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+SocialFinance:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+LargeOrderInflow:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+NetLeverageBuying:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+IndexFutureDifference:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+IndexScoreDifference:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+Indexygfactorexposure:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
 
 #  ChinaDevelopmentBankBonds:
 #    directories: "\\Data_prepared_new\\data_macro\\ChinaDevelopmentBankBonds"

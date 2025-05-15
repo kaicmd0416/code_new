@@ -1237,7 +1237,8 @@ class lhb_amt_update_main:
                 self.logger.error(f'处理龙虎榜数据时: {available_date2} 发生错误')
 
 class nlb_update_main:
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date,is_sql):
+        self.is_sql=is_sql
         self.logger = setup_logger('Mktdata_update')
         self.logger.info('\n' + '*'*50 + '\nNLB UPDATE PROCESS\n' + '*'*50)
         self.start_date = start_date
@@ -1254,6 +1255,9 @@ class nlb_update_main:
         else:
             start_date=self.start_date
         working_days_list=gt.working_days_list(start_date,self.end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm=gt.sqlSaving_main(inputpath_configsql,'NetLeverageBuying')
         for available_date in working_days_list:
             df_final=pd.DataFrame()
             available_date2=gt.intdate_transfer(available_date)
@@ -1287,19 +1291,21 @@ class nlb_update_main:
                 nlb_ratio_gz2000 = nlb_gz2000 / amt_gz2000 if amt_gz2000 != 0 else 0
                 if nlb_ratio_gz2000 != 0 and nlb_ratio_zz1000 != 0 and nlb_ratio_hs300 != 0:
                     NetLeverageAMTProportion_difference = nlb_ratio_hs300 - nlb_ratio_zz1000 - nlb_ratio_gz2000
-                    df_final['valuation_date'] = [available_date]
-                    df_final['NLB_hs300'] = nlb_ratio_hs300
-                    df_final['NLB_zz1000'] = nlb_ratio_zz1000
-                    df_final['NLB_gz2000'] = nlb_ratio_gz2000
-                    df_final['NetLeverageAMTProportion_difference'] = NetLeverageAMTProportion_difference
+                    df_final['organization']=['hs300','zz1000','gz2000','NetLeverageAMTProportion_difference']
+                    df_final['type']='NetLeverageBuying'
+                    df_final['valuation_date'] = available_date
+                    df_final['value'] = [nlb_ratio_hs300,nlb_ratio_zz1000,nlb_ratio_gz2000,NetLeverageAMTProportion_difference]
                     self.logger.info(f'Successfully saved nlb data for date: {available_date}')
                     df_final.to_csv(outputpath_daily, index=False)
+                    if self.is_sql == True:
+                        capture_file_withdraw_output(sm.df_to_sql, df_final)
                 else:
                     self.logger.error(f'处理融资融券时: {available_date2} 发生错误')
             except:
                 self.logger.error(f'处理融资融券时: {available_date2} 发生错误')
 class futureDifference_update_main:
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date,is_sql):
+        self.is_sql=is_sql
         self.logger = setup_logger('Mktdata_update')
         self.logger.info('\n' + '*'*50 + '\nFuture Difference UPDATE PROCESS\n' + '*'*50)
         self.start_date = start_date
@@ -1326,6 +1332,9 @@ class futureDifference_update_main:
         else:
             start_date=self.start_date
         working_days_list=gt.working_days_list(start_date,self.end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm=gt.sqlSaving_main(inputpath_configsql,'IndexFutureDifference')
         for available_date in working_days_list:
             available_date2 = gt.intdate_transfer(available_date)
             outputpath_daily = os.path.join(outputpath, 'FutureDifference_' + str(available_date2) + '.csv')
@@ -1363,13 +1372,15 @@ class futureDifference_update_main:
                 difference_zz = index_close_zz - future_close_zz
                 difference_future = difference_hs300 - difference_zz
                 df_add=pd.DataFrame()
-                df_add['valuation_date']=[available_date]
-                df_add['hs300']=difference_hs300
-                df_add['zz1000']=difference_zz
-                df_add['difference']=difference_future
+                df_add['organization']=['hs300','zz1000','indexFuture_difference']
+                df_add['type']='FutureDifference'
+                df_add['valuation_date']=available_date
+                df_add['value']=[difference_hs300,difference_zz,difference_future]
                 if len(df_add) > 0:
                     df_add.to_csv(outputpath_daily,index=False)
                     self.logger.info(f'Successfully saved future difference data for date: {available_date}')
+                    if self.is_sql == True:
+                        capture_file_withdraw_output(sm.df_to_sql, df_add)
                 else:
                     self.logger.error(f"处理基差日期 {available_date} 时出错: {str(e)}")
             except Exception as e:

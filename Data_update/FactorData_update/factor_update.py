@@ -223,7 +223,10 @@ class FactorData_update:
             df_final = pd.DataFrame(np.array(index_factor_exposure), columns=barra_name[1:] + industry_name)
             df_final['valuation_date'] = available_date
             df_final = df_final[barra_name[-2:]]
-            df_final.columns = [index_name+'Earningsyield', index_name+'Growth']
+            df_final=df_final.T
+            df_final.reset_index(inplace=True)
+            df_final.columns=['type','value']
+            df_final['organization']=index_name
         else:
             df_final = pd.DataFrame()
         return df_final
@@ -238,6 +241,9 @@ class FactorData_update:
         else:
             start_date=self.start_date
         working_days_list=gt.working_days_list(start_date,self.end_date)
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm=gt.sqlSaving_main(inputpath_configsql,'Indexygfactorexposure')
         for available_date in working_days_list:
             self.logger.info(f'\nProcessing date: {available_date}')
             available_date2=gt.intdate_transfer(available_date)
@@ -246,7 +252,7 @@ class FactorData_update:
             for index_type in [ '沪深300', '中证1000','国证2000']:
                 self.logger.info(f'Processing index type: {index_type}')
                 df_exposure=self.index_ygFactor_exposure_update(available_date,index_type)
-                df_final=pd.concat([df_final,df_exposure],axis=1)
+                df_final=pd.concat([df_final,df_exposure])
             if df_final.empty:
                 self.logger.warning(f'index_yg_indexexposure{available_date}更新有问题')
             else:
@@ -257,6 +263,9 @@ class FactorData_update:
                     df_final = df_final[['valuation_date'] + df_final.columns.tolist()[:-1]]
                     df_final.to_csv(outputpath_daily, index=False)
                     self.logger.info(f'Successfully saved yg factor exposure data for date: {available_date}')
+                    if self.is_sql==True:
+                        capture_file_withdraw_output(sm.df_to_sql, df_final)
+
 
     def FactorData_update_main(self):
         self.logger.info('\n' + '='*50 + '\nSTARTING FACTOR DATA UPDATE PROCESS\n' + '='*50)
@@ -267,7 +276,7 @@ class FactorData_update:
 
 def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
-    fu.index_factor_update_main()
+    fu.index_ygFactor_exposure_update_main()
 if __name__ == '__main__':
     FactorData_history_main('2025-01-01', '2025-05-09', True)
 

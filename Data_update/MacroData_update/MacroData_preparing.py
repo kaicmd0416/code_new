@@ -6,6 +6,7 @@ import pandas as pd
 import yaml
 sys.path.append(path)
 import global_tools as gt
+from setup_logger.logger_setup import setup_logger
 
 class macroData_preparing:
     def __init__(self,available_date):
