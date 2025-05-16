@@ -73,6 +73,7 @@ class FactorData_update:
             sm4 = gt.sqlSaving_main(inputpath_configsql, 'FactorCov')
             sm5 = gt.sqlSaving_main(inputpath_configsql, 'FactorSpecificrisk')
         for available_date in working_days_list:
+
             self.logger.info(f'\nProcessing date: {available_date}')
             available_date=gt.intdate_transfer(available_date)
             outputpath_factor_exposure = os.path.join(outputpath_factor_exposure_base,

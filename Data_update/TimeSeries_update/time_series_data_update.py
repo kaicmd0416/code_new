@@ -101,6 +101,27 @@ class timeSeries_data_update:
         except Exception as e:
             self.logger.error(f"SQL查询执行失败: {str(e)}")
             raise
+    def df_transformer(self,df,type):
+        # 获取唯一的估值日期
+        valuation_date_list = df['valuation_date'].unique().tolist()
+        
+        # 将数据透视化：organization成为列，value作为值
+        if type=='indexOther':
+            df_pivot = df.pivot(index='valuation_date', columns='organization', values='value')
+        elif type=='macroData':
+            df_pivot = df.pivot(index='valuation_date', columns='name', values='value')
+        else:
+            raise ValueError
+        
+        # 重置索引，使valuation_date成为列
+        df_pivot = df_pivot.reset_index()
+        
+        # 确保valuation_date是第一列
+        cols = df_pivot.columns.tolist()
+        cols.remove('valuation_date')
+        df_pivot = df_pivot[['valuation_date'] + cols]
+        
+        return df_pivot
     def indexMktData_update(self):
         inputpath=os.path.join(self.output_path,'index_data')
         gt.folder_creator2(inputpath)
@@ -223,27 +244,29 @@ class timeSeries_data_update:
         inputpath = os.path.join(self.output_path, 'index_data')
         inputpath2=os.path.join(self.output_path,'mkt_data')
         gt.folder_creator2(inputpath)
+        gt.folder_creator2(inputpath2)
         for type in ['FutureDifference','rrIndexScore','eg','LargeOrderInflow','NetLeverageBuying']:
             if type in ['FutureDifference','rrIndexScore']:
                  name = 'Index' + str(type)
+                 inputpath_file=os.path.join(inputpath,str(name)+'.csv')
             elif type=='eg':
                 name='IndexygData'
+                inputpath_file = os.path.join(inputpath, str(name) + '.csv')
             else:
                 name=type
-
-
+                inputpath_file=os.path.join(inputpath2,str(name)+'.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
                 start_date = gt.strdate_transfer(self.start_date)
                 end_date = gt.strdate_transfer(self.end_date)
-                sql = f"SELECT * FROM data_indexother WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
+                sql = f"SELECT * FROM data_indexother WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND type = '{type}'"
             else:
                 df = pd.DataFrame()
-                sql = f"SELECT * FROM data_indexother"
+                sql = f"SELECT * FROM data_indexother WHERE type = '{type}'"
             df_add = self.execute_sql_to_df(sql)
+            df_add=self.df_transformer(df_add,'indexOther')
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['id','metadata_id'],inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}没有找到{name}数据")
                 continue
@@ -305,22 +328,14 @@ class timeSeries_data_update:
                 df = pd.read_csv(inputpath_file)
                 start_date = gt.strdate_transfer(self.start_date)
                 end_date = gt.strdate_transfer(self.end_date)
-                if type!='Shibor':
-                      sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}'"
-                else:
-                    sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND type = '{'CLOSE'}'"
+                sql = f"SELECT * FROM data_macro WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND organization = '{type}' AND type = '{'close'}' "
             else:
                 df = pd.DataFrame()
-                if type!='Shibor':
-                     sql = f"SELECT * FROM {type2}"
-                else:
-                    sql = f"SELECT * FROM {type2} WHERE type = '{'CLOSE'}'"
+                sql = f"SELECT * FROM data_macro WHERE organization = '{type}' AND type = '{'close'}' "
             df_add = self.execute_sql_to_df(sql)
+            df_add = self.df_transformer(df_add, 'macroData')
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['id', 'metadata_id'], inplace=True)
-            if type=='Shibor':
-                df_add.drop(columns=['type'], inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}_data没有找到{name}数据")
                 continue
@@ -337,13 +352,13 @@ class timeSeries_data_update:
             else:
                 self.logger.info(
                     f"{type}_data没有找到{name}数据在" + str(self.start_date) + "至" + str(self.end_date))
-    def MktData_update(self):
+    def MktOther_update(self):
         inputpath = os.path.join(self.output_path, 'mkt_data')
         gt.folder_creator2(inputpath)
-        for type in ['LargeOrderInflow','LHB_AMT_proportion','NetLeverageBuying']:
+        for type in ['LHB_AMT_proportion']:
             type2 = type.lower()
             if type=='LHB_AMT_proportion':
-                type2='lhb'
+                type2='data_lhb'
             name=type
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
@@ -357,7 +372,6 @@ class timeSeries_data_update:
             df_add = self.execute_sql_to_df(sql)
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['id', 'metadata_id'], inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}_data没有找到{name}数据")
                 continue
@@ -378,22 +392,21 @@ class timeSeries_data_update:
     def USData_update(self):
         inputpath = os.path.join(self.output_path, 'us_data')
         gt.folder_creator2(inputpath)
-        for type in ['usdollar','usindex']:
-            type2 = type.lower()
+        for type in ['USDollar','USIndex']:
             name = type
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
                 df = pd.read_csv(inputpath_file)
                 start_date = gt.strdate_transfer(self.start_date)
                 end_date = gt.strdate_transfer(self.end_date)
-                sql = f"SELECT * FROM {type2} WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND type = '{'CLOSE'}'"
+                sql = f"SELECT * FROM data_us WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND type = '{'CLOSE'}' AND organization = '{type}'"
             else:
                 df = pd.DataFrame()
-                sql = f"SELECT * FROM {type2} WHERE type = '{'CLOSE'}'"
+                sql = f"SELECT * FROM data_us WHERE type = '{'CLOSE'}' AND organization = '{type}'"
             df_add = self.execute_sql_to_df(sql)
+            df_add=self.df_transformer(df_add,'macroData')
             df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
                 lambda x: gt.strdate_transfer(x))
-            df_add.drop(columns=['type'], inplace=True)
             if df_add.empty:
                 self.logger.info(f"{type}_data没有找到{name}数据")
                 continue
@@ -501,15 +514,15 @@ class timeSeries_data_update:
         self.stockMktData_update()
         self.VIXData_update()
     def Factordata_update_main(self):
-        # self.indexFactorData_update()
-        # self.FactorData_update()
+        self.indexFactorData_update()
+        self.FactorData_update()
         self.indexOtherData_update()
     def macrodata_update_main(self):
-        self.MktData_update()
-        self.MacroData_update()
+        #self.MktOther_update()
+        #self.MacroData_update()
         self.USData_update()
 
 if __name__ == "__main__":
     ts=timeSeries_data_update('2025-05-01','2025-05-09')
-    ts.Factordata_update_main()
+    ts.macrodata_update_main()
     

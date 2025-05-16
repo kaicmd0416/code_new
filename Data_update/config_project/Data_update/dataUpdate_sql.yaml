@@ -126,7 +126,7 @@ USDollar:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 USIndex:
     table_name: "data_us"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -135,7 +135,7 @@ USIndex:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 M1M2:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -144,7 +144,7 @@ M1M2:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 Shibor:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -153,7 +153,7 @@ Shibor:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 CPI:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -162,7 +162,7 @@ CPI:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 PPI:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -171,7 +171,7 @@ PPI:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 PMI:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -180,7 +180,7 @@ PMI:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 ChinaGovernmentBonds:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -189,7 +189,7 @@ ChinaGovernmentBonds:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 ChinaDevelopmentBankBonds:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -198,7 +198,7 @@ ChinaDevelopmentBankBonds:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 ChinaMediumTermNotes:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -207,7 +207,7 @@ ChinaMediumTermNotes:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 SocialFinance:
     table_name: "data_macro"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
@@ -216,7 +216,7 @@ SocialFinance:
     private_keys:
       - "valuation_date"
       - 'type'
-      - 'organization'
+      - 'name'
 LargeOrderInflow:
     table_name: "data_indexother"
     db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"

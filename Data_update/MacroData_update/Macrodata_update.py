@@ -49,10 +49,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_m1m2=mdp.raw_M1M2_wind_withdraw()
             if len(df_m1m2)>0:
-                df_m1m2.columns=['organization','value']
+                df_m1m2.columns=['name','value']
                 df_m1m2['type']='close'
                 df_m1m2['valuation_date']=available_date
                 df_m1m2=df_m1m2[['valuation_date']+df_m1m2.columns.tolist()[:-1]]
+                df_m1m2['organization']='M1M2'
                 df_m1m2.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved M1M2 data for date: {available_date}')
                 if self.is_sql==True:
@@ -90,9 +91,10 @@ class MacroData_update:
                     slice_df['type']=name.lower()
                     df_final=pd.concat([df_final,slice_df])
                 df_final.reset_index(inplace=True)
-                df_final.rename(columns={'CODE':'organization'},inplace=True)
+                df_final.rename(columns={'CODE':'name'},inplace=True)
                 df_final['valuation_date']=available_date
                 df_final = df_final[['valuation_date'] + df_final.columns.tolist()[:-1]]
+                df_final['organization']='Shibor'
                 df_final.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved Shibor data for date: {available_date}')
                 if self.is_sql==True:
@@ -122,10 +124,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_cb=mdp.raw_CB_wind_withdraw()
             if len(df_cb)>0:
-                df_cb.columns=['organization','value']
+                df_cb.columns=['name','value']
                 df_cb['type']='close'
                 df_cb['valuation_date']=available_date
                 df_cb=df_cb[['valuation_date']+df_cb.columns.tolist()[:-1]]
+                df_cb['organization']='ChinaGovernmentBonds'
                 df_cb.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved China Government Bonds data for date: {available_date}')
                 if self.is_sql==True:
@@ -155,10 +158,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_cdb=mdp.raw_CDB_wind_withdraw()
             if len(df_cdb)>0:
-                df_cdb.columns = ['organization', 'value']
+                df_cdb.columns = ['name', 'value']
                 df_cdb['type'] = 'close'
                 df_cdb['valuation_date'] = available_date
                 df_cdb = df_cdb[['valuation_date'] + df_cdb.columns.tolist()[:-1]]
+                df_cdb['organization']='ChinaDevelopmentBankBonds'
                 df_cdb.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved China Development Bank Bonds data for date: {available_date}')
                 if self.is_sql==True:
@@ -188,10 +192,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_cmn=mdp.raw_CMN_wind_withdraw()
             if len(df_cmn)>0:
-                df_cmn.columns = ['organization', 'value']
+                df_cmn.columns = ['name', 'value']
                 df_cmn['type'] = 'close'
                 df_cmn['valuation_date'] = available_date
                 df_cmn = df_cmn[['valuation_date'] + df_cmn.columns.tolist()[:-1]]
+                df_cmn['organization']='ChinaMediumTermNotes'
                 df_cmn.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved China Medium Term Notes data for date: {available_date}')
                 if self.is_sql==True:
@@ -221,10 +226,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_cpi=mdp.raw_cpi_wind_withdraw()
             if len(df_cpi)>0:
-                df_cpi.columns = ['organization', 'value']
+                df_cpi.columns = ['name', 'value']
                 df_cpi['type'] = 'close'
                 df_cpi['valuation_date'] = available_date
                 df_cpi = df_cpi[['valuation_date'] + df_cpi.columns.tolist()[:-1]]
+                df_cpi['organization']='CPI'
                 df_cpi.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved CPI data for date: {available_date}')
                 if self.is_sql==True:
@@ -254,10 +260,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_ppi=mdp.raw_ppi_wind_withdraw()
             if len(df_ppi)>0:
-                df_ppi.columns = ['organization', 'value']
+                df_ppi.columns = ['name', 'value']
                 df_ppi['type'] = 'close'
                 df_ppi['valuation_date'] = available_date
                 df_ppi = df_ppi[['valuation_date'] + df_ppi.columns.tolist()[:-1]]
+                df_ppi['organization']='PPI'
                 df_ppi.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved PPI data for date: {available_date}')
                 if self.is_sql==True:
@@ -287,10 +294,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_pmi=mdp.raw_pmi_wind_withdraw()
             if len(df_pmi)>0:
-                df_pmi.columns = ['organization', 'value']
+                df_pmi.columns = ['name', 'value']
                 df_pmi['type'] = 'close'
                 df_pmi['valuation_date'] = available_date
                 df_pmi = df_pmi[['valuation_date'] + df_pmi.columns.tolist()[:-1]]
+                df_pmi['organization']='PMI'
                 df_pmi.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved PMI data for date: {available_date}')
                 if self.is_sql==True:
@@ -320,10 +328,11 @@ class MacroData_update:
             mdp=macroData_preparing(available_date)
             df_sf=mdp.raw_socialFinance_wind_withdraw()
             if len(df_sf)>0:
-                df_sf.columns = ['organization', 'value']
+                df_sf.columns = ['name', 'value']
                 df_sf['type'] = 'close'
                 df_sf['valuation_date'] = available_date
                 df_sf = df_sf[['valuation_date'] + df_sf.columns.tolist()[:-1]]
+                df_sf['organization']='SocialFinance'
                 df_sf.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved Social Finance data for date: {available_date}')
                 if self.is_sql==True:
@@ -409,7 +418,8 @@ class MacroData_update:
                 df_usd.reset_index(inplace=True)
                 df_usd.rename(columns={'index':'type','USDX':'value'}, inplace=True)
                 df_usd['type']=df_usd['type'].apply(lambda x: str(x).lower())
-                df_usd['organization']='USDX'
+                df_usd['name']='USDX'
+                df_usd['organization']='USDollar'
                 df_usd['valuation_date']=available_date
                 df_usd=df_usd[['valuation_date']+df_usd.columns.tolist()[:-1]]
                 df_usd.to_csv(outputpath_daily, index=False)
@@ -448,7 +458,8 @@ class MacroData_update:
                 for name in df_usi.columns.tolist():
                     slice_df_usi=df_usi[[name]]
                     slice_df_usi.columns=['value']
-                    slice_df_usi['organization']=name
+                    slice_df_usi['name']=name
+                    slice_df_usi['organization'] = 'USIndex'
                     df_final=pd.concat([df_final,slice_df_usi])
                 df_final.reset_index(inplace=True)
                 df_final.rename(columns={'index':'type'},inplace=True)
