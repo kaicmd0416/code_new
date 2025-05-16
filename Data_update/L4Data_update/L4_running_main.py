@@ -73,7 +73,7 @@ def L4_running_main(product_code_list,start_date,end_date,is_sql):
             else:
                 logger.warning(f"No data to process for {product_code} on {available_date}")
 
-def L4_update_main():
+def L4_update_main(is_sql):
     logger.info('\n' + '*'*50 + '\nL4 UPDATE MAIN PROCESS\n' + '*'*50)
     logger.info("Starting L4 update main process")
     product_code_list=valid_productCode_withdraw()
@@ -82,7 +82,7 @@ def L4_update_main():
     for i in range(3):
          target_date2=gt.last_workday_calculate(target_date2)
     logger.info(f"Processing data from {target_date2} to {target_date}")
-    L4_running_main(product_code_list, target_date2, target_date,is_sql=True)
+    L4_running_main(product_code_list, target_date2, target_date,is_sql)
     logger.info("L4 update main process completed")
 
 def L4_history_main(mode,product_name_list,start_date,end_date,is_sql):

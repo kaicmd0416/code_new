@@ -22,7 +22,7 @@ class timeSeries_data_update:
     def _load_db_config(self):
         """加载数据库配置信息"""
         try:
-            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                      'config_project', 'Data_update', 'sql_connection.yaml')
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
@@ -31,7 +31,7 @@ class timeSeries_data_update:
         except Exception as e:
             self.logger.error(f"加载数据库配置失败: {str(e)}")
             raise
-            
+
     def connect_db(self):
         """建立数据库连接"""
         try:
@@ -47,7 +47,7 @@ class timeSeries_data_update:
         except Exception as e:
             self.logger.error(f"数据库连接失败: {str(e)}")
             raise
-            
+
     def close_db(self):
         """关闭数据库连接"""
         if self.cursor:
@@ -55,12 +55,12 @@ class timeSeries_data_update:
         if self.conn:
             self.conn.close()
         self.logger.info("数据库连接已关闭")
-        
+
     def __enter__(self):
         """支持with语句的上下文管理"""
         self.connect_db()
         return self
-        
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """支持with语句的上下文管理"""
         self.close_db()
@@ -68,21 +68,21 @@ class timeSeries_data_update:
     def execute_sql_to_df(self, sql, params=None):
         """
         执行SQL查询并返回DataFrame
-        
+
         Args:
             sql (str): SQL查询语句
             params (tuple/dict, optional): SQL参数，用于参数化查询
-            
+
         Returns:
             pandas.DataFrame: 查询结果
-            
+
         Examples:
             # 简单查询
             df = ts.execute_sql_to_df("SELECT * FROM table_name")
-            
+
             # 带参数的查询
             df = ts.execute_sql_to_df("SELECT * FROM table_name WHERE date = %s", ('2024-01-01',))
-            
+
             # 带多个参数的查询
             df = ts.execute_sql_to_df(
                 "SELECT * FROM table_name WHERE date BETWEEN %s AND %s",
@@ -92,12 +92,12 @@ class timeSeries_data_update:
         try:
             if not self.conn or not self.conn.open:
                 self.connect_db()
-                
+
             # 使用pandas的read_sql直接读取为DataFrame
             df = pd.read_sql(sql, self.conn, params=params)
             self.logger.info(f"SQL查询执行成功，返回 {len(df)} 行数据")
             return df
-            
+
         except Exception as e:
             self.logger.error(f"SQL查询执行失败: {str(e)}")
             raise
@@ -518,8 +518,8 @@ class timeSeries_data_update:
         self.FactorData_update()
         self.indexOtherData_update()
     def macrodata_update_main(self):
-        #self.MktOther_update()
-        #self.MacroData_update()
+        self.MktOther_update()
+        self.MacroData_update()
         self.USData_update()
 
 if __name__ == "__main__":
