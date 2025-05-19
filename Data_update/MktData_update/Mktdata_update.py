@@ -466,7 +466,7 @@ class stockData_update:
                 df_stock['adjfactor_jy']=None
                 self.logger.info('stock_data使用的数据源是: wind')
             elif len(df_stock_wind)==0 and len(df_stock_jy)>0:
-                df_stock=df_stock_wind
+                df_stock=df_stock_jy
                 df_stock.rename(columns={'adjfactor':'adjfactor_jy'},inplace=True)
                 df_stock['adjfactor_wind']=None
                 self.logger.info('stock_data使用的数据源是: jy')
