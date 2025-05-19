@@ -250,7 +250,7 @@ class DataCheck:
         return output_list
 
     def checking_crossSectiondata_main(self):
-        self.logger.info("开始数据检查主流程")
+        self.logger.info("开始截面数据检查主流程")
         outputlist=self.config_withdraw()
         further_list=['output_indexexposure','output_indexcomponent','output_portfolio']
         for data_type in outputlist:
@@ -282,9 +282,10 @@ class DataCheck:
                     inputpath_daily = self.capture_file_withdraw_output(gt.file_withdraw, inputpath, available_date)
                 except:
                     self.logger.error(f'找不到 {inputpath}')
-        self.logger.info("数据检查主流程完成")
+        self.logger.info("截面数据检查主流程完成")
 
     def checking_timeseriesdata_main(self):
+        self.logger.info("开始时序数据检查主流程")
         self.logger = setup_logger2('TimeseriesDataCheck')
         outputpath_ori = glv.get('output_timeseries')
         file_list = os.listdir(outputpath_ori)
@@ -325,9 +326,10 @@ class DataCheck:
                         self.logger.info(f'{file} already updated to the latest date {end_date}')
                 except Exception as e:
                     self.logger.error(f"Error processing {file} in {file_name}: {str(e)}")
+        self.logger.info("时序数据检查主流程完成")
 
 
 
 if __name__ == '__main__':
-    dc=DataCheck('2025-05-12')
-    dc.timeselecting_check()
+    dc=DataCheck('2025-05-19')
+    dc.check_database_updates()

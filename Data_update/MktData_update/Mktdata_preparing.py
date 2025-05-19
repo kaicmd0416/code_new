@@ -303,5 +303,5 @@ class FutureDifference_prepare:
         df_index=gt.readcsv(inputpath2)
         return df_future,df_index
 if __name__ == '__main__':
-    cbp=timeseries_stockreturn_withdraw()
-    cbp.stock_close_withdraw()
+    cbp=BankMomentum_prepare('2025-05-06')
+    cbp.raw_BankMomentum_prepare()

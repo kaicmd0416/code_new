@@ -523,6 +523,6 @@ class timeSeries_data_update:
         self.USData_update()
 
 if __name__ == "__main__":
-    ts=timeSeries_data_update('2025-05-01','2025-05-09')
-    ts.macrodata_update_main()
+    ts=timeSeries_data_update('2025-05-01','2025-05-19')
+    ts.VIXData_update()
     

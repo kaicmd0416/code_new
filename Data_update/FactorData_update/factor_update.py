@@ -278,8 +278,8 @@ class FactorData_update:
 
 def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
-    fu.index_ygFactor_exposure_update_main()
+    fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2025-01-01', '2025-05-09', True)
+    FactorData_history_main('2025-05-01', '2025-05-16', True)
 
 
