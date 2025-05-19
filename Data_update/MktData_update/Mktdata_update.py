@@ -848,10 +848,10 @@ class optionData_update:
                 df_option_tushare = pd.DataFrame()
             if len(df_option_wind) > 0 and len(df_option_tushare) == 0:
                 df_option = df_option_wind
-                self.logger.info('stock_data使用的数据源是: wind')
+                self.logger.info('option_data使用的数据源是: wind')
             elif len(df_option_wind) == 0 and len(df_option_tushare) > 0:
                 df_option = df_option_tushare
-                self.logger.info('stock_data使用的数据源是: jy')
+                self.logger.info('option_data使用的数据源是: jy')
             elif len(df_option_wind) > 0 and len(df_option_tushare) > 0:
                 all_codes = list(set(df_option_wind['code']) | set(df_option_tushare['code']))
                 all_codes.sort()
@@ -899,7 +899,7 @@ class optionData_update:
                                 idx_to_update = df_option.loc[mask].index[valid_mask]
                                 codes_valid = codes_to_update[valid_mask]
                                 df_option.loc[idx_to_update, col] = df_bu.set_index('code').loc[codes_valid, col].values
-                if len(df_option) != 0 and len(df_future) != 0:
+            if len(df_option) != 0 and len(df_future) != 0:
                     available_date2 = gt.strdate_transfer(available_date)
                     df_option['valuation_date'] = gt.strdate_transfer(available_date)
                     df_option = df_option[['valuation_date'] + df_option.columns.tolist()[:-1]]
@@ -910,8 +910,8 @@ class optionData_update:
                     df_option.to_csv(outputpath_option, index=False)
                     if self.is_sql == True:
                         capture_file_withdraw_output(sm.df_to_sql, df_option)
-                else:
-                    self.logger.info('option_data在'+str(available_date)+'更新有问题')
+            else:
+                self.logger.info('option_data在'+str(available_date)+'更新有问题')
                 self.logger.info('option_data使用的数据源是: wind和tushare的合并数据')
 
 
