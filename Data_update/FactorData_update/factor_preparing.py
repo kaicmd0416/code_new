@@ -299,10 +299,10 @@ class FactorData_prepare:
         if inputpath_result != None:
             df = gt.readcsv(inputpath_result)
             df.drop(columns='Observations',inplace=True)
+            df.columns=barra_name + industry_name
             df['factor_name'] = barra_name + industry_name
-            df.columns = ['factor_name'] + barra_name + industry_name
             df['valuation_date']=gt.strdate_transfer(self.available_date)
-            df=df[['valuation_date']+df.columns.tolist()[:-1]]
+            df=df[['valuation_date','factor_name']+df.columns.tolist()[:-2]]
         else:
             df = pd.DataFrame()
         return df
@@ -324,10 +324,10 @@ class FactorData_prepare:
         if inputpath_result != None:
             df = gt.readcsv(inputpath_result)
             df.drop(columns='Observations', inplace=True)
+            df.columns = barra_name + industry_name
             df['factor_name'] = barra_name + industry_name
-            df.columns = ['factor_name'] + barra_name + industry_name
             df['valuation_date'] = gt.strdate_transfer(self.available_date)
-            df = df[['valuation_date'] + df.columns.tolist()[:-1]]
+            df = df[['valuation_date', 'factor_name'] + df.columns.tolist()[:-2]]
         else:
             df = pd.DataFrame()
         return df
@@ -389,7 +389,7 @@ class FactorData_prepare:
             df = pd.DataFrame()
         return df
 if __name__ == '__main__':
-    working_days_list=gt.working_days_list('2024-01-01','2024-12-31')
+    working_days_list=gt.working_days_list('2024-12-30','2024-12-31')
     for date in working_days_list:
         fp=FactorData_prepare(date)
-        fp.jy_factor_index_exposure_update('国证2000')
+        fp.factor_jy_covariance_update()
