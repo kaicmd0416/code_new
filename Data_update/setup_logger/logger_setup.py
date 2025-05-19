@@ -73,8 +73,8 @@ def setup_logger2(logger_name):
     file_handler = logging.FileHandler(log_file, encoding='utf-8')
     file_handler.setLevel(logging.INFO)
     
-    # 创建格式化器
-    formatter = logging.Formatter('%(asctime)s - %(name)s\n%(message)s\n' + '='*80)
+    # 创建格式化器 - 移除分隔线
+    formatter = logging.Formatter('%(asctime)s - %(name)s\n%(message)s')
     file_handler.setFormatter(formatter)
     
     # 添加处理器到记录器

@@ -138,6 +138,8 @@ class L4Info_update:
             self.logger.error('Update failed')
         else:
             result=self.standardize_column_names(result)
+            result['valuation_date'] = pd.to_datetime(result['valuation_date'])
+            result['valuation_date'] = result['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
             result.to_csv(result_path,index=False)
             self.logger.info(f"L4 info processing completed, saved to: {result_path}")
             if self.is_sql == True:

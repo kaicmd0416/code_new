@@ -28,6 +28,7 @@ class DataCheck:
         self.db_config = self._load_db_config()
         self.conn = None
         self.cursor = None
+        self.table_config = self._load_table_config()
 
     def _load_db_config(self):
         """加载数据库配置信息"""
@@ -40,6 +41,32 @@ class DataCheck:
             return config['database']
         except Exception as e:
             self.logger.error(f"加载数据库配置失败: {str(e)}")
+            raise
+
+    def _load_check_config(self):
+        """加载数据库检查配置信息"""
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
+                                     'config_project', 'Data_update', 'database_check.yaml')
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+            self.logger.info("数据库检查配置加载成功")
+            return config
+        except Exception as e:
+            self.logger.error(f"加载数据库检查配置失败: {str(e)}")
+            raise
+
+    def _load_table_config(self):
+        """加载表配置信息"""
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
+                                     'config_project', 'Data_update', 'dataUpdate_sql.yaml')
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+            self.logger.info("表配置加载成功")
+            return config
+        except Exception as e:
+            self.logger.error(f"加载表配置失败: {str(e)}")
             raise
 
     def connect_db(self):
@@ -69,124 +96,192 @@ class DataCheck:
     def check_database_updates(self):
         """
         检查数据库中所有表的更新状态
-        基于每个表的主键和valuation_date字段检查数据是否更新到最新日期
-        对于多维数据表，检查最新日期的数据完整性
+        基于配置文件中定义的检查模式进行检查
         """
+        self.logger.info("=================================================================================================================")
         self.logger.info("开始检查数据库更新状态")
         try:
             self.connect_db()
+            check_config = self._load_check_config()
             
-            # 获取所有表名
-            self.cursor.execute("SHOW TABLES")
-            tables = self.cursor.fetchall()
-            
-            for table in tables:
-                table_name = table[0]
-                self.logger.info(f"\n检查表 {table_name} 的更新状态:")
-                
-                try:
-                    # 获取表的主键信息
-                    self.cursor.execute(f"""
-                        SELECT COLUMN_NAME 
-                        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-                        WHERE TABLE_SCHEMA = '{self.db_config['database']}' 
-                        AND TABLE_NAME = '{table_name}' 
-                        AND CONSTRAINT_NAME = 'PRIMARY'
-                    """)
-                    primary_keys = [pk[0] for pk in self.cursor.fetchall()]
-                    
-                    if not primary_keys:
-                        self.logger.warning(f"表 {table_name} 没有主键，跳过检查")
-                        continue
-                    
-                    # 检查是否有valuation_date字段
-                    self.cursor.execute(f"""
-                        SELECT COLUMN_NAME 
-                        FROM INFORMATION_SCHEMA.COLUMNS 
-                        WHERE TABLE_SCHEMA = '{self.db_config['database']}' 
-                        AND TABLE_NAME = '{table_name}' 
-                        AND COLUMN_NAME = 'valuation_date'
-                    """)
-                    has_valuation_date = self.cursor.fetchone()
-                    
-                    if not has_valuation_date:
-                        self.logger.warning(f"表 {table_name} 没有valuation_date字段，跳过检查")
-                        continue
-                    
-                    # 获取最新的valuation_date
-                    self.cursor.execute(f"""
-                        SELECT MAX(valuation_date) 
-                        FROM {table_name}
-                    """)
-                    latest_date = self.cursor.fetchone()[0]
-                    
-                    if not latest_date:
-                        self.logger.warning(f"表 {table_name} 没有数据")
-                        continue
-                    
-                    # 转换为datetime对象进行比较
-                    latest_date = pd.to_datetime(latest_date).date()
-                    target_date = pd.to_datetime(self.target_date_other).date()
-                    
-                    if latest_date < target_date:
-                        self.logger.error(f"表 {table_name} 数据未更新到最新日期")
-                        self.logger.error(f"最新数据日期: {latest_date}, 目标日期: {target_date}")
-                        continue
-                    
-                    # 检查最新日期的数据完整性
-                    # 1. 获取所有主键组合的计数
-                    pk_columns = ', '.join(primary_keys)
-                    self.cursor.execute(f"""
-                        SELECT {pk_columns}, COUNT(*) as count
-                        FROM {table_name}
-                        GROUP BY {pk_columns}
-                        ORDER BY count DESC
-                    """)
-                    pk_counts = self.cursor.fetchall()
-                    
-                    if not pk_counts:
-                        self.logger.warning(f"表 {table_name} 没有主键组合数据")
-                        continue
-                    
-                    # 2. 获取最新日期的数据
-                    self.cursor.execute(f"""
-                        SELECT {pk_columns}
-                        FROM {table_name}
-                        WHERE valuation_date = '{latest_date}'
-                    """)
-                    latest_date_data = self.cursor.fetchall()
-                    
-                    # 3. 获取所有唯一的主键组合
-                    self.cursor.execute(f"""
-                        SELECT DISTINCT {pk_columns}
-                        FROM {table_name}
-                    """)
-                    all_unique_pks = self.cursor.fetchall()
-                    
-                    # 4. 检查最新日期的数据完整性
-                    if len(latest_date_data) < len(all_unique_pks):
-                        self.logger.error(f"表 {table_name} 在最新日期 {latest_date} 的数据不完整")
-                        self.logger.error(f"应有 {len(all_unique_pks)} 条记录，实际有 {len(latest_date_data)} 条记录")
+            for mode, tables in check_config.items():
+                self.logger.info(f"\n开始执行 {mode} 检查模式:")
+                for table_config in tables:
+                    table_name = table_config['table_name']
+                    self.logger.info(f"\n检查表 {table_name}:")
+                    try:
+                        # 检查表字段
+                        self.cursor.execute(f"""
+                            SELECT COLUMN_NAME 
+                            FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE TABLE_SCHEMA = '{self.db_config['database']}' 
+                            AND TABLE_NAME = '{table_name}'
+                        """)
+                        columns = [col[0] for col in self.cursor.fetchall()]
                         
-                        # 找出缺失的主键组合
-                        missing_pks = set(all_unique_pks) - set(latest_date_data)
-                        self.logger.error("缺失的主键组合:")
-                        for pk in missing_pks:
-                            pk_str = ', '.join(str(x) for x in pk)
-                            self.logger.error(f"  - {pk_str}")
-                    else:
-                        self.logger.info(f"表 {table_name} 数据已更新到最新日期 {latest_date} 且数据完整")
-                    
-                except Exception as e:
-                    self.logger.error(f"检查表 {table_name} 时发生错误: {str(e)}")
-                    continue
-                    
+                        if mode == 'mode1':
+                            # mode1: 检查仅包含valuation_date字段的表的数据维度
+                            if 'valuation_date' not in columns:
+                                self.logger.warning(f"表 {table_name} 没有valuation_date字段，跳过检查")
+                                continue
+                            self.cursor.execute(f"""
+                                SELECT COUNT(*) 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_other}'
+                            """)
+                            count = self.cursor.fetchone()[0]
+                            self.logger.info(f"表 {table_name} 在 {self.target_date_other} 的数据维度:")
+                            self.logger.info(f"记录数: {count}")
+                            self.logger.info(f"列名: {', '.join(columns)}")
+                        elif mode == 'mode2':
+                            # mode2: 检查包含valuation_date和organization字段的表的数据维度
+                            if 'valuation_date' not in columns or 'organization' not in columns:
+                                self.logger.warning(f"表 {table_name} 没有valuation_date或organization字段，跳过检查")
+                                continue
+                            # 输出目标日期下所有organization的数量
+                            self.cursor.execute(f"""
+                                SELECT organization, COUNT(*) 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_other}'
+                                GROUP BY organization
+                            """)
+                            org_counts = self.cursor.fetchall()
+                            self.logger.info(f"表 {table_name} 在 {self.target_date_other} 按organization分组的维度:")
+                            for org, cnt in org_counts:
+                                self.logger.info(f"organization: {org}, 记录数: {cnt}")
+                            # 输出所有唯一organization
+                            org_list = [org for org, _ in org_counts]
+                            self.logger.info(f"唯一organization列表: {', '.join([str(o) for o in org_list])}")
+                            self.logger.info(f"列名: {', '.join(columns)}")
+                        elif mode == 'mode3':
+                            # mode3: 检查包含valuation_date和product_code字段的表的数据维度
+                            if 'valuation_date' not in columns or 'product_code' not in columns:
+                                self.logger.warning(f"表 {table_name} 没有valuation_date或product_code字段，跳过检查")
+                                continue
+                            # 计算mode3的检查日期
+                            check_date = gt.last_workday_calculate(self.target_date_other)
+                            # 输出目标日期下所有product_code的数量
+                            self.cursor.execute(f"""
+                                SELECT product_code, COUNT(*) 
+                                FROM {table_name}
+                                WHERE valuation_date = '{check_date}'
+                                GROUP BY product_code
+                            """)
+                            product_counts = self.cursor.fetchall()
+                            self.logger.info(f"表 {table_name} 在 {check_date} 按product_code分组的维度:")
+                            for product, cnt in product_counts:
+                                self.logger.info(f"product_code: {product}, 记录数: {cnt}")
+                            # 输出所有唯一product_code
+                            product_list = [product for product, _ in product_counts]
+                            self.logger.info(f"唯一product_code列表: {', '.join([str(p) for p in product_list])}")
+                            self.logger.info(f"列名: {', '.join(columns)}")
+                        elif mode == 'mode4':
+                            # mode4: 检查包含valuation_date、type和organization字段的表的数据维度
+                            if 'valuation_date' not in columns or 'type' not in columns or 'organization' not in columns:
+                                self.logger.warning(f"表 {table_name} 没有valuation_date、type或organization字段，跳过检查")
+                                continue
+                            # 输出目标日期下按type和organization分组的数量
+                            self.cursor.execute(f"""
+                                SELECT type, organization, COUNT(*) 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_other}'
+                                GROUP BY type, organization
+                                ORDER BY type, organization
+                            """)
+                            type_org_counts = self.cursor.fetchall()
+                            self.logger.info(f"表 {table_name} 在 {self.target_date_other} 按type和organization分组的维度:")
+                            for type_val, org, cnt in type_org_counts:
+                                self.logger.info(f"type: {type_val}, organization: {org}, 记录数: {cnt}")
+                            # 输出所有唯一type
+                            self.cursor.execute(f"""
+                                SELECT DISTINCT type 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_other}'
+                                ORDER BY type
+                            """)
+                            type_list = [t[0] for t in self.cursor.fetchall()]
+                            self.logger.info(f"唯一type列表: {', '.join([str(t) for t in type_list])}")
+                            # 输出所有唯一organization
+                            self.cursor.execute(f"""
+                                SELECT DISTINCT organization 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_other}'
+                                ORDER BY organization
+                            """)
+                            org_list = [o[0] for o in self.cursor.fetchall()]
+                            self.logger.info(f"唯一organization列表: {', '.join([str(o) for o in org_list])}")
+                            self.logger.info(f"列名: {', '.join(columns)}")
+                        elif mode == 'mode5':
+                            # mode5: 检查包含valuation_date和score_name字段的表的数据维度
+                            if 'valuation_date' not in columns or 'score_name' not in columns:
+                                self.logger.warning(f"表 {table_name} 没有valuation_date或score_name字段，跳过检查")
+                                continue
+                            # 输出目标日期下按score_name分组的数量
+                            self.cursor.execute(f"""
+                                SELECT score_name, COUNT(*) 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_other}'
+                                GROUP BY score_name
+                                ORDER BY score_name
+                            """)
+                            score_counts = self.cursor.fetchall()
+                            self.logger.info(f"表 {table_name} 在 {self.target_date_other} 按score_name分组的维度:")
+                            for score, cnt in score_counts:
+                                self.logger.info(f"score_name: {score}, 记录数: {cnt}")
+                            # 输出所有唯一score_name
+                            score_list = [score for score, _ in score_counts]
+                            self.logger.info(f"唯一score_name列表: {', '.join([str(s) for s in score_list])}")
+                            self.logger.info(f"列名: {', '.join(columns)}")
+                        elif mode == 'mode6':
+                            # mode6: 检查包含valuation_date和portfolio_name字段的表的数据维度
+                            if 'valuation_date' not in columns or 'portfolio_name' not in columns:
+                                self.logger.warning(f"表 {table_name} 没有valuation_date或portfolio_name字段，跳过检查")
+                                continue
+                            # 输出目标日期下按portfolio_name分组的数量
+                            self.cursor.execute(f"""
+                                SELECT portfolio_name, COUNT(*) 
+                                FROM {table_name}
+                                WHERE valuation_date = '{self.target_date_score}'
+                                GROUP BY portfolio_name
+                                ORDER BY portfolio_name
+                            """)
+                            portfolio_counts = self.cursor.fetchall()
+                            self.logger.info(f"表 {table_name} 在 {self.target_date_score} 按portfolio_name分组的维度:")
+                            for portfolio, cnt in portfolio_counts:
+                                self.logger.info(f"portfolio_name: {portfolio}, 记录数: {cnt}")
+                            
+                            # 获取所有唯一的portfolio_name，不限制于当前日期的数据
+                            self.cursor.execute(f"""
+                                SELECT DISTINCT portfolio_name 
+                                FROM {table_name}
+                                ORDER BY portfolio_name
+                            """)
+                            portfolio_list = [p[0] for p in self.cursor.fetchall()]
+                            self.logger.info(f"所有唯一portfolio_name列表: {', '.join([str(p) for p in portfolio_list])}")
+                            
+                            # 获取当前日期的portfolio_name列表
+                            current_date_portfolios = [p for p, _ in portfolio_counts]
+                            self.logger.info(f"当前日期({self.target_date_score})的portfolio_name列表: {', '.join([str(p) for p in current_date_portfolios])}")
+                            
+                            # 检查是否有缺失的portfolio_name
+                            missing_portfolios = set(portfolio_list) - set(current_date_portfolios)
+                            if missing_portfolios:
+                                self.logger.warning(f"以下portfolio_name在当前日期({self.target_date_score})没有数据: {', '.join([str(p) for p in sorted(missing_portfolios)])}")
+                            
+                            self.logger.info(f"列名: {', '.join(columns)}")
+                        elif mode == 'mode7':
+                            # mode7: 不需要日常检查的表，跳过日志输出
+                            continue
+                    except Exception as e:
+                        self.logger.error(f"检查表 {table_name} 时发生错误: {str(e)}")
+                        continue
         except Exception as e:
             self.logger.error(f"数据库检查过程中发生错误: {str(e)}")
         finally:
             self.close_db()
             
         self.logger.info("数据库更新状态检查完成")
+        self.logger.info("=================================================================================================================")
 
     def capture_file_withdraw_output(self, func, *args, **kwargs):
         """捕获file_withdraw的输出并记录到日志"""
@@ -198,6 +293,7 @@ class DataCheck:
         return result
 
     def rrScore_updateChecking(self):
+        self.logger.info("=================================================================================================================")
         self.logger.info("开始检查 rrScore 更新状态")
         inputpath_score_config = glv.get('score_mode')
         df_config = pd.read_excel(inputpath_score_config)
@@ -216,8 +312,10 @@ class DataCheck:
                 self.logger.error(f'fm_score在最新时间:{self.target_date_score}更新出现错误')
             else:
                 self.logger.info(f'fm_score已经更新到最新日期:{self.target_date_score}')
+        self.logger.info("=================================================================================================================")
 
     def combineScore_updateChecking(self):
+        self.logger.info("=================================================================================================================")
         self.logger.info("开始检查 combineScore 更新状态")
         inputpath_score_config = glv.get('mode_dic')
         df_config = pd.read_excel(inputpath_score_config)
@@ -233,6 +331,7 @@ class DataCheck:
                 self.logger.error(f'combine_score在最新时间:{self.target_date_score}更新出现错误')
             else:
                 self.logger.info(f'combine_score已经更新到最新日期:{self.target_date_score}')
+        self.logger.info("=================================================================================================================")
 
     def config_withdraw(self):
         inputpath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -250,6 +349,7 @@ class DataCheck:
         return output_list
 
     def checking_crossSectiondata_main(self):
+        self.logger.info("=================================================================================================================")
         self.logger.info("开始截面数据检查主流程")
         outputlist=self.config_withdraw()
         further_list=['output_indexexposure','output_indexcomponent','output_portfolio']
@@ -283,8 +383,10 @@ class DataCheck:
                 except:
                     self.logger.error(f'找不到 {inputpath}')
         self.logger.info("截面数据检查主流程完成")
+        self.logger.info("=================================================================================================================")
 
     def checking_timeseriesdata_main(self):
+        self.logger.info("=================================================================================================================")
         self.logger.info("开始时序数据检查主流程")
         self.logger = setup_logger2('TimeseriesDataCheck')
         outputpath_ori = glv.get('output_timeseries')
@@ -327,7 +429,13 @@ class DataCheck:
                 except Exception as e:
                     self.logger.error(f"Error processing {file} in {file_name}: {str(e)}")
         self.logger.info("时序数据检查主流程完成")
-
+        self.logger.info("=================================================================================================================")
+    def DataCheckmain(self):
+        self.checking_crossSectiondata_main()
+        self.checking_timeseriesdata_main()
+        self.rrScore_updateChecking()
+        self.combineScore_updateChecking()
+        self.check_database_updates()
 
 
 if __name__ == '__main__':

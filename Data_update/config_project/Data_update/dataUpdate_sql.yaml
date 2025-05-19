@@ -297,14 +297,35 @@ Portfolio:
       - "valuation_date"
       - 'code'
       - 'portfolio_name'
+ChineseValuationDate:
+    table_name: "chinesevaluationdate"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+STstock:
+    table_name: "st_stock"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "code"
+Stock_uni:
+    table_name: "stockUniverse"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "S_INFO_WINDCODE"
+      - 'type'
+SpecialDay:
+    table_name: "specialday"
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
 
-#  ChinaDevelopmentBankBonds:
-#    directories: "\\Data_prepared_new\\data_macro\\ChinaDevelopmentBankBonds"
-#    table_name: "ChinaDevelopmentBankBonds"
-#    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared_new"
-#    pattern_config: "config/Data_prepared_new/file_patterns.yaml"
-#    mapping_config: "config/Data_prepared_new/column_mappings.yaml"
-#    chunk_size: 20000
-#    workers: 4
-#    today_only: false  # 只处理当天的文件
 

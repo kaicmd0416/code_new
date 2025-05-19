@@ -186,6 +186,8 @@ class L4Holding_update:
             result4=self.output_df_normalization(result4,'bond')
             result5=self.output_df_normalization(result5,'etf')
             df_final=pd.concat([result,result1,result2,result3,result4,result5])
+            df_final['valuation_date']=pd.to_datetime(df_final['valuation_date'])
+            df_final['valuation_date']= df_final['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
             df_final.to_csv(result_path,index=False)
             self.logger.info(f"L4 holding processing completed, saved to: {result_path}")
             if self.is_sql == True:

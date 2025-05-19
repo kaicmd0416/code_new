@@ -49,17 +49,15 @@ def FactorData_update_main(is_sql=True):
 def L4Data_update_main(is_sql=True):
     L4_update_main(is_sql)
 def daily_update_auto():
-    try:
-        fm = File_moving()
-        fm.file_moving_update_main()
-    except:
-        pass
+    fm = File_moving()
+    fm.file_moving_update_main()
     MarketData_update_main()
     ScoreData_update_main()
     FactorData_update_main()
     L4Data_update_main()
     DC=DataCheck()
-    DC.checking_crossSectiondata_main()
-    DC.checking_timeseriesdata_main()
+    DC.DataCheckmain()
 if __name__ == '__main__':
-    daily_update_auto()
+    DC = DataCheck()
+    DC.DataCheckmain()
+    #daily_update_auto()
