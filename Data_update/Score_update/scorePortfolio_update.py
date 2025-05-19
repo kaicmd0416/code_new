@@ -8,6 +8,8 @@ import global_tools as gt
 from setup_logger.logger_setup import setup_logger
 import io
 import contextlib
+import time
+from datetime import datetime
 def capture_file_withdraw_output(func, *args, **kwargs):
     """捕获file_withdraw的输出并记录到日志"""
     logger = setup_logger('Portfolio_update_sql')
@@ -192,7 +194,10 @@ class scorePortfolio_update:
         self.logger.info('Completed UBP top portfolio update')
     def etf_update_main(self):
         self.logger.info('\nProcessing ETF portfolio update...')
-        inputpath=glv.get('outputpath_RRJX')
+        inputpath = glv.get('inputpath_gms')
+        update_time=time.ctime(os.path.getmtime(inputpath))
+        d = datetime.strptime(update_time, "%a %b %d %H:%M:%S %Y")
+        d=d.strftime('%Y-%m-%d')
         outputpath = glv.get('output_portfolio')
         outputpath = os.path.join(outputpath, 'gms')
         gt.folder_creator2(outputpath)
@@ -204,32 +209,34 @@ class scorePortfolio_update:
             sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
         for date in working_days_list:
             self.logger.info(f'Processing date: {date}')
-            available_date=gt.last_workday_calculate(date)
-            available_date=gt.last_workday_calculate(available_date)
-            available_date=gt.intdate_transfer(available_date)
-            date2=gt.intdate_transfer(date)
-            outputpath_daily=os.path.join(outputpath,'gms_'+str(date2)+'.csv')
-            inputpath_daily=gt.file_withdraw(inputpath,available_date)
-            try:
-                df=pd.read_excel(inputpath_daily,sheet_name='etf_tracking')
-            except:
-                df = pd.DataFrame()
-            if len(df)>0:
-                df['weight']=df['市值']/df['市值'].sum()
-                df=df[['代码','市价','weight']]
-                df.columns=['code','price','weight']
-                df=gt.code_transfer(df)
-                df=df[['code','weight']]
-                df['valuation_date'] = date
+            difference_date=(pd.to_datetime(date)-pd.to_datetime(d)).days
+            if difference_date>5:
+                print(inputpath,'上一次更新时间为:'+d,'时间间隔为:'+str(difference_date)+'天')
+            date2 = gt.intdate_transfer(date)
+            outputpath_daily = os.path.join(outputpath, 'gms_' + str(date2) + '.csv')
+            df = pd.read_excel(inputpath)
+            index_start=df[df[df.columns.tolist()[1]]=='ALD ETF Signal - UBP Bric'].index.tolist()[0]
+            index_end_list = df[df[df.columns.tolist()[1]].isna()].index.tolist()
+            index_end_list=[i for i in index_end_list if i>index_start]
+            index_end=index_end_list[0]
+            df=df.iloc[index_start+1:index_end]
+            df.dropna(inplace=True,axis=1)
+            df.fillna(0,inplace=True)
+            df.columns=['chi_name','code','money']
+            df['money']=df['money']
+            df['weight']=df['money']/df['money'].sum()
+            df=df[['code','weight']]
+            if len(df) > 0:
                 df['portfolio_name'] = 'gms'
-                df = df[['valuation_date', 'portfolio_name', 'code', 'weight']]
-                df.to_csv(outputpath_daily, index=False)
+                df['valuation_date'] = date
+                df=df[['valuation_date']+df.columns.tolist()[:-1]]
+                df.to_csv(outputpath_daily, index=False, encoding='gbk')
                 self.logger.info(f'Successfully saved ETF portfolio data for date: {date2}')
-                if self.is_sql==True:
+                if self.is_sql == True:
                     capture_file_withdraw_output(sm.df_to_sql, df)
-            else:
-                self.logger.warning(f'ubpETF {date} ETF_tracking 为空')
-        self.logger.info('Completed ETF portfolio update')
+                else:
+                    self.logger.warning(f'ubpETF {date} ETF_tracking 为空')
+            self.logger.info('Completed ETF portfolio update')
     def scorePortfolio_update_main(self):
         self.logger.info('\nStarting score portfolio update main process...')
         self.ubp_top_update_main()
@@ -237,5 +244,3 @@ class scorePortfolio_update:
         self.rr_hs300_top_update_main()
         self.etf_update_main()
         self.logger.info('Completed all score portfolio updates')
-# su=scorePortfolio_update('20250101','20250320')
-# su.rr_hs300_top_update_main()

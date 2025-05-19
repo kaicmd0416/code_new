@@ -18,16 +18,20 @@ def MarketData_update_main(is_sql=True):
     date = tt.target_date_decision_mkt()
     date = gt.strdate_transfer(date)
     #回滚
-    start_date=date
+    start_date2=date
     for i in range(10):
-        start_date=gt.last_workday_calculate(start_date)
-    tdu=timeSeries_data_update(start_date,date)
-    MktData_update_main(date, date,is_sql)
-    MacroData_update_main(date, date,is_sql)
-    VIX_calculation_main(date, date, False,is_sql)
+        start_date2=gt.last_workday_calculate(start_date2)
+    # 回滚
+    start_date = date
+    for i in range(3):
+            start_date = gt.last_workday_calculate(start_date)
+    tdu=timeSeries_data_update(start_date2,date)
+    MktData_update_main(start_date, date,is_sql)
+    MacroData_update_main(start_date, date,is_sql)
+    VIX_calculation_main(start_date, date, False,is_sql)
     tdu.Mktdata_update_main()
     tdu.macrodata_update_main()
-    CBData_update_main(date, date,is_sql)
+    CBData_update_main(start_date, date,is_sql)
 def ScoreData_update_main(is_sql=True):
     tt = time_tools()
     date = tt.target_date_decision_score()
@@ -39,11 +43,15 @@ def FactorData_update_main(is_sql=True):
     date = tt.target_date_decision_factor()
     date = gt.strdate_transfer(date)
     # 回滚
-    start_date = date
+    start_date2 = date
     for i in range(10):
-        start_date = gt.last_workday_calculate(start_date)
-    tdu = timeSeries_data_update(start_date, date)
-    fu = FactorData_update(date, date,is_sql)
+        start_date2 = gt.last_workday_calculate(start_date2)
+    # 回滚
+    start_date = date
+    for i in range(3):
+            start_date = gt.last_workday_calculate(start_date)
+    tdu = timeSeries_data_update(start_date2, date)
+    fu = FactorData_update(start_date, date,is_sql)
     fu.FactorData_update_main()
     tdu.Factordata_update_main()
 def L4Data_update_main(is_sql=True):
@@ -58,6 +66,4 @@ def daily_update_auto():
     DC=DataCheck()
     DC.DataCheckmain()
 if __name__ == '__main__':
-    DC = DataCheck()
-    DC.DataCheckmain()
-    #daily_update_auto()
+    daily_update_auto()

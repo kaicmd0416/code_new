@@ -25,6 +25,8 @@ class DataCheck:
         else:
             self.target_date_score = target_date
             self.target_date_other = gt.last_workday_calculate(target_date)
+        self.target_date_score=gt.strdate_transfer(self.target_date_score)
+        self.target_date_other=gt.strdate_transfer(self.target_date_other)
         self.db_config = self._load_db_config()
         self.conn = None
         self.cursor = None
@@ -411,6 +413,8 @@ class DataCheck:
             for file in files:
                 try:
                     df = gt.readcsv(os.path.join(outputpath, file))
+                    df['valuation_date'] = pd.to_datetime(df['valuation_date'])
+                    df['valuation_date']=df['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
                     start_date = df['valuation_date'].min()
                     end_date = df['valuation_date'].max()
                     expected_dates = gt.working_days_list(start_date, self.target_date_other)
