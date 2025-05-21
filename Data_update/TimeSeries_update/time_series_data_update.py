@@ -110,6 +110,8 @@ class timeSeries_data_update:
             df_pivot = df.pivot(index='valuation_date', columns='organization', values='value')
         elif type=='macroData':
             df_pivot = df.pivot(index='valuation_date', columns='name', values='value')
+        elif type=='intData':
+            df_pivot = df.pivot(index='valuation_date', columns='code', values='value')
         else:
             raise ValueError
         
@@ -245,12 +247,12 @@ class timeSeries_data_update:
         inputpath2=os.path.join(self.output_path,'mkt_data')
         gt.folder_creator2(inputpath)
         gt.folder_creator2(inputpath2)
-        for type in ['FutureDifference','rrIndexScore','eg','LargeOrderInflow','NetLeverageBuying']:
+        for type in ['FutureDifference','rrIndexScore','earningsyield','growth','LargeOrderInflow','NetLeverageBuying']:
             if type in ['FutureDifference','rrIndexScore']:
                  name = 'Index' + str(type)
                  inputpath_file=os.path.join(inputpath,str(name)+'.csv')
-            elif type=='eg':
-                name='IndexygData'
+            elif type=='earningsyield' or type=='growth':
+                name='Index'+str(type)+'Data'
                 inputpath_file = os.path.join(inputpath, str(name) + '.csv')
             else:
                 name=type
@@ -392,7 +394,7 @@ class timeSeries_data_update:
     def USData_update(self):
         inputpath = os.path.join(self.output_path, 'us_data')
         gt.folder_creator2(inputpath)
-        for type in ['USDollar','USIndex']:
+        for type in ['USDollar']:
             name = type
             inputpath_file = os.path.join(inputpath, type + '.csv')
             if os.path.exists(inputpath_file):
@@ -423,6 +425,39 @@ class timeSeries_data_update:
             else:
                 self.logger.info(
                     f"{type}_data没有找到{name}数据在" + str(self.start_date) + "至" + str(self.end_date))
+    def intData_update(self):
+        active_index=['HSI','HKTECH','DJI','SPX','IXIC','RUT']
+        inputpath = os.path.join(self.output_path, 'intIndex_data')
+        gt.folder_creator2(inputpath)
+        inputpath_file = os.path.join(inputpath, 'intIndex.csv')
+        if os.path.exists(inputpath_file):
+            df = pd.read_csv(inputpath_file)
+            start_date = gt.strdate_transfer(self.start_date)
+            end_date = gt.strdate_transfer(self.end_date)
+            sql = f"SELECT valuation_date,code,pct_chg as value FROM data_internationalindex WHERE valuation_date BETWEEN '{start_date}' AND '{end_date}' AND type = '{'pct_chg'}'"
+        else:
+            df = pd.DataFrame()
+            sql = f"SELECT valuation_date,code,pct_chg as value FROM data_internationalindex"
+        df_add = self.execute_sql_to_df(sql)
+        df_add=df_add[df_add['code'].isin(active_index)]
+        df_add = self.df_transformer(df_add, 'intData')
+        df_add['valuation_date'] = df_add['valuation_date'].astype(str).apply(
+            lambda x: gt.strdate_transfer(x))
+        if df_add.empty:
+            self.logger.info(f"data_internationalindex没有找到数据")
+        if not df_add.empty:
+            # 竖向拼接df和df_add
+            df = pd.concat([df, df_add], axis=0, ignore_index=True)
+
+            # 处理重复的valuation_date，保留最后一个
+            df = df.drop_duplicates(subset=['valuation_date'], keep='last')
+
+            # 按valuation_date排序
+            df = df.sort_values('valuation_date')
+            df.to_csv(inputpath_file, encoding='gbk', index=False)
+        else:
+            self.logger.info(
+                f"data_internationalindex没有找到数据在" + str(self.start_date) + "至" + str(self.end_date))
     def VIXData_update(self):
         inputpath = os.path.join(self.output_path, 'vix_data')
         gt.folder_creator2(inputpath)
@@ -523,6 +558,6 @@ class timeSeries_data_update:
         self.USData_update()
 
 if __name__ == "__main__":
-    ts=timeSeries_data_update('2025-05-01','2025-05-19')
-    ts.VIXData_update()
+    ts=timeSeries_data_update('2015-01-01','2025-05-21')
+    ts.intData_update()
     

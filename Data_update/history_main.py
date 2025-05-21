@@ -14,7 +14,6 @@ from vix.vix_calculation import VIX_calculation_main
 from MacroData_update.MacroData_upate_main import MacroData_update_main
 def MarketData_history_main(start_date,end_date,is_sql):
     MktData_update_main(start_date,end_date,is_sql)
-    MacroData_update_main(start_date,end_date,is_sql)
     tdu = timeSeries_data_update(start_date, end_date)
     VIX_calculation_main(start_date,end_date, False,is_sql)
     tdu.Mktdata_update_main()
@@ -28,8 +27,9 @@ def FactorData_history_main(start_date,end_date,is_sql):
     tdu = timeSeries_data_update(start_date, end_date)
     fu.FactorData_update_main()
     tdu.Factordata_update_main()
-
+def MacroData_history_main(start_date,end_date,is_sql):
+    MacroData_update_main(start_date, end_date, is_sql)
 if __name__ == '__main__':
-    start_date='2025-05-12'
+    start_date='2024-01-01'
     end_date='2025-05-19'
-    MarketData_history_main(start_date, end_date,True)
+    FactorData_history_main(start_date, end_date,True)

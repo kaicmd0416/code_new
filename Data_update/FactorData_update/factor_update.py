@@ -178,17 +178,11 @@ class FactorData_update:
         dic_index = self.index_dic_processing()
         index_name=dic_index[index_type]
         available_date2=gt.intdate_transfer(available_date)
-        inputpath_stockuniverse_ori = glv.get('data_other')
-        if available_date2 <= '20230601':
+        if available_date2 <= '20240531':
             inputpath_factor = glv.get('input_factor_jy_old')
-            inputpath_stockuniverse = os.path.join(inputpath_stockuniverse_ori, 'StockUniverse_old.csv')
         else:
             inputpath_factor = glv.get('input_factor_jy')
-            inputpath_stockuniverse = os.path.join(inputpath_stockuniverse_ori, 'StockUniverse_new.csv')
         inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(available_date2) + '.mat')
-        df_stockuniverse = gt.readcsv(inputpath_stockuniverse)
-        df_stockuniverse.rename(columns={'S_INFO_WINDCODE': 'code'}, inplace=True)
-        stock_code = df_stockuniverse['code'].values.tolist()
         fp=FactorData_prepare(available_date)
         try:
             df_factor_exposure = fp.jy_factor_exposure_update()
@@ -197,10 +191,12 @@ class FactorData_update:
         except:
             status = 0
         if status == 1:
-            df_factor_exposure['code'] = stock_code
+            df_factor_exposure=fp.stock_pool_processing(df_factor_exposure)
             df_component = gt.index_weight_withdraw(index_type,available_date)
             df_component.dropna(subset=['weight'], inplace=True)
             index_code_list = df_component['code'].tolist()
+            df_stockuniverse=pd.DataFrame()
+            df_stockuniverse['code']=df_factor_exposure['code'].tolist()
             slice_df_stock_universe = df_stockuniverse[df_stockuniverse['code'].isin(index_code_list)]
             slice_df_stock_universe.reset_index(inplace=True)
             slice_df_stock_universe = slice_df_stock_universe.merge(df_component, on='code', how='left')
@@ -261,7 +257,6 @@ class FactorData_update:
                     self.logger.warning(f'index_yg_indexexposure{available_date}更新有问题')
                 else:
                     df_final['valuation_date'] = available_date
-                    df_final['type']='eg'
                     df_final = df_final[['valuation_date'] + df_final.columns.tolist()[:-1]]
                     df_final.to_csv(outputpath_daily, index=False)
                     self.logger.info(f'Successfully saved yg factor exposure data for date: {available_date}')
@@ -280,6 +275,6 @@ def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
     fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2025-05-01', '2025-05-16', True)
+    FactorData_history_main('2023-06-01', '2025-05-21', True)
 
 

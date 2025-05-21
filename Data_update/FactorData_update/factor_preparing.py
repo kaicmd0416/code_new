@@ -54,7 +54,7 @@ class FactorData_prepare:
         return df_factor_exposure
 
     def jy_factor_exposure_update(self):  # available_date这里是YYYYMMDD格式
-        if self.available_date <= '20220801':
+        if self.available_date <= '20240531':
             inputpath_factor = glv.get('input_factor_jy_old')
         else:
             inputpath_factor = glv.get('input_factor_jy')

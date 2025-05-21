@@ -775,7 +775,9 @@ class optionData_update:
             'OI' : 'oi',
             #持仓量变化
             'oi_chg' : 'oi_chg',
-            'oi_CHG': 'oi_chg'
+            'oi_CHG': 'oi_chg',
+            'DELTA' : 'delta_wind',
+            'US_IMPLIEDVOL':'implied_vol_wind'
         }
         # 处理列名：先转小写
         df.columns = df.columns.str.lower()
@@ -794,12 +796,24 @@ class optionData_update:
         columns_to_keep = [col for col in df.columns if col in standardized_columns]
         df = df[columns_to_keep]
         # 定义固定的列顺序
-        fixed_columns = ['code', 'close', 'settle', 'pre_close', 'pre_settle','open','high','low','volume','amt','oi','oi_chg', 'multiplier']
+        fixed_columns = ['code', 'close', 'settle', 'pre_close', 'pre_settle','open','high','low','volume','amt','oi','oi_chg', 'multiplier','delta_wind','implied_vol_wind']
         # 只选择实际存在的列，并按固定顺序排列
         existing_columns = [col for col in fixed_columns if col in df.columns]
         df = df[existing_columns]
+        if 'delta_wind' not in df.columns:
+            df['delta_wind']=None
+        if 'implied_vol_wind' not in df.columns:
+            df['implied_vol_wind']=None
         return df
-
+    def future_option_code_processing(self, df):
+        def extract_dot_field(code):
+            code_str = str(code)
+            if '.' in code_str:
+                return code_str.split('.')[0]
+            else:
+                return code_str
+        df['code'] = df['code'].apply(extract_dot_field)
+        return df
     def get_code_multiplier(self,df):
         inputpath_option_uni = glv.get('input_optiondata_info_tushare')
         df_uni = gt.readcsv(inputpath_option_uni)
@@ -853,6 +867,8 @@ class optionData_update:
                 df_option = df_option_tushare
                 self.logger.info('option_data使用的数据源是: jy')
             elif len(df_option_wind) > 0 and len(df_option_tushare) > 0:
+                df_option_wind=self.future_option_code_processing(df_option_wind)
+                df_option_tushare = self.future_option_code_processing(df_option_tushare)
                 all_codes = list(set(df_option_wind['code']) | set(df_option_tushare['code']))
                 all_codes.sort()
                 # 保持Wind的列顺序，并添加Tushare独有的列
@@ -885,7 +901,6 @@ class optionData_update:
                         df_option.loc[~valid_codes, col] = None
                     else:
                         df_option[col] = None
-
                     # 如果Wind的数据有缺失，用Tushare的数据补充
                     if col in df_bu.columns:
                         # 找出当前列中为NaN的行

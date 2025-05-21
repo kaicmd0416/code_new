@@ -146,6 +146,43 @@ class scorePortfolio_update:
 
                 self.logger.info(f'Successfully saved HS300 top {number} portfolio data for date: {date2}')
         self.logger.info('Completed RR HS300 top portfolio update')
+    def rr_zz2000_top_update_main(self):
+        start_date = gt.strdate_transfer(self.start_date)
+        end_date = gt.strdate_transfer(self.end_date)
+        inputpath = glv.get('output_score')
+        inputpath_a3 = os.path.join(inputpath, 'a3')
+        outputpath = glv.get('output_portfolio')
+        outputpath_test2 = os.path.join(outputpath, 'a3_zz2000_top' + str(100))
+        try:
+            os.listdir(outputpath_test2)
+        except:
+            start_date = '2024-01-01'
+        working_list = gt.working_days_list(start_date, end_date)
+
+        for date in working_list:
+            yes=gt.last_workday_calculate(date)
+            yes=gt.last_workday_calculate(yes)
+            if date<='2024-01-01':
+                 df_hs300=gt.index_weight_withdraw('国证2000',yes)
+            else:
+                df_hs300 = gt.index_weight_withdraw('中证2000', yes)
+            code_list=df_hs300['code'].tolist()
+            date2 = gt.intdate_transfer(date)
+            available_date = gt.last_workday_calculate(date)
+            available_date = gt.intdate_transfer(available_date)
+            daily_a3 = gt.file_withdraw(inputpath_a3, available_date)
+            df_a3 = gt.readcsv(daily_a3)
+            df_a3=df_a3[df_a3['code'].isin(code_list)]
+            df_a3.reset_index(inplace=True)
+            for number in [100,200]:
+                outputpath_a3 = os.path.join(outputpath, 'a3_zz2000_top' + str(number))
+                gt.folder_creator2(outputpath_a3)
+                daily_outputpath_a3 = os.path.join(outputpath_a3, 'a3_zz2000_top' + str(number) + '_' + str(date2) + '.csv')
+                slice_a3 = df_a3.loc[:number - 1]
+                slice_a3['final_score']=(slice_a3['final_score']-slice_a3['final_score'].min())/(slice_a3['final_score'].max()-slice_a3['final_score'].min())
+                slice_a3['weight'] = slice_a3['final_score']/slice_a3['final_score'].sum()
+                slice_a3 = slice_a3[['code', 'weight']]
+                slice_a3.to_csv(daily_outputpath_a3, index=False)
     def ubp_top_update_main(self):
         self.logger.info('\nProcessing UBP top portfolio update...')
         start_date = gt.strdate_transfer(self.start_date)
@@ -242,5 +279,6 @@ class scorePortfolio_update:
         self.ubp_top_update_main()
         self.rr_top_update_main()
         self.rr_hs300_top_update_main()
+        self.rr_zz2000_top_update_main()
         self.etf_update_main()
         self.logger.info('Completed all score portfolio updates')

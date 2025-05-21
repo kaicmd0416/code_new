@@ -199,7 +199,7 @@ class delta_calculator:
             sigma=row['sigma'],
             n=row['option_type']
         ), axis=1)
-        df=df[ori_list+['Delta','sigma']]
+        df=df[ori_list[:-2]+['Delta','sigma']+ori_list[-2:]]
         return df
 
 

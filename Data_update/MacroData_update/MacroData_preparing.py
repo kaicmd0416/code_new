@@ -121,12 +121,11 @@ class macroData_preparing:
         df=gt.readcsv(inputpath)
         df=self.rename_code_by_folder_wind(df,'UsDollar')
         return df
-    def raw_USIndex_wind_withdraw(self):
-        inputpath=glv.get('input_USIndex_wind')
+    def raw_intIndex_tushare_withdraw(self):
+        inputpath=glv.get('input_internationalIndex_tushare')
         available_date2=gt.intdate_transfer(self.available_date)
         inputpath=gt.file_withdraw(inputpath,available_date2)
         df=gt.readcsv(inputpath)
-        df=self.rename_code_by_folder_wind(df,'UsIndex')
         return df
     def raw_indexScore_withdraw(self):
         inputpath=glv.get('output_score')

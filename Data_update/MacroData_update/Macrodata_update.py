@@ -26,6 +26,75 @@ class MacroData_update:
         self.end_date = end_date
         self.logger = setup_logger('Macrodata_update')
         self.logger.info('\n' + '*'*50 + '\nMACRODATA UPDATE PROCESSING\n' + '*'*50)
+    def standardize_column_names(self,df):
+        # 创建列名映射字典
+        column_mapping = {
+            # 代码相关
+            'code': 'code',
+            'ts_code': 'code',
+            'qtid': 'code',
+            'CODE': 'code',
+            #时间:
+            'trade_date':'valuation_date',
+            'date':'valuation_date',
+            'DATE':'valuation_date',
+            # 收盘价相关
+            'close': 'close',
+            'closeprice': 'close',
+            'close_price': 'close',
+            'CLOSE': 'close',
+            'ClosePrice': 'close',
+            # 前收盘价相关
+            'pre_close': 'pre_close',
+            'prevClose': 'pre_close',
+            'prev_close': 'pre_close',
+            'prevcloseprice': 'pre_close',
+            'PRE_CLOSE': 'pre_close',
+            'PrevClosePrice': 'pre_close',
+            #开盘价相关
+            'OPEN' : 'open',
+            'open' : 'open',
+            #最高价相关
+            'HIGH' : 'high',
+            'high' : 'high',
+            'hi' : 'high',
+            #最低价相关
+            'LOW' : 'low',
+            'low' : 'low',
+            'lo' : 'low',
+            #成交量相关：
+            'vol' : 'volume',
+            'VOLUME' : 'volume',
+            #成交金额相关：
+            'value' : 'amt',
+            'AMT' : 'amt',
+            'return' : 'pct_chg',
+            'PCT_CHG' : 'pct_chg',
+            'ret' : 'return',
+            'turn' :'turn_over',
+        }
+        # 处理列名：先转小写
+        df.columns = df.columns.str.lower()
+        # 处理列名：替换空格为下划线
+        df.columns = df.columns.str.replace(' ', '_')
+        # 处理列名：移除特殊字符
+        df.columns = df.columns.str.replace('[^\w\s]', '')
+        # 创建小写的映射字典
+        lower_mapping = {k.lower(): v for k, v in column_mapping.items()}
+        # 应用标准化映射
+        renamed_columns = {col: lower_mapping.get(col, col) for col in df.columns}
+        df = df.rename(columns=renamed_columns)
+        # 获取所有标准化后的列名
+        standardized_columns = set(column_mapping.values())
+        # 只保留在映射字典中定义的列
+        columns_to_keep = [col for col in df.columns if col in standardized_columns]
+        df = df[columns_to_keep]
+        # 定义固定的列顺序
+        fixed_columns = ['valuation_date','code','chi_name','open','high','low','close','pre_close','pct_chg','change','swing','volume']
+        # 只选择实际存在的列，并按固定顺序排列
+        existing_columns = [col for col in fixed_columns if col in df.columns]
+        df = df[existing_columns]
+        return df
     def M1M2_data_update(self):
         self.logger.info('\nProcessing M1M2 data update...')
         outputpath=glv.get('output_m1m2')
@@ -428,9 +497,10 @@ class MacroData_update:
                     capture_file_withdraw_output(sm.df_to_sql,df_usd)
             else:
                 self.logger.warning(f'UsDollar数据在：{available_date}数据更新出现错误')
-    def USindex_data_update(self):
-        self.logger.info('\nProcessing US Index data update...')
-        outputpath=glv.get('output_USIndex')
+
+    def intindex_data_update(self):
+        self.logger.info('\nProcessing international Index data update...')
+        outputpath=glv.get('output_intIndex')
         gt.folder_creator2(outputpath)
         inputlist=os.listdir(outputpath)
         if len(inputlist)==0:
@@ -443,35 +513,25 @@ class MacroData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'USIndex')
+            sm=gt.sqlSaving_main(inputpath_configsql,'IntIndex')
         for available_date in working_days_list:
             print(available_date)
             self.logger.info(f'Processing date: {available_date}')
             available_date2=gt.intdate_transfer(available_date)
-            outputpath_daily=os.path.join(outputpath,'UsIndex_'+str(available_date2)+'.csv')
+            outputpath_daily=os.path.join(outputpath,'IntIndex_'+str(available_date2)+'.csv')
             mdp=macroData_preparing(available_date)
-            df_usi=mdp.raw_USIndex_wind_withdraw()
+            df_usi=mdp.raw_intIndex_tushare_withdraw()
             if len(df_usi)>0:
-                df_usi.set_index('CODE', inplace=True, drop=True)
-                df_usi = df_usi.T
-                df_final=pd.DataFrame()
-                for name in df_usi.columns.tolist():
-                    slice_df_usi=df_usi[[name]]
-                    slice_df_usi.columns=['value']
-                    slice_df_usi['name']=name
-                    slice_df_usi['organization'] = 'USIndex'
-                    df_final=pd.concat([df_final,slice_df_usi])
-                df_final.reset_index(inplace=True)
-                df_final.rename(columns={'index':'type'},inplace=True)
-                df_final['type']=df_final['type'].apply(lambda x: str(x).lower())
-                df_final['valuation_date']=available_date
-                df_final=df_final[['valuation_date']+df_final.columns.tolist()[:-1]]
+                df_final=self.standardize_column_names(df_usi)
+                df_final['pct_chg']=df_final['pct_chg']/100
+                df_final['valuation_date']=pd.to_datetime(df_final['valuation_date'].astype(str))
+                df_final['valuation_date']=df_final['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
                 df_final.to_csv(outputpath_daily, index=False)
-                self.logger.info(f'Successfully saved US Index data for date: {available_date}')
+                self.logger.info(f'Successfully saved international Index data for date: {available_date}')
                 if self.is_sql==True:
                     capture_file_withdraw_output(sm.df_to_sql,df_final)
             else:
-                self.logger.warning(f'UsIndex数据在：{available_date}数据更新出现错误')
+                self.logger.warning(f'internationalIndex数据在：{available_date}数据更新出现错误')
     def IndexScore_data_update(self):
         self.logger.info('\nProcessing Index Score data update...')
         outputpath=glv.get('output_indexScore')

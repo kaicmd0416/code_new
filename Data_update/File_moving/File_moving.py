@@ -23,7 +23,7 @@ class File_moving:
         output = glv.get('output_destination')
         gt.folder_creator2(output)
         status=0
-        if len(os.listdir(output)):
+        if len(os.listdir(output))==0:
             status=1
         gt.move_specific_files(input, output)
         if status==1:
@@ -86,8 +86,9 @@ class DataOther_sql:
         self.stockuni_sql()
         self.specialdate_sql()
         self.st_stock_sql()
-
-
+if __name__ == '__main__':
+    fm=DataOther_sql()
+    fm.Dataother_main()
 
 
 
