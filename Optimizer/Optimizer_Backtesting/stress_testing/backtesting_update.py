@@ -20,36 +20,49 @@ import os
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
+import json
+global source,config_path
+def source_getting():
+    """
+    获取数据源配置
+
+    Returns:
+        str: 数据源模式（'local' 或 'sql'）
+    """
+    try:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        config_path = os.path.join(current_dir, 'global_setting\\optimizer_path_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        source = config_data['components']['data_source']['mode']
+    except Exception as e:
+        print(f"获取配置出错: {str(e)}")
+        source = 'local'
+    return source,config_path
+source,config_path= source_getting()
 class Back_testing:
     def __init__(self):
         self.df_index_return=self.index_return_withdraw()
         self.df_stock_return=self.stock_return_withdraw()
 
     def index_return_withdraw(self):
-        inputpath_indexreturn = glv.get('input_timeSeries')
-        inputpath_index = os.path.join(inputpath_indexreturn, 'index_return.csv')
-        df = gt.readcsv(inputpath_index, dtype=str)
-        df['valuation_date'] = pd.to_datetime(df['valuation_date'])
-        df['valuation_date'] = df['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
+        df=gt.timeSeries_index_return_withdraw()
         return df
     def stock_return_withdraw(self):
-        inputpath_stockreturn = glv.get('input_timeSeries')
-        inputpath_stockreturn = os.path.join(inputpath_stockreturn, 'stock_return.csv')
-        df = gt.readcsv(inputpath_stockreturn, dtype=str)
+        inputpath_stockreturn = glv.get('input_timeseriesstock')
+        df=gt.data_getting(inputpath_stockreturn,config_path)
+        if source=='sql':
+              df=df[['valuation_date','code','pct_chg']]
+              df=gt.sql_to_timeseries(df)
         df['valuation_date'] = pd.to_datetime(df['valuation_date'])
         df['valuation_date'] = df['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
+        df.set_index('valuation_date',inplace=True,drop=True)
+        df=df.astype(float)
+        df.reset_index(inplace=True)
         return df
     def index_weight_withdraw(self,index_type, available_date):  # 提取指数权重股数据
-        available_date2 = gt.intdate_transfer(available_date)
-        inputpath_index = glv.get('input_indexcomponent')
-        short_name = gt.index_shortname(index_type)
-        inputpath_index = os.path.join(inputpath_index, short_name)
-        inputpath_index = gt.file_withdraw(inputpath_index, available_date2)
-        if inputpath_index == None:
-            raise ValueError
-        else:
-            df = gt.readcsv(inputpath_index, dtype=str)
-            df = df[['code', 'weight']]
+        df=gt.index_weight_withdraw(index_type, available_date)
+        df=df[['code','weight']]
         return df
     def weight_matrix_combination(self, df_input, inputpath_backtesting):
         df_final = pd.DataFrame()

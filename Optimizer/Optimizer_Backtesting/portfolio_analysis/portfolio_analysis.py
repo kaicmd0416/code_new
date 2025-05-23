@@ -6,7 +6,44 @@ import sys
 import os
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
+import json
 import global_tools as gt
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                should_break=True
+    return inputpath_output
+def source_getting():
+    """
+    获取数据源配置
+
+    Returns:
+        str: 数据源模式（'local' 或 'sql'）
+    """
+    try:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        config_path = os.path.join(current_dir, 'global_setting\\optimizer_path_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        source = config_data['components']['data_source']['mode']
+    except Exception as e:
+        print(f"获取配置出错: {str(e)}")
+        source = 'local'
+    return source,config_path
+global global_config_path,source,config_path
+source,config_path= source_getting()
+global_config_path=config_path_finding()
 class portfolio_analysis:
     def __init__(self,df_index_return,df_stock_return,index_type,df_code,df_weight,score_name,top_number,inputpath_backtesting):
         self.df_index_return=df_index_return
@@ -31,16 +68,22 @@ class portfolio_analysis:
         slice_df_index=self.df_index_return[self.df_index_return['valuation_date']==target_date]
         return slice_df_index
     def portfolio_index_finding(self,score_name):
-        inputpath_mode_dic=glv.get('mode_dic')
+        inputpath_mode_dic=os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
         df_mode=pd.read_excel(inputpath_mode_dic)
         base_score=df_mode[df_mode['score_name']==score_name]['base_score'].tolist()[0]
         return base_score
     def score_withdraw(self,target_date):
         available_date=gt.intdate_transfer(gt.last_workday_calculate(target_date))
+        available_date2=gt.strdate_transfer(available_date)
         inputpath_original=glv.get('score')
-        inputpath_original=os.path.join(inputpath_original,self.base_score)
-        inputpath_original=gt.file_withdraw(inputpath_original,available_date)
-        df3=gt.readcsv(inputpath_original)
+        inputpath_score = glv.get('input_score')
+        if source == 'local':
+            inputpath_score2 = os.path.join(inputpath_score, self.base_score)
+            inputpath_score2 = gt.file_withdraw(inputpath_score2, available_date)
+        else:
+            inputpath_score2 = str(
+                inputpath_score) + f" WHERE valuation_date = '{available_date}' AND score_name = '{self.base_score}' "
+        df3= gt.data_getting(inputpath_score2, config_path)
         df3.rename(columns={'final_score':'original_score'},inplace=True)
         inputpath=os.path.join(self.inputpath,target_date)
         inputpath_score=os.path.join(inputpath,'Stock_score.csv')

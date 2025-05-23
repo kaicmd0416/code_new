@@ -35,7 +35,12 @@
         },
         {
             "folder_type": "output_folder_2",
-            "path": "Portfolio_test",
+            "path": "Portfolio",
+            "disk": "D"
+        },
+        {
+            "folder_type": "output_folder_3",
+            "path": "Trading_data",
             "disk": "D"
         },
         {
@@ -120,6 +125,16 @@
             "data_type": "result",
             "folder_name": "portfolio_weight",
             "folder_type": "output_folder_2"
+        },
+        {
+            "data_type": "output_check",
+            "folder_name": "portfolio_check",
+            "folder_type": "output_folder_2"
+        },
+                {
+            "data_type": "output_check2",
+            "folder_name": "portfolio_check",
+            "folder_type": "output_folder_3"
         },
         {
             "data_type": "portfolio_parameters",

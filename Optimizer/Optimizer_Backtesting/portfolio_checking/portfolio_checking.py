@@ -6,8 +6,26 @@ path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 import os
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                should_break=True
+    return inputpath_output
+global global_config_path
+global_config_path=config_path_finding()
 def trading_portfolio_withdraw():
-    inputpath_trading = glv.get('trading_config')
+    inputpath_trading = os.path.join(global_config_path,'trading_config\config_product.xlsx')
     xls = pd.ExcelFile(inputpath_trading)
     index_list = xls.sheet_names
     product_names = index_list[1:]
@@ -35,7 +53,7 @@ def exposure_proportion_checking2(df1):
 def portfolio_checking(score_name,target_date):
     barra_header=['portfolio','index','proportion','TE','portfolio_score','weight_sum']
     industry_header=['portfolio','index','proportion']
-    inputpath_portfolio = glv.get('portfolio_data')
+    inputpath_portfolio = glv.get('output_optimizer')
     daily_inputpath = os.path.join(inputpath_portfolio, score_name)
     daily_inputpath = os.path.join(daily_inputpath, target_date)
     daily_parameter=os.path.join(daily_inputpath,'parameter_selecting.xlsx')
