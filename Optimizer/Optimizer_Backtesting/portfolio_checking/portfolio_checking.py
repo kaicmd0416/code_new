@@ -100,7 +100,7 @@ def portfolio_Error_raising(target_date):
     target_date2=gt.intdate_transfer(target_date)
     outputpath=os.path.join(outputpath,'PortfolioCheck_'+str(target_date2)+'.xlsx')
     inputpath_check=glv.get('output_check')
-    inputpath_dic=glv.get('mode_dic')
+    inputpath_dic=os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
     trading_list=trading_portfolio_withdraw()
     df_dic=pd.read_excel(inputpath_dic)
     portfolio_list=df_dic['score_name'].tolist()

@@ -30,7 +30,12 @@
         },
         {
             "folder_type": "output_folder",
-            "path": "Optimizer_python_data_test",
+            "path": "Optimizer_python_data",
+            "disk": "D"
+        },
+        {
+            "folder_type": "output_folder_result",
+            "path": "Optimizer_python_data\\optimizer_result",
             "disk": "D"
         },
         {
@@ -125,6 +130,16 @@
             "data_type": "result",
             "folder_name": "portfolio_weight",
             "folder_type": "output_folder_2"
+        },
+        {
+            "data_type": "output_backtest",
+            "folder_name": "portfolio_history",
+            "folder_type": "output_folder_result"
+        },
+        {
+            "data_type": "output_stresstesting",
+            "folder_name": "portfolio_update",
+            "folder_type": "output_folder_result"
         },
         {
             "data_type": "output_check",
