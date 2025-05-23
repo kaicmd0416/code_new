@@ -1,6 +1,9 @@
 from Optimizer_python.optimizer_update_main import update_optimizer_main,update_optimizer_main2
 import sys
-import global_tools_func.global_tools as gt
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 def main_part1():#交易日版
     n = 2
     chunks_outputpath_list = gt.chunks(update_optimizer_main(), n)

@@ -1,10 +1,11 @@
 import pandas as pd
 import os
-import Optimizer_python.global_setting.global_dic as glv
+import global_setting.global_dic as glv
 class weight_constraint:
-    def __init__(self,df_score,df_weight,optimizer_args):
+    def __init__(self,df_score,df_weight,df_weight_yes,optimizer_args):
         self.df_score=df_score
         self.df_weight=df_weight
+        self.df_weight_yes=df_weight_yes
         self.top_number=int(optimizer_args.get('top_number'))
         self.stock_number=int(optimizer_args.get('stock_number'))
         self.top_weight_upper=optimizer_args.get('top_weight_upper')
@@ -191,5 +192,11 @@ class weight_constraint:
         df_weight.sort_values('code', inplace=True)
         df_weight.reset_index(inplace=True, drop=True)
         df_initial=df_weight[['code','initial_weight_index']]
-        df_initial.rename(columns={'initial_weight_index':'weight'},inplace=True)
+        if self.df_weight_yes.empty():
+            df_initial=df_initial
+            df_initial.rename(columns={'initial_weight_index': 'weight'}, inplace=True)
+        else:
+            df_initial=df_initial.merge(self.df_weight_yes,on='code',how='left')
+            df_initial.fillna(0,inplace=True)
+        df_initial=df_initial[['code','weight']]
         return df_weight,df_initial

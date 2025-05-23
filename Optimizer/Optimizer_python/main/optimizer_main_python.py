@@ -1,8 +1,11 @@
 from Optimizer_python.Optimizer.optimizer_V5 import Optimizer_python
 import sys
-import global_tools_func.global_tools as gt
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 import pandas as pd
-import Optimizer_python.global_setting.global_dic as glv
+import global_setting.global_dic as glv
 class Optimizer_main:
     def __init__(self,df_st, df_stock_universe):
             self.df_st=df_st

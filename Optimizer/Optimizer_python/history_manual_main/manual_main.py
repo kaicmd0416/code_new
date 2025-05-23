@@ -1,6 +1,9 @@
 from Optimizer_python.optimizer_history_main import history_optimizer_main
 import sys
-import global_tools_func.global_tools as gt
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 import pandas as pd
 import os
 def backtest_main_part1():

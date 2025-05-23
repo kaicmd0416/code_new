@@ -4,18 +4,40 @@ import os
 from scipy.io import loadmat
 import numpy as np
 import warnings
-import Optimizer_python.global_setting.global_dic as glv
+import global_setting.global_dic as glv
 from Optimizer_python.parameters.parameters_withdraw import factor_constraint_withdraw,optimizer_args_withdraw,valid_factor_withdraw
 from Optimizer_python.Score.score_withdraw import score_withdraw_main
 from Optimizer_python.data_prepare.data_prepare import cross_section_data_preparing
 from Optimizer_python.weight_processing.weight_constraint import weight_constraint
 warnings.filterwarnings("ignore")
 import sys
-import global_tools_func.global_tools as gt
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                inputpath_output=os.path.dirname(inputpath_output)
+                should_break=True
+    return inputpath_output
+global global_config_path
+global_config_path=config_path_finding()
 class Optimizer_python:
     def __init__(self,target_date,df_st, df_stock_universe):
         available_date=gt.last_workday_calculate(target_date)
         dp=cross_section_data_preparing(available_date)
+        self.dp=dp
         self.available_date=available_date
         self.df_hs300,self.df_zz500,self.df_zz1000,self.df_zz2000,self.df_zzA500=dp.index_component_withdraw()
         self.df_hs300_exposure,self.df_zz500_exposure,self.df_zz1000_exposure,self.df_zz2000_exposure,self.df_zzA500_exposure=dp.index_exposure_withdraw()
@@ -26,7 +48,7 @@ class Optimizer_python:
         self.df_cov=dp.factor_cov_withdraw()
         self.df_specificrisk=dp.factor_risk_withdraw()
     def optimizer_args_processing(self,optimizer_args,score_name):
-        inputpath_modedic = glv.get('mode_dic')
+        inputpath_modedic = os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
         df_mode_dic = pd.read_excel(inputpath_modedic)
         slice_df_mode_dic=df_mode_dic.iloc[df_mode_dic[df_mode_dic['score_name']==score_name].index]
         score_type=slice_df_mode_dic['base_score'].tolist()[0]
@@ -72,7 +94,8 @@ class Optimizer_python:
         df_weight['code'] = stock_list
         df_weight = df_weight.merge(df_score, on='code', how='left')
         df_weight = df_weight.merge(df_weight1, on='code', how='left')
-        ws=weight_constraint(df_score,df_weight,optimizer_args)
+        df_initial_weight=self.dp.weight_yes_withdraw(score_type,self.available_date)
+        ws=weight_constraint(df_score,df_weight,df_initial_weight,optimizer_args)
         df_final,df_initial=ws.weight_constraint_main()
         initial_weight = df_final['initial_weight'].tolist()
         upper_weight = df_final['weight_upper'].tolist()

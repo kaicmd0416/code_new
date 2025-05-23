@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-import Optimizer_python.global_setting.global_dic as glv
+import global_setting.global_dic as glv
 
 def optimizer_args_withdraw(score_type):
     inputpath_config = glv.get('portfolio_parameters')

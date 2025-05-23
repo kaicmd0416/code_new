@@ -1,8 +1,30 @@
 import pandas as pd
 import os
-import Optimizer_python.global_setting.global_dic as glv
+import global_setting.global_dic as glv
 import sys
-import global_tools_func.global_tools as gt
+import json
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
+global source,config_path
+def source_getting():
+    """
+    获取数据源配置
+
+    Returns:
+        str: 数据源模式（'local' 或 'sql'）
+    """
+    try:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        config_path = os.path.join(current_dir, 'global_setting\\optimizer_path_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        source = config_data['components']['data_source']['mode']
+    except Exception as e:
+        print(f"获取配置出错: {str(e)}")
+        source = 'local'
+    return source,config_path
+source,config_path= source_getting()
 def component_bu(df_score,index_type,df_hs300,df_zz500,df_zz1000,df_zz2000,df_zzA500):
     if index_type=='沪深300':
         quantile_1=0.4
@@ -45,9 +67,12 @@ def component_bu(df_score,index_type,df_hs300,df_zz500,df_zz1000,df_zz2000,df_zz
 def basic_score_withdraw(score_type,available_date):
     available_date2=gt.intdate_transfer(available_date)
     inputpath_score=glv.get('input_score')
-    inputpath_score2=os.path.join(inputpath_score,score_type)
-    inputpath_score2=gt.file_withdraw(inputpath_score2,available_date2)
-    df_score=gt.readcsv(inputpath_score2)
+    if source=='local':
+           inputpath_score2=os.path.join(inputpath_score,score_type)
+           inputpath_score2=gt.file_withdraw(inputpath_score2,available_date2)
+    else:
+           inputpath_score2=str(inputpath_score)+f" WHERE valuation_date = '{available_date}' AND score_name = '{score_type}' "
+    df_score=gt.data_getting(inputpath_score2,config_path)
     df_score['final_score']=(df_score['final_score']-df_score['final_score'].mean())/df_score['final_score'].std()
     return df_score
 def score_zz800_stockpool_processing(df_score,df_hs300,df_zz500):
