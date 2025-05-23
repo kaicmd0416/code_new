@@ -94,8 +94,8 @@
             "sql_sheet": "data_score"
         },
         {
-            "data_type": "input_stockdata",
-            "folder_name": "data_stock",
+            "data_type": "input_timeseriesstock",
+            "folder_name": "data_timeSeries\\stock_data\\stockClose.csv",
             "folder_type": "input_folder",
             "sql_sheet": "data_stock"
         },

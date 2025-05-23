@@ -75,6 +75,7 @@ class cross_section_data_preparing:
         else:
               inputpath_cov=str(inputpath_cov)+f" WHERE valuation_date = '{self.available_date}'"
         df= gt.data_getting(inputpath_cov,config_path)
+        df.rename(columns={'factor_name':'covariance'},inplace=True)
         return df
     def factor_risk_withdraw(self):
         available_date2=gt.intdate_transfer(self.available_date)
@@ -84,6 +85,10 @@ class cross_section_data_preparing:
         else:
               inputpath_cov=str(inputpath_cov)+f" WHERE valuation_date = '{self.available_date}'"
         df=gt.data_getting(inputpath_cov,config_path)
+        df.set_index('code',inplace=True,drop=True)
+        df=df[['specificrisk']]
+        df=df.T
+        df.reset_index(inplace=True,drop=True)
         return df
     def weight_yes_withdraw(self,score_name,available_date):
         inputpath_weight=glv.get('output_optimizer')

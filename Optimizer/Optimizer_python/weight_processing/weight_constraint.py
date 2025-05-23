@@ -192,7 +192,7 @@ class weight_constraint:
         df_weight.sort_values('code', inplace=True)
         df_weight.reset_index(inplace=True, drop=True)
         df_initial=df_weight[['code','initial_weight_index']]
-        if self.df_weight_yes.empty():
+        if len(self.df_weight_yes)==0:
             df_initial=df_initial
             df_initial.rename(columns={'initial_weight_index': 'weight'}, inplace=True)
         else:

@@ -1,8 +1,12 @@
 import sys
 import os
 import pandas as pd
-import Optimizer_Backtesting.global_setting.global_dic as glv
-import global_tools_func.global_tools as gt
+import global_setting.global_dic as glv
+import sys
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 class portfolio_analysis:
     def __init__(self,df_index_return,df_stock_return,index_type,df_code,df_weight,score_name,top_number,inputpath_backtesting):
         self.df_index_return=df_index_return

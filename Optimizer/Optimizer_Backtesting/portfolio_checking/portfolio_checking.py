@@ -1,6 +1,10 @@
-import Optimizer_Backtesting.global_setting.global_dic as glv
+import global_setting.global_dic as glv
 import pandas as pd
-import global_tools_func.global_tools as gt
+import sys
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 import os
 def trading_portfolio_withdraw():
     inputpath_trading = glv.get('trading_config')

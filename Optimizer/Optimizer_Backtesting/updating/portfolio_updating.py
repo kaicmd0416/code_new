@@ -1,8 +1,12 @@
 import sys
 from datetime import date
 import datetime
-import Optimizer_Backtesting.global_setting.global_dic as glv
-import global_tools_func.global_tools as gt
+import global_setting.global_dic as glv
+import sys
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 import pandas as pd
 from Optimizer_Backtesting.portfolio_checking.portfolio_checking import portfolio_checking,portfolio_Error_raising
 import os

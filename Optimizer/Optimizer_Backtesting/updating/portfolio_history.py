@@ -1,11 +1,12 @@
-import sys
 from datetime import date
 import datetime
-sys.path.append('D:\OneDrive\global_tools_func')
-import Optimizer_Backtesting.global_setting.global_dic as glv
-import global_tools_func.global_tools as gt
-import pandas as pd
+import global_setting.global_dic as glv
+import sys
 import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
+import pandas as pd
 def portfolio_updating(score_name_list,start_date,end_date):
     inputpath_portfolio=glv.get('portfolio_data')
     outputpath_weight=glv.get('output_weight')

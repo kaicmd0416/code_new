@@ -5,11 +5,30 @@ import yaml
 import re
 from datetime import date
 import datetime
-import global_tools_func.global_tools as gt
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
 from Optimizer_python.main.optimizer_main_python import Optimizer_main
 from Optimizer_python.data_prepare.data_prepare import stable_data_preparing
-import Optimizer_python.global_setting.global_dic as glv
-
+import global_setting.global_dic as glv
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                should_break=True
+    return inputpath_output
+global global_config_path
+global_config_path=config_path_finding()
 def score_name_withdraw():
     # 初始化两个空列表来存储所有score和opt_type
     all_scores = []
@@ -17,7 +36,7 @@ def score_name_withdraw():
 
     # 循环处理每个时间点
     for i in ['time_1', 'time_2', 'time_3']:
-        inputpath_mode_dic = glv.get('mode_dic')
+        inputpath_mode_dic = os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
         df_mode_dic = pd.read_excel(inputpath_mode_dic)
         df_mode_dic['score_type'] = df_mode_dic['score_name'].apply(lambda x: str(x)[:4])
 

@@ -9,9 +9,12 @@ mpl.rcParams['font.sans-serif'] = ['Microsoft YaHei']
 mpl.rcParams['axes.unicode_minus'] = False
 warnings.filterwarnings("ignore")
 import sys
-import Optimizer_Backtesting.global_setting.global_dic as glv
+import os
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
+import global_tools as gt
+import global_setting.global_dic as glv
 from Optimizer_Backtesting.portfolio_analysis.portfolio_analysis import portfolio_analysis
-import global_tools_func.global_tools as gt
 class Back_testing_processing:
     def __init__(self,df_index_return,df_stock_return):
         self.df_index_return=df_index_return
