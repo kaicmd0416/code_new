@@ -128,6 +128,7 @@ class Optimizer_python:
         score_name=optimizer_args.get('score_name')
         outputpath = outpath_optimizer_python
         target_date = gt.next_workday_calculate(self.available_date)
+        outputpath_yes=os.path.join(outputpath,self.available_date)
         outputpath = os.path.join(outputpath, target_date)
         try:
             gt.folder_creator2(outputpath)
@@ -194,7 +195,7 @@ class Optimizer_python:
             df_parameter.to_excel(writer, header=None, index=False,sheet_name='parameters')
             df_style.to_excel(writer,sheet_name='style',index=False)
             df_industry.to_excel(writer,sheet_name='industry',index=False)
-        return outputpath
+        return outputpath,outputpath_yes
 
     def main_optimizer(self,score_name):
         optimizer_args=optimizer_args_withdraw(score_name)
@@ -205,7 +206,7 @@ class Optimizer_python:
             gt.folder_creator2(outputpath_optimizer_python2)
         except:
             pass
-        outputpath_final = self.data_processing_main(optimizer_args, outputpath_optimizer_python2)
-        return outputpath_final
+        outputpath_final,outputpath_yes = self.data_processing_main(optimizer_args, outputpath_optimizer_python2)
+        return outputpath_final,outputpath_yes
 
 

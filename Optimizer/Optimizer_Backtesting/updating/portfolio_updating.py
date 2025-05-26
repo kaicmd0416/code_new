@@ -10,15 +10,31 @@ import global_tools as gt
 import pandas as pd
 from Optimizer_Backtesting.portfolio_checking.portfolio_checking import portfolio_checking,portfolio_Error_raising
 import os
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                should_break=True
+    return inputpath_output
+global global_config_path
+global_config_path=config_path_finding()
 def history_config_withdraw():
     inputpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     inputpath = os.path.join(inputpath, 'config_history.xlsx')
     df = pd.read_excel(inputpath)
     return df
 def score_name_withdraw(score_type):
-    inputpath_mode_dic = glv.get('mode_dic')
-    # inputpath = os.path.split(os.path.realpath(__file__))[0]
-    # inputpath_mode_dic = os.path.join(os.path.dirname(inputpath), 'mode_dictionary.xlsx')
+    inputpath_mode_dic = os.path.join(global_config_path,'Score_config\\mode_dictionary.xlsx')
     df_mode_dic = pd.read_excel(inputpath_mode_dic)
     if len(score_type)==4:
          df_mode_dic['score_type']=df_mode_dic['score_name'].apply(lambda x: str(x)[:4])

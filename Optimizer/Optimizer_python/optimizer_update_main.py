@@ -11,6 +11,7 @@ import global_tools as gt
 from Optimizer_python.main.optimizer_main_python import Optimizer_main
 from Optimizer_python.data_prepare.data_prepare import stable_data_preparing
 import global_setting.global_dic as glv
+from call_matlab_opt import call_matlab_running_main
 def config_path_finding():
     inputpath = os.path.split(os.path.realpath(__file__))[0]
     inputpath_output=None
@@ -94,8 +95,8 @@ def update_optimizer_main(): #部署自动化
         stable_data = stable_data_preparing()
         df_st, df_stockuniverse=stable_data.stable_data_preparing()
         opm=Optimizer_main(df_st, df_stockuniverse)
-        outputpath_list = opm.optimizer_update_main(target_date, score_name_list)
-        return outputpath_list
+        outputpath_list, outputpath_list_yes = opm.optimizer_update_main(target_date, score_name_list)
+        call_matlab_running_main(outputpath_list, outputpath_list_yes)
     else:
         print('没有符合条件的score_name，请检查配置文件和score')
 
@@ -135,8 +136,8 @@ def update_optimizer_main_manual():
                 stable_data = stable_data_preparing()
                 df_st, df_stockuniverse = stable_data.stable_data_preparing()
                 opm = Optimizer_main(df_st, df_stockuniverse)
-                outputpath_list = opm.optimizer_update_main(target_date, score_name_list)
-                return outputpath_list,n
+                outputpath_list,outputpath_list_yes = opm.optimizer_update_main(target_date, score_name_list)
+                call_matlab_running_main(outputpath_list, outputpath_list_yes)
             else:
                 continue
         else:
@@ -155,8 +156,8 @@ def update_optimizer_main2(): #部署自动化
         stable_data = stable_data_preparing()
         df_st, df_stockuniverse=stable_data.stable_data_preparing()
         opm=Optimizer_main(df_st, df_stockuniverse)
-        outputpath_list = opm.optimizer_update_main(target_date, score_name_list)
-        return outputpath_list
+        outputpath_list,outputpath_list_yes = opm.optimizer_update_main(target_date, score_name_list)
+        call_matlab_running_main(outputpath_list,outputpath_list_yes)
 
 if __name__ == '__main__':
     d = update_optimizer_main()

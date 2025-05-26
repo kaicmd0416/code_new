@@ -7,7 +7,7 @@ import json
 import global_tools as gt
 import global_setting.global_dic as glv
 from Optimizer_Backtesting.backtesting.backtesting_history import Back_testing_processing
-global source,config_path
+global source,config_path,config_path2
 def source_getting():
     """
     获取数据源配置
@@ -25,13 +25,30 @@ def source_getting():
         print(f"获取配置出错: {str(e)}")
         source = 'local'
     return source,config_path
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                should_break=True
+    return inputpath_output
 source,config_path= source_getting()
+config_path2=config_path_finding()
 class backtesting_main:
     def __init__(self):
         self.df_index_return=self.index_return_withdraw()
         self.df_stock_return=self.stock_return_withdraw()
     def portfolio_index_finding(self,score_name):
-        inputpath_mode_dic=glv.get('mode_dic')
+        inputpath_mode_dic=os.path.join(config_path2,'Score_config\\mode_dictionary.xlsx')
         df_mode=pd.read_excel(inputpath_mode_dic)
         index_type=df_mode[df_mode['score_name']==score_name]['index_type'].tolist()[0]
         return index_type

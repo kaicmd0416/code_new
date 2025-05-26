@@ -1,0 +1,330 @@
+VIX:
+    table_name: "data_vix"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'vix_type'
+      - 'organization'
+indexData:
+    table_name: "data_index"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+indexComponent:
+    table_name: "data_indexcomponent"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'organization'
+stockData:
+    table_name: "data_stock"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+futureData:
+    table_name: "data_future"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+optionData:
+    table_name: "data_option"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+etfData:
+    table_name: "data_etf"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+lhbData:
+    table_name: "data_lhb"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+convertibleBondData:
+    table_name: "data_convertibleBond"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorExposrue:
+    table_name: "data_factorexposure"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorReturn:
+    table_name: "data_factorreturn"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+FactorPool:
+    table_name: "data_factorpool"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorCov:
+    table_name: "data_factorcov"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'factor_name'
+FactorSpecificrisk:
+    table_name: "data_factorspecificrisk"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+FactorIndexExposure:
+    table_name: "data_factorindexexposure"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'organization'
+USDollar:
+    table_name: "data_us"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+IntIndex:
+    table_name: "data_internationalindex"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+M1M2:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+Shibor:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+CPI:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+PPI:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+PMI:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+ChinaGovernmentBonds:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+ChinaDevelopmentBankBonds:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+ChinaMediumTermNotes:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+SocialFinance:
+    table_name: "data_macro"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'name'
+LargeOrderInflow:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+NetLeverageBuying:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+IndexFutureDifference:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+IndexScoreDifference:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+Indexygfactorexposure:
+    table_name: "data_indexother"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+      - 'organization'
+L4HoldingData:
+    table_name: "data_l4holding"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'product_code'
+      - 'code'
+L4InfoData:
+    table_name: "data_l4info"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'product_code'
+Score:
+    table_name: "data_score"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'score_name'
+Portfolio:
+    table_name: "portfolio"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'portfolio_name'
+ChineseValuationDate:
+    table_name: "chinesevaluationdate"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+STstock:
+    table_name: "st_stock"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "code"
+Stock_uni:
+    table_name: "stockUniverse"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "S_INFO_WINDCODE"
+      - 'type'
+SpecialDay:
+    table_name: "specialday"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'type'
+
+

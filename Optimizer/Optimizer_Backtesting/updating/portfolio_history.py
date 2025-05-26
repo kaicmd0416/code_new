@@ -7,6 +7,28 @@ path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd
+def config_path_finding():
+    inputpath = os.path.split(os.path.realpath(__file__))[0]
+    inputpath_output=None
+    should_break=False
+    for i in range(10):
+        if should_break:
+            break
+        inputpath = os.path.dirname(inputpath)
+        input_list = os.listdir(inputpath)
+        for input in input_list:
+            if should_break:
+                break
+            if str(input)=='config':
+                inputpath_output=os.path.join(inputpath,input)
+                should_break=True
+    return inputpath_output
+global global_config_path
+def history_config_withdraw():
+    inputpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    inputpath = os.path.join(inputpath, 'config_history.xlsx')
+    df = pd.read_excel(inputpath)
+    return df
 def portfolio_updating(score_name_list,start_date,end_date):
     inputpath_portfolio=glv.get('portfolio_data')
     outputpath_weight=glv.get('output_weight')
@@ -35,7 +57,7 @@ def portfolio_updating(score_name_list,start_date,end_date):
             df_final['weight'] = df_final['weight'] / df_final['weight'].sum()
             df_final.to_csv(daily_outputpath2, index=False)
 def all_score_name_list_withdraw():
-    inputpath=glv.get('mode_dic')
+    inputpath=os.path.join(global_config_path,'Score_config\\mode_dictionary.xlsx')
     df=pd.read_excel(inputpath)
     score_name_list=df['score_name'].tolist()
     return score_name_list

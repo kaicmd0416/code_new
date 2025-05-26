@@ -15,6 +15,7 @@ class Optimizer_main:
     #日更function组
     def optimizer_history_main(self,df_config):
         outputpath_list=[]
+        outputpath_list_yes=[]
         df_config['start_date']=pd.to_datetime(df_config['start_date'])
         df_config['end_date']=pd.to_datetime(df_config['end_date'])
         start_date_min=df_config['start_date'].min()
@@ -31,19 +32,22 @@ class Optimizer_main:
                   Optimizer_V5 = Optimizer_python(target_date, self.df_st,self.df_stock_universe)
                   for score_name in score_name_list:
                          print(score_name)
-                         outputpath = Optimizer_V5.main_optimizer(score_name)
+                         outputpath,outputpath_yes = Optimizer_V5.main_optimizer(score_name)
                          outputpath_list.append(outputpath)
+                         outputpath_list_yes.append(outputpath_yes)
         outputpath_list.sort()
-        return outputpath_list
+        outputpath_list_yes.sort()
+        return outputpath_list,outputpath_list_yes
     def optimizer_update_main(self,target_date,score_name_list):
         outputpath_list = []
+        outputpath_list_yes=[]
         Optimizer_V5 = Optimizer_python(target_date, self.df_st, self.df_stock_universe)
         for score_name in score_name_list:
-
-            outputpath = Optimizer_V5.main_optimizer(score_name)
+            outputpath,outputpath_yes = Optimizer_V5.main_optimizer(score_name)
             if outputpath != None:
                 outputpath_list.append(outputpath)
-        return outputpath_list
+                outputpath_list_yes.append(outputpath_yes)
+        return outputpath_list,outputpath_list_yes
 
 
 
