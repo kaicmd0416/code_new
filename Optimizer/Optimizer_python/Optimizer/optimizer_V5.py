@@ -93,8 +93,7 @@ class Optimizer_python:
         df_weight['code'] = stock_list
         df_weight = df_weight.merge(df_score, on='code', how='left')
         df_weight = df_weight.merge(df_weight1, on='code', how='left')
-        df_initial_weight=self.dp.weight_yes_withdraw(score_type,self.available_date)
-        ws=weight_constraint(df_score,df_weight,df_initial_weight,optimizer_args)
+        ws=weight_constraint(df_score,df_weight,optimizer_args)
         df_final,df_initial=ws.weight_constraint_main()
         initial_weight = df_final['initial_weight'].tolist()
         upper_weight = df_final['weight_upper'].tolist()
@@ -121,7 +120,11 @@ class Optimizer_python:
         style_list,industry_list=valid_factor_withdraw()
         valid_factor_list=style_list+industry_list
         df_factorcov = self.df_cov[self.df_cov['covariance'].isin(valid_factor_list)]
-        df_factorcov=df_factorcov[['covariance']+valid_factor_list]
+        df_factorcov = df_factorcov[['covariance'] + valid_factor_list]
+        
+        # 确保covariance列的顺序与valid_factor_list一致
+        df_factorcov['covariance'] = pd.Categorical(df_factorcov['covariance'], categories=valid_factor_list, ordered=True)
+        df_factorcov = df_factorcov.sort_values('covariance')
         df_factorcov.set_index('covariance',inplace=True,drop=True)
         df_parameter = pd.DataFrame(optimizer_args.items())
         index_type=optimizer_args.get('index_type')

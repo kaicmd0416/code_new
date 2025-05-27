@@ -126,75 +126,6 @@ try
         stock_score = stock_score.data;
     end
     fprintf('股票分数数据类型: %s, 维度: %dx%d\n', class(stock_score), size(stock_score, 1), size(stock_score, 2));
-    
-    % 读取初始权重
-    initial_code_path = fullfile(path, config.input_files.stock_code);
-    initial_weight_path = fullfile(path, config.input_files.initial_weight);
-    initial_weight_path_yes = fullfile(path_yes, config.output_files.weight);
-    initial_code_yes_path = fullfile(path_yes, config.input_files.stock_code);
-    fprintf('读取初始权重: %s\n', initial_weight_path);
-    initial_weight = importdata(initial_weight_path);
-    fprintf('初始权重原始数据类型: %s\n', class(initial_weight));
-    if isstruct(initial_weight)
-        fprintf('初始权重包含字段: %s\n', strjoin(fieldnames(initial_weight), ', '));
-        initial_weight = initial_weight.data;
-    end
-    fprintf('初始权重数据类型: %s, 维度: %dx%d\n', class(initial_weight), size(initial_weight, 1), size(initial_weight, 2));
-
-    % 检查是否存在yes文件并应用权重约束
-    if exist(initial_weight_path_yes, 'file') && exist(initial_code_yes_path, 'file')
-        fprintf('检测到yes文件，应用权重约束...\n');
-        % 读取yes权重文件
-        initial_weight_yes = importdata(initial_weight_path_yes);
-        if isstruct(initial_weight_yes)
-            initial_weight_yes = initial_weight_yes.data;
-        end
-        
-        % 读取yes代码文件
-        initial_code_yes = readtable(initial_code_yes_path);
-        % 转换为cell数组并去掉第一行（日期行）
-        initial_code_yes = table2cell(initial_code_yes(2:end, :));
-        
-        % 确保代码和权重维度匹配
-        if size(initial_code_yes, 1) == size(initial_weight_yes, 1)
-            % 打印调试信息
-            fprintf('initial_code_yes 类型: %s\n', class(initial_code_yes));
-            fprintf('initial_code_yes 第一行: ');
-            disp(initial_code_yes(1,:));
-            fprintf('initial_weight_yes 类型: %s\n', class(initial_weight_yes));
-            fprintf('initial_weight_yes 第一行: ');
-            disp(initial_weight_yes(1,:));
-            
-            % 创建代码到权重的映射
-            code_weight_map = containers.Map(initial_code_yes, initial_weight_yes);
-            
-            % 获取当前权重对应的代码
-            current_codes = readtable(initial_code_path);
-            % 转换为cell数组并去掉第一行（日期行）
-            current_codes = table2cell(current_codes(2:end, 1)); % 只取第一列作为代码
-            
-            % 打印调试信息
-            fprintf('current_codes 类型: %s\n', class(current_codes));
-            fprintf('current_codes 第一行: ');
-            disp(current_codes{1});
-            
-            % 应用权重约束
-            for i = 1:length(current_codes)
-                code = current_codes{i};  % 使用花括号访问cell数组
-                if isKey(code_weight_map, code)
-                    initial_weight(i) = code_weight_map(code); % 如果在yes列表中，使用yes列表中的权重
-                end
-                % 如果代码不在yes列表中，保持原始权重不变
-            end
-            
-            fprintf('权重约束应用完成，最终权重维度: %dx%d\n', size(initial_weight, 1), size(initial_weight, 2));
-        else
-            warning('yes文件中的代码和权重维度不匹配，跳过权重约束');
-        end
-    else
-        fprintf('未检测到yes文件，跳过权重约束\n');
-    end
-    
     % 读取权重下限
     lower_weight_path = fullfile(path, config.input_files.lower_weight);
     fprintf('读取权重下限: %s\n', lower_weight_path);
@@ -300,7 +231,6 @@ try
         factor_constraint_lower = expanded;
         fprintf('已扩展因子约束下限向量长度至%d\n', length(factor_constraint_lower));
     end
-    
     % 分离风格权重和行业权重约束
     style_weight_upper = factor_constraint_upper(1:style_len, :);
     style_weight_lower = factor_constraint_lower(1:style_len, :);
@@ -335,14 +265,100 @@ try
     fprintf('计算协方差矩阵...\n');
     V = (stock_risk * factor_cov * stock_risk' + diag(stock_sperisk.^2));
     fprintf('协方差矩阵维度: %dx%d\n', size(V, 1), size(V, 2));
-    
+            % 读取初始权重
+    initial_code_path = fullfile(path, config.input_files.stock_code);
+    initial_weight_path = fullfile(path, config.input_files.initial_weight);
+    initial_weight_path_yes = fullfile(path_yes, config.output_files.weight);
+    initial_code_yes_path = fullfile(path_yes, config.input_files.stock_code);
+    fprintf('读取初始权重: %s\n', initial_weight_path);
+    initial_weight = importdata(initial_weight_path);
+    fprintf('初始权重原始数据类型: %s\n', class(initial_weight));
+    if isstruct(initial_weight)
+        fprintf('初始权重包含字段: %s\n', strjoin(fieldnames(initial_weight), ', '));
+        initial_weight = initial_weight.data;
+    end
+    fprintf('初始权重数据类型: %s, 维度: %dx%d\n', class(initial_weight), size(initial_weight, 1), size(initial_weight, 2));
+
+    % 检查是否存在yes文件并应用权重约束
+    if exist(initial_weight_path_yes, 'file') && exist(initial_code_yes_path, 'file')
+        fprintf('检测到yes文件，应用权重约束...\n');
+        % 读取yes权重文件
+        initial_weight_yes = importdata(initial_weight_path_yes);
+        if isstruct(initial_weight_yes)
+            initial_weight_yes = initial_weight_yes.data;
+        end
+        
+        % 读取yes代码文件
+        initial_code_yes = readtable(initial_code_yes_path);
+        % 转换为cell数组并去掉第一行（日期行）
+        initial_code_yes = table2cell(initial_code_yes(2:end, :));
+        
+        % 确保代码和权重维度匹配
+        if size(initial_code_yes, 1) == size(initial_weight_yes, 1)
+            % 打印调试信息
+            fprintf('initial_code_yes 类型: %s\n', class(initial_code_yes));
+            fprintf('initial_code_yes 第一行: ');
+            disp(initial_code_yes(1,:));
+            fprintf('initial_weight_yes 类型: %s\n', class(initial_weight_yes));
+            fprintf('initial_weight_yes 第一行: ');
+            disp(initial_weight_yes(1,:));
+            
+            % 创建代码到权重的映射
+            code_weight_map = containers.Map(initial_code_yes, initial_weight_yes);
+            
+            % 获取当前权重对应的代码
+            current_codes = readtable(initial_code_path);
+            % 转换为cell数组并去掉第一行（日期行）
+            current_codes = table2cell(current_codes(2:end, 1)); % 只取第一列作为代码
+            
+            % 打印调试信息
+            fprintf('current_codes 类型: %s\n', class(current_codes));
+            fprintf('current_codes 第一行: ');
+            disp(current_codes{1});
+            
+            % 创建final_initial_weight并初始化为initial_weight
+            final_initial_weight = initial_weight;
+            
+            % 应用权重约束
+            for i = 1:length(current_codes)
+                code = current_codes{i};  % 使用花括号访问cell数组
+                if isKey(code_weight_map, code)
+                    final_initial_weight(i) = code_weight_map(code); % 如果在yes列表中，使用yes列表中的权重
+                end
+                % 如果代码不在yes列表中，保持原始权重不变
+            end
+            
+            % 检查跟踪误差计算
+            diff_weight = final_initial_weight - index_initial_weight;
+            V_diff = V * diff_weight;
+            quad_term = diff_weight' * V_diff;
+            annual_term = quad_term * 252;
+            
+            % 如果年化项小于0，回退到原始权重
+            if annual_term < 0
+                fprintf('警告：应用yes权重后年化跟踪误差项为负（%f），回退到原始权重\n', annual_term);
+                final_initial_weight = initial_weight;
+            else
+                fprintf('应用yes权重后年化跟踪误差项为：%f\n', annual_term);
+            end
+            
+            fprintf('权重约束应用完成，最终权重维度: %dx%d\n', size(final_initial_weight, 1), size(final_initial_weight, 2));
+        else
+            warning('yes文件中的代码和权重维度不匹配，跳过权重约束');
+            final_initial_weight = initial_weight;
+        end
+    else
+        fprintf('未检测到yes文件，跳过权重约束\n');
+        final_initial_weight = initial_weight;
+    end
+
     % 设置目标函数
     score_stock = stock_score';
     fprintf('转置后的股票分数维度: %dx%d\n', size(score_stock, 1), size(score_stock, 2));
     f = @(x) -score_stock * x;
     
     % 设置初始值和约束
-    x0 = initial_weight;
+    x0 = final_initial_weight;
     lb = lower_weight;
     ub = upper_weight;
     x0 = max(min(x0, ub), lb);
@@ -350,6 +366,17 @@ try
     fprintf('下界维度: %dx%d\n', size(lb, 1), size(lb, 2));
     fprintf('上界维度: %dx%d\n', size(ub, 1), size(ub, 2));
     
+    % 在调用 fmincon 之前添加初始点验证
+    fprintf('验证初始点:\n');
+    fprintf('初始点 x0 中的 NaN: %d, Inf: %d\n', sum(isnan(x0(:))), sum(isinf(x0(:))));
+    fprintf('初始点 x0 范围: [%f, %f]\n', min(x0), max(x0));
+    fprintf('初始点 x0 和: %f\n', sum(x0));
+      % 验证初始点是否满足约束条件
+    [g0, h0] = fun2(x0, stock_risk, index_risk, style_weight_upper, style_weight_lower, industry_weight_upper, industry_weight_lower, V, index_initial_weight, te_value, style_len);
+    assignin('base', 'g0', g0);
+    assignin('base', 'h0', h0);
+    fprintf('初始点约束条件 g0 中的 NaN: %d, Inf: %d\n', sum(isnan(g0(:))), sum(isinf(g0(:))));
+    fprintf('初始点约束条件 g0 范围: [%f, %f]\n', min(g0), max(g0));
     % 设置非线性约束
     nonlcon = @(x)fun2(x, stock_risk, index_risk, style_weight_upper, style_weight_lower, industry_weight_upper, industry_weight_lower, V, index_initial_weight, te_value, style_len);
     
@@ -362,10 +389,13 @@ try
     
     % 设置优化选项
     options = optimoptions('fmincon', ...
-        'Display', config.optimization_params.Display, ...
+        'Display', 'iter-detailed', ...  % 更详细的输出
         'Algorithm', config.optimization_params.Algorithm, ...
         'MaxFunctionEvaluations', config.optimization_params.MaxFunctionEvaluations, ...
-        'UseParallel', config.optimization_params.UseParallel);
+        'UseParallel', config.optimization_params.UseParallel, ...
+        'CheckGradients', true, ...  % 检查梯度
+        'FiniteDifferenceType', 'central', ...  % 使用中心差分
+        'FiniteDifferenceStepSize', 1e-6);  % 设置差分步长
     fprintf('优化选项设置完成: 算法=%s, 最大函数评估次数=%d, 并行计算=%s\n', ...
         config.optimization_params.Algorithm, ...
         config.optimization_params.MaxFunctionEvaluations, ...
@@ -486,17 +516,38 @@ end
 
 % 非线性约束函数
 function [g, h] = fun2(x, stock_risk, index_risk, style_weight_upper, style_weight_lower, industry_weight_upper, industry_weight_lower, V, index_initial_weight, TE, style_len)
+    % 分离风格和行业风险
     barra_stock_risk = stock_risk(:, 1:style_len);
     industry_stock_risk = stock_risk(:, style_len+1:end);
     barra_index_risk = index_risk(:, 1:style_len);
     industry_index_risk = index_risk(:, style_len+1:end);
+    
+    % 计算投资组合风险暴露
     portfolio_barra_risk = barra_stock_risk' * x;
     portfolio_industry_risk = industry_stock_risk' * x;
-    g1_upper = portfolio_barra_risk - barra_index_risk' - style_weight_upper .* abs(barra_index_risk');
-    g1_lower = -(portfolio_barra_risk - barra_index_risk') + style_weight_lower .* abs(barra_index_risk');
-    g2_upper = portfolio_industry_risk - industry_index_risk' - industry_weight_upper .* abs(industry_index_risk');
-    g2_lower = -(portfolio_industry_risk - industry_index_risk') + industry_weight_lower .* abs(industry_index_risk');
-    g3 = sqrt((x - index_initial_weight)' * V * (x - index_initial_weight) * 252) - TE;
+    
+    % 计算约束条件，确保不会出现复数
+    barra_diff = portfolio_barra_risk - barra_index_risk';
+    industry_diff = portfolio_industry_risk - industry_index_risk';
+    
+    % 计算约束条件，使用 real 函数确保结果为实数
+    barra_index_abs = abs(barra_index_risk');
+    industry_index_abs = abs(industry_index_risk');
+    
+    g1_upper = barra_diff - style_weight_upper .* barra_index_abs;
+    g1_lower = -barra_diff + style_weight_lower .* barra_index_abs;
+    g2_upper = industry_diff - industry_weight_upper .* industry_index_abs;
+    g2_lower = -industry_diff + industry_weight_lower .* industry_index_abs;
+    
+    % 计算跟踪误差
+    diff_weight = x - index_initial_weight;
+    V_diff = V * diff_weight;
+    quad_term = diff_weight' * V_diff;
+    annual_term = quad_term * 252;
+    tracking_error = sqrt(real(annual_term));
+    g3 = tracking_error - TE;
+    
+    % 组合所有约束条件
     g = [g1_upper; g1_lower; g2_upper; g2_lower; g3];
     h = [];
 end

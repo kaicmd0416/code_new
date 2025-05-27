@@ -90,21 +90,6 @@ class cross_section_data_preparing:
         df=df.T
         df.reset_index(inplace=True,drop=True)
         return df
-    def weight_yes_withdraw(self,score_name,available_date):
-        inputpath_weight=glv.get('output_optimizer')
-        inputpath_weight=os.path.join(inputpath_weight,score_name)
-        yes=gt.last_workday_calculate(available_date)
-        inputpath_weight=os.path.join(inputpath_weight,yes)
-        if os.path.exists(inputpath_weight):
-            inputpath_weight_yes=os.path.join(inputpath_weight,'weight.csv')
-            inputpath_code_yes=os.path.join(inputpath_weight,'Stock_code.csv')
-            df_weight=pd.read_csv(inputpath_weight_yes,header=None)
-            df_code=gt.readcsv(inputpath_code_yes)
-            df_final=pd.concat([df_code,df_weight],axis=1)
-            df_final.columns=['code','weight']
-        else:
-            df_final=pd.DataFrame()
-        return df_final
 class stable_data_preparing:
     def stable_data_preparing(self):  # only need to run one time
         # 静态文件

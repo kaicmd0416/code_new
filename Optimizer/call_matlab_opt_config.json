@@ -2,8 +2,8 @@
   "matlab": {
     "function_name": "optimizer_matlab_func_v2",
     "scripts_dir": "Optimizer_python/matlab",
-    "worker_count": 7,
-    "engine_count": 1
+    "worker_count": 8,
+    "engine_count": 3
   },
   "logging": {
     "level": "INFO",

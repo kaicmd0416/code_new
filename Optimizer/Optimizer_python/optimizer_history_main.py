@@ -32,4 +32,4 @@ def matlab_test(portfolio_name,start_date,end_date):
         input_list_yes.append(daily_inputpath_yes)
     call_matlab_running_main(input_list, input_list_yes)
 if __name__ == '__main__':
-    matlab_test('combine_zz500_HB', '2025-05-20', '2025-05-26')
+    history_optimizer_main()

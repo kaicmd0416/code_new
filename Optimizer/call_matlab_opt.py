@@ -73,10 +73,21 @@ def setup_logging(config, process_name='main'):
 
 def process_single_path(args):
     """处理单个路径的函数，用于多进程调用"""
-    path, path_yes, matlab_config = args
+    if isinstance(args, tuple):
+        # 单个路径处理
+        path, path_yes, matlab_config = args
+        paths_to_process = [(path, path_yes, matlab_config)]
+    else:
+        # 多个路径处理
+        paths_to_process = args
+        if not paths_to_process:  # 检查是否为空列表
+            return []
+        # 从第一个路径获取配置
+        _, _, matlab_config = paths_to_process[0]
+    
     if not MATLAB_AVAILABLE:
         logging.error("MATLAB Engine API未安装，无法处理")
-        return 0, 1
+        return [(0, 1)] * len(paths_to_process)
     
     # 为子进程设置日志
     setup_logging(matlab_config, f"worker_{os.getpid()}")
@@ -87,7 +98,7 @@ def process_single_path(args):
     
     try:
         # 启动MATLAB引擎
-        logging.info(f"进程 {os.getpid()} 开始处理路径: {path}")
+        logging.info(f"进程 {os.getpid()} 开始处理 {len(paths_to_process)} 个路径")
         eng = matlab.engine.start_matlab()
         
         # 添加脚本目录到MATLAB路径
@@ -97,41 +108,44 @@ def process_single_path(args):
         else:
             logging.error(f"MATLAB脚本目录不存在: {scripts_dir}")
             eng.quit()
-            return 0, 1
+            return [(0, 1)] * len(paths_to_process)
 
-        start_time = time.time()
-        
-        try:
-            # 调用MATLAB函数
-            result = getattr(eng, function_name)(path, path_yes, float(worker_count), nargout=3)
+        results = []
+        for path, path_yes, _ in paths_to_process:
+            start_time = time.time()
             
-            # 解析结果
-            if result and len(result) >= 3:
-                final_weight = result[0]
-                barra_info = result[1]
-                industry_info = result[2]
+            try:
+                # 调用MATLAB函数
+                result = getattr(eng, function_name)(path, path_yes, float(worker_count), nargout=3)
+                
+                # 解析结果
+                if result and len(result) >= 3:
+                    final_weight = result[0]
+                    barra_info = result[1]
+                    industry_info = result[2]
+                
+                success = 1
+                logging.info(f"进程 {os.getpid()} 路径处理成功: {path}")
+                
+            except Exception as e:
+                logging.error(f"进程 {os.getpid()} 处理路径时出错: {path}, 错误: {e}")
+                logging.error(traceback.format_exc())
+                success = 0
             
-            success = 1
-            logging.info(f"进程 {os.getpid()} 路径处理成功: {path}")
-            
-        except Exception as e:
-            logging.error(f"进程 {os.getpid()} 处理路径时出错: {path}, 错误: {e}")
-            logging.error(traceback.format_exc())
-            success = 0
-        
-        elapsed = time.time() - start_time
-        logging.info(f"进程 {os.getpid()} 路径处理完成，用时: {elapsed:.2f}秒")
+            elapsed = time.time() - start_time
+            logging.info(f"进程 {os.getpid()} 路径处理完成，用时: {elapsed:.2f}秒")
+            results.append((success, 1))
         
         # 关闭MATLAB引擎
         eng.quit()
         logging.info(f"进程 {os.getpid()} MATLAB引擎已关闭")
         
-        return success, 1
+        return results
         
     except Exception as e:
         logging.error(f"进程 {os.getpid()} MATLAB处理过程出错: {e}")
         logging.error(traceback.format_exc())
-        return 0, 1
+        return [(0, 1)] * len(paths_to_process)
 
 def run_parallel_optimization(all_paths, all_paths_yes, config):
     """并行运行MATLAB优化"""
@@ -160,22 +174,44 @@ def run_parallel_optimization(all_paths, all_paths_yes, config):
     
     # 准备参数列表
     args_list = [(path, path_yes, matlab_config) for path, path_yes in zip(all_paths, all_paths_yes)]
-    logging.info(f"准备处理 {len(args_list)} 个路径，使用 {engine_count} 个进程")
+    
+    # 计算每个引擎处理的路径数量
+    total_paths = len(args_list)
+    paths_per_engine = total_paths // engine_count
+    
+    # 分配路径给每个引擎
+    engine_args = []
+    for i in range(engine_count):
+        start_idx = i * paths_per_engine
+        end_idx = start_idx + paths_per_engine if i < engine_count - 1 else total_paths
+        engine_args.append(args_list[start_idx:end_idx])
+    
+    logging.info(f"准备处理 {total_paths} 个路径，使用 {engine_count} 个MATLAB引擎")
+    for i, args in enumerate(engine_args):
+        logging.info(f"MATLAB引擎 {i+1} 将处理 {len(args)} 个路径")
     
     # 使用进程池并行处理
     total_success = 0
     total_processed = 0
     processed_paths = set()  # 用于跟踪已处理的路径
+    failed_paths = []  # 用于记录失败的路径
+    failed_paths_yes = []  # 用于记录失败路径对应的path_yes
     
     with Pool(processes=engine_count) as pool:
-        results = pool.map(process_single_path, args_list)
+        # 每个进程处理分配给它的路径列表
+        results = pool.map(process_single_path, engine_args)
         
-        for (success, processed), (path, _, _) in zip(results, args_list):
-            if path in processed_paths:
-                logging.error(f"警告：路径 {path} 被重复处理！")
-            processed_paths.add(path)
-            total_success += success
-            total_processed += processed
+        # 处理结果
+        for engine_result, engine_paths in zip(results, engine_args):
+            for (success, processed), (path, path_yes, _) in zip(engine_result, engine_paths):
+                if path in processed_paths:
+                    logging.error(f"警告：路径 {path} 被重复处理！")
+                processed_paths.add(path)
+                total_success += success
+                total_processed += processed
+                if not success:
+                    failed_paths.append(path)
+                    failed_paths_yes.append(path_yes)
     
     # 验证所有路径是否都被处理
     if len(processed_paths) != len(all_paths):
@@ -183,12 +219,62 @@ def run_parallel_optimization(all_paths, all_paths_yes, config):
         missing_paths = set(all_paths) - processed_paths
         logging.error(f"未处理的路径: {missing_paths}")
     
+    # 如果有失败的路径，重新处理
+    if failed_paths:
+        logging.info(f"开始重新处理失败的路径（共 {len(failed_paths)} 个）:")
+        for path in failed_paths:
+            logging.info(f"失败路径: {path}")
+        
+        # 准备重试的参数列表
+        retry_args = [(path, path_yes, matlab_config) for path, path_yes in zip(failed_paths, failed_paths_yes)]
+        
+        # 计算重试时每个引擎处理的路径数量
+        retry_engine_count = min(len(retry_args), engine_count)
+        retry_paths_per_engine = len(retry_args) // retry_engine_count
+        
+        # 分配重试路径给每个引擎
+        retry_engine_args = []
+        for i in range(retry_engine_count):
+            start_idx = i * retry_paths_per_engine
+            end_idx = start_idx + retry_paths_per_engine if i < retry_engine_count - 1 else len(retry_args)
+            if start_idx < len(retry_args):  # 确保有路径需要处理
+                retry_engine_args.append(retry_args[start_idx:end_idx])
+        
+        if retry_engine_args:  # 确保有需要重试的路径
+            logging.info(f"重新处理失败路径，使用 {len(retry_engine_args)} 个MATLAB引擎")
+            
+            # 创建新的进程池重新处理失败的路径
+            with Pool(processes=len(retry_engine_args)) as retry_pool:
+                # 重新处理失败的路径
+                retry_results = retry_pool.map(process_single_path, retry_engine_args)
+                
+                # 处理重试结果
+                retry_success = 0
+                retry_processed = 0
+                still_failed_paths = []
+                
+                for engine_result, engine_paths in zip(retry_results, retry_engine_args):
+                    for (success, processed), (path, _, _) in zip(engine_result, engine_paths):
+                        retry_success += success
+                        retry_processed += processed
+                        if not success:
+                            still_failed_paths.append(path)
+                
+                # 更新总成功数和处理数
+                total_success += retry_success
+                total_processed += retry_processed
+                
+                # 输出仍然失败的路径
+                if still_failed_paths:
+                    logging.info(f"重试后仍然失败的路径（共 {len(still_failed_paths)} 个）:")
+                    for path in still_failed_paths:
+                        logging.info(f"重试失败路径: {path}")
+    
     # 计算总耗时和成功率
     total_elapsed = time.time() - start_time
     success_rate = total_success / total_processed if total_processed > 0 else 0.0
     
-    logging.info(f"所有处理完成，总用时: {total_elapsed:.2f}秒")
-    logging.info(f"总成功率: {success_rate:.2%} ({total_success}/{total_processed})")
+    logging.info(f"MATLAB优化完成，成功率: {success_rate:.2%}，总用时: {total_elapsed:.2f}秒")
     
     return success_rate, total_elapsed
 
