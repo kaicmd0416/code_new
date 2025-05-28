@@ -56,7 +56,7 @@ class backtesting_main:
         df=gt.timeSeries_index_return_withdraw()
         return df
     def stock_return_withdraw(self):
-        inputpath_stockreturn = glv.get('input_timeseriesstock')
+        inputpath_stockreturn = glv.get('input_timeseriesstockreturn')
         df=gt.data_getting(inputpath_stockreturn,config_path)
         if source=='sql':
               df=df[['valuation_date','code','pct_chg']]

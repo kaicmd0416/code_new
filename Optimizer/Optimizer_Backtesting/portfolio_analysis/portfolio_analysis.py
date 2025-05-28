@@ -48,6 +48,8 @@ class portfolio_analysis:
     def __init__(self,df_index_return,df_stock_return,index_type,df_code,df_weight,score_name,top_number,inputpath_backtesting):
         self.df_index_return=df_index_return
         self.df_stock_return=df_stock_return
+        self.index_name=index_type
+        index_type=gt.index_mapping(index_type,type='code')
         self.index_type=index_type
         self.df_code=df_code
         self.df_weight=df_weight
@@ -117,7 +119,7 @@ class portfolio_analysis:
         target_date=gt.next_workday_calculate(available_date)
         df_score = self.score_withdraw(target_date)
         df_weight =self.weight_construct(available_date)
-        df_index = gt.index_weight_withdraw(self.index_type, target_date)
+        df_index = gt.index_weight_withdraw(self.index_name, target_date)
         df_index.rename(columns={'weight': 'component_weight'}, inplace=True)
         df_weight = df_weight.merge(df_index, on='code', how='outer')
         df_weight = df_weight.merge(df_score, on='code', how='left')

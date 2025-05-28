@@ -38,18 +38,6 @@ class Back_testing_processing:
         df2.reset_index(inplace=True)
         df2=df2[['valuation_date','weight_sum']]
         return df2
-    def index_weight_withdraw(self,index_type, available_date):  # 提取指数权重股数据
-        available_date2 = gt.intdate_transfer(available_date)
-        inputpath_index = glv.get('index_component')
-        short_name = gt.index_shortname(index_type)
-        inputpath_index = os.path.join(inputpath_index, short_name)
-        inputpath_index = gt.file_withdraw(inputpath_index, available_date2)
-        if inputpath_index == None:
-            raise ValueError
-        else:
-            df = gt.readcsv(inputpath_index, dtype=str)
-            df = df[['code', 'weight']]
-        return df
     def weight_matrix_combination(self, df_input, inputpath_backtesting):
         df_final = pd.DataFrame()
         df_final_weight = pd.DataFrame()
@@ -116,11 +104,11 @@ class Back_testing_processing:
             slice_df = df_final[ticker_list[i - 2:i]]  # 切片
             slice_df.rename(columns={ticker_list[i -2]: 'code',ticker_list[i - 1]: 'weight'}, inplace=True)
             slice_df.dropna(inplace=True, axis=0)
-            component_list_hs300 = self.index_weight_withdraw(index_type='沪深300', available_date=available_date)['code'].tolist()
-            component_list_zz500 = self.index_weight_withdraw(index_type='中证500', available_date=available_date)['code'].tolist()
-            component_list_zz1000 = self.index_weight_withdraw(index_type='中证1000', available_date=available_date)['code'].tolist()
-            component_list_zz2000 = self.index_weight_withdraw(index_type='中证2000', available_date=available_date)['code'].tolist()
-            component_list_zzA500= self.index_weight_withdraw(index_type='中证A500', available_date=available_date)['code'].tolist()
+            component_list_hs300 = gt.index_weight_withdraw(index_type='沪深300', available_date=available_date)['code'].tolist()
+            component_list_zz500 = gt.index_weight_withdraw(index_type='中证500', available_date=available_date)['code'].tolist()
+            component_list_zz1000 = gt.index_weight_withdraw(index_type='中证1000', available_date=available_date)['code'].tolist()
+            component_list_zz2000 = gt.index_weight_withdraw(index_type='中证2000', available_date=available_date)['code'].tolist()
+            component_list_zzA500= gt.index_weight_withdraw(index_type='中证A500', available_date=available_date)['code'].tolist()
             component_weight_hs300 = slice_df[slice_df['code'].isin(component_list_hs300)]['weight'].sum()
             component_weight_zz500 = slice_df[slice_df['code'].isin(component_list_zz500)]['weight'].sum()
             component_weight_zz1000 = slice_df[slice_df['code'].isin(component_list_zz1000)]['weight'].sum()
@@ -241,6 +229,7 @@ class Back_testing_processing:
         plt.close()
     def portfolio_return_processing(self,index_type, df_selecting, df_weight, df_turn_over, cost):
         df_turn_over['valuation_date'] = pd.to_datetime(df_turn_over['valuation_date'])
+        index_type=gt.index_mapping(index_type,type='code')
         df_index=self.df_index_return[['valuation_date',index_type]]
         df_stock=self.df_stock_return
         df_stock['valuation_date'] = pd.to_datetime(df_stock['valuation_date'])
@@ -381,7 +370,7 @@ class Back_testing_processing:
             self.PDF_Creator(outputpath=outputpath2, df2=df_h,df3=df_turn_over2, df4=df_h2, score_type=score_type, index_type=index_type,df_component=df_component,df_pa_1=df_pa_1,df_pa_2=df_pa_2)
     def back_testing_main_history(self,index_type,score_type, start_date, end_date):
         outpath_optimizer_result2=glv.get('output_backtest')
-        outputpath_optimizer_python=glv.get('portfolio_data')
+        outputpath_optimizer_python=glv.get('output_optimizer')
         inputpath_backtesting=os.path.join(outputpath_optimizer_python,score_type)
         inputlist=os.listdir(inputpath_backtesting)
         df_config=self.portfolio_information_withdraw(inputpath_backtesting,end_date)
