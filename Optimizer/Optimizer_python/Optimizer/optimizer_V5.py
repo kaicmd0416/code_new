@@ -71,6 +71,7 @@ class Optimizer_python:
         stock_pool2 = stock_pool.tolist()
         df_score = df_score[df_score['code'].isin(stock_pool2)]
         df_score = df_score[~df_score['code'].isin(st_list)]
+
         df_score.sort_values(by='final_score', ascending=False, inplace=True)
         if index_type=='沪深300':
              df_weight1 = self.df_hs300

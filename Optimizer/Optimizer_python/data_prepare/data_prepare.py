@@ -66,6 +66,7 @@ class cross_section_data_preparing:
         else:
              inputpath_factor=str(inputpath_factor)+f" WHERE valuation_date = '{self.available_date}'"
         df_factor = gt.data_getting(inputpath_factor,config_path)
+        df_factor.sort_values(by='code',inplace=True)
         return df_factor
     def factor_cov_withdraw(self):
         available_date2=gt.intdate_transfer(self.available_date)

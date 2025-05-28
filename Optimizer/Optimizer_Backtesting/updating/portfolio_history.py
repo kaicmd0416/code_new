@@ -24,13 +24,14 @@ def config_path_finding():
                 should_break=True
     return inputpath_output
 global global_config_path
+global_config_path=config_path_finding()
 def history_config_withdraw():
     inputpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     inputpath = os.path.join(inputpath, 'config_history.xlsx')
     df = pd.read_excel(inputpath)
     return df
 def portfolio_updating(score_name_list,start_date,end_date):
-    inputpath_portfolio=glv.get('portfolio_data')
+    inputpath_portfolio=glv.get('output_optimizer')
     outputpath_weight=glv.get('output_weight')
     working_days_list=gt.working_days_list(start_date,end_date)
     for score_name in score_name_list:
@@ -64,4 +65,5 @@ def all_score_name_list_withdraw():
 def all_portfolio_updating(start_date,end_date):
     score_name_list=all_score_name_list_withdraw()
     portfolio_updating(score_name_list, start_date, end_date)
-
+if __name__ == '__main__':
+    all_portfolio_updating('2025-05-05','2025-05-27')

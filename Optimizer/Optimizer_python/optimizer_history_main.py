@@ -30,6 +30,6 @@ def matlab_test(portfolio_name,start_date,end_date):
         daily_inputpath_yes=os.path.join(inputpath,yes)
         input_list.append(daily_inputpath)
         input_list_yes.append(daily_inputpath_yes)
-    call_matlab_running_main(input_list, input_list_yes)
+    #call_matlab_running_main(input_list, input_list_yes)
 if __name__ == '__main__':
     history_optimizer_main()

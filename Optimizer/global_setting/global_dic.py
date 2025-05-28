@@ -89,13 +89,16 @@ def get(key):
     if not config:
         return None
     
-    # 检查是否有有效的sql_sheet配置
-    if config.get('sql_sheet'):
-        # 如果有sql_sheet配置，返回查询语句
+    # 检查数据源模式
+    data_source = global_dic.get('components', {}).get('data_source', {})
+    mode = data_source.get('mode', 'local')
+    
+    if mode == 'sql' and config.get('sql_sheet'):
+        # SQL模式且有sql_sheet配置，返回查询语句
         table_name = config['sql_sheet']
         return f"SELECT * FROM {table_name}"
     else:
-        # 如果没有sql_sheet配置，使用本地文件模式
+        # 本地文件模式
         if 'folder_name' not in config:
             return None
             
