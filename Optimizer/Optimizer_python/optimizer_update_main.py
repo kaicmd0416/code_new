@@ -12,6 +12,8 @@ from Optimizer_python.main.optimizer_main_python import Optimizer_main
 from Optimizer_python.data_prepare.data_prepare import stable_data_preparing
 import global_setting.global_dic as glv
 from call_matlab_opt import call_matlab_running_main
+from Optimizer_Backtesting.updating.portfolio_updating import portfolio_updating_auto
+from Optimizer_python.data_check.data_check import check_data_completeness
 def config_path_finding():
     inputpath = os.path.split(os.path.realpath(__file__))[0]
     inputpath_output=None
@@ -87,11 +89,10 @@ def select_target_date_decision(date):
     else:
         print('填写的日期不是交易日，请重新填写')
         return 0
-def update_optimizer_main(): #部署自动化
+def update_optimizer_main(is_sql=True): #部署自动化
     score_name_list=score_name_withdraw()
+    target_date = target_date_decision()
     if len(score_name_list)!=0:
-        target_date = target_date_decision()
-        print(target_date)
         stable_data = stable_data_preparing()
         df_st, df_stockuniverse=stable_data.stable_data_preparing()
         opm=Optimizer_main(df_st, df_stockuniverse)
@@ -99,6 +100,9 @@ def update_optimizer_main(): #部署自动化
         call_matlab_running_main(outputpath_list, outputpath_list_yes)
     else:
         print('没有符合条件的score_name，请检查配置文件和score')
+    portfolio_updating_auto(is_sql)
+    check_data_completeness(target_date)
+
 
 def get_valid_date(prompt):
     while True:
@@ -149,15 +153,17 @@ def score_name_withdraw2():
     df_mode_dic['score_type'] = df_mode_dic['score_name'].apply(lambda x: str(x)[:4])
     score_list = df_mode_dic['score_name'].tolist()
     return score_list
-def update_optimizer_main2(): #部署自动化
+def update_optimizer_main2(is_sql=True): #部署自动化
     score_name_list=score_name_withdraw2()
+    target_date = target_date_decision()
     if len(score_name_list)!=0:
-        target_date = target_date_decision()
         stable_data = stable_data_preparing()
         df_st, df_stockuniverse=stable_data.stable_data_preparing()
         opm=Optimizer_main(df_st, df_stockuniverse)
         outputpath_list,outputpath_list_yes = opm.optimizer_update_main(target_date, score_name_list)
         call_matlab_running_main(outputpath_list,outputpath_list_yes)
+    portfolio_updating_auto(is_sql)
+    check_data_completeness(target_date)
 
 if __name__ == '__main__':
     d = update_optimizer_main()

@@ -94,10 +94,14 @@ def portfolio_checking(score_name,target_date):
     df_style=exposure_proportion_checking(df_style)
     df_industry=exposure_proportion_checking(df_industry)
     return df_style,df_industry
-def portfolio_Error_raising(target_date):
+def portfolio_Error_raising(target_date,is_sql):
     outputpath=glv.get('output_check2')
     gt.folder_creator2(outputpath)
     target_date2=gt.intdate_transfer(target_date)
+    if is_sql==True:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        inputpath_configsql = os.path.join(current_dir, 'global_setting\\optimizer_sql.yaml')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio_check')
     outputpath=os.path.join(outputpath,'PortfolioCheck_'+str(target_date2)+'.xlsx')
     inputpath_check=glv.get('output_check')
     inputpath_dic=os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
@@ -142,5 +146,11 @@ def portfolio_Error_raising(target_date):
     with pd.ExcelWriter(outputpath) as writer:
         df_trading.to_excel(writer,sheet_name='Trading',index=False)
         df_non.to_excel(writer,sheet_name='None_Trading',index=False)
+    if is_sql==True:
+        df_final = pd.concat([df_trading, df_non])
+        df_final['valuation_date'] = target_date
+        df_final = df_final[['valuation_date'] + df_final.columns.tolist()[:-1]]
+        sm.df_to_sql(df_final)
+
 
 
