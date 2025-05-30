@@ -74,8 +74,9 @@ def setup_check_logger(name, log_level=logging.INFO):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
-    # Create check log file handler
-    check_log_file = os.path.join(log_dir, 'opt_check.log')
+    # Create check log file handler with date-based filename
+    current_date = datetime.now().strftime('%Y%m%d')
+    check_log_file = os.path.join(log_dir, f'opt_check_{current_date}.log')
     check_handler = logging.FileHandler(check_log_file, encoding='utf-8')
     check_handler.setLevel(log_level)
     check_handler.setFormatter(check_formatter)
