@@ -280,5 +280,8 @@ class scorePortfolio_update:
         self.rr_top_update_main()
         self.rr_hs300_top_update_main()
         self.rr_zz2000_top_update_main()
-        self.etf_update_main()
+        try:
+            self.etf_update_main()
+        except:
+            print('gms更新有误')
         self.logger.info('Completed all score portfolio updates')

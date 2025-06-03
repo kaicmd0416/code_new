@@ -275,6 +275,16 @@ def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
     fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2023-06-01', '2025-05-21', True)
+    inputpath_configsql = glv.get('config_sql')
+    working_days_list = gt.working_days_list('2023-06-01', '2025-05-26')
+    sm5 = gt.sqlSaving_main(inputpath_configsql, 'FactorCov')
+    inputpath='D:\Data_prepared\data_factor\FactorCov'
+    for date in working_days_list:
+        print(date)
+        date2=gt.intdate_transfer(date)
+        inputpath_daily=gt.file_withdraw(inputpath,date2)
+        df=gt.readcsv(inputpath_daily)
+        capture_file_withdraw_output(sm5.df_to_sql, df)
+
 
 

@@ -33,7 +33,7 @@ def MacroData_update_main2(start_date,end_date,is_sql):
     # MDU.SocialFinance_data_update()
     # MDU.LargeOrderInflow_data_update()
     # MDU.USD_data_update()
-    MDU.intindex_data_update()
+    #MDU.intindex_data_update()
     #MDU.IndexScore_data_update()
 if __name__ == '__main__':
     MacroData_update_main2('2015-01-01', '2025-05-21',True)

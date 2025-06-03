@@ -1,6 +1,6 @@
 Portfolio:
     table_name: "portfolio"
-    db_url: "mysql+pymysql://root:root@localhost:3306/portfolio?autocommit=True"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/portfolio?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
@@ -9,7 +9,7 @@ Portfolio:
       - 'portfolio_name'
 Portfolio_check:
     table_name: "portfolio_check"
-    db_url: "mysql+pymysql://root:root@localhost:3306/portfolio?autocommit=True"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/portfolio?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:

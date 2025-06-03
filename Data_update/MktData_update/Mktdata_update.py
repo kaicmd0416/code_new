@@ -169,6 +169,7 @@ class indexData_update:
                 self.logger.info('indexdata使用的数据源是: tushare')
             elif len(df_index_wind)==0 and len(df_index_tushare)==0 and len(df_index_jy)>0:
                 df_indexdata=df_index_jy
+                df_indexdata=df_indexdata[df_indexdata['code'].isin(['000016.SH','000076.SH','000300.SH','000510.CSI','000852.SH','000905.SH','399303.SZ','932000.CSI','999004.SSI'])]
                 df_indexdata['turn_over']=None
                 self.logger.info('indexdata使用的数据源是: jy')
             elif len(df_index_wind)==0 and len(df_index_tushare)==0 and len(df_index_jy)==0:
@@ -177,12 +178,16 @@ class indexData_update:
                 continue
             else:
                  # 获取所有唯一的code
-                all_codes = list(set(df_index_wind['code']) | set(df_index_tushare['code']))
-                all_codes.sort()
+                if len(df_index_wind)!=0:
+                     all_codes = list(set(df_index_wind['code']) | set(df_index_tushare['code']))
+                     all_codes.sort()
                 # 保持Wind的列顺序，并添加Tushare独有的列
-                wind_columns = df_index_wind.columns.tolist()
-                tushare_only_columns = [col for col in df_index_tushare.columns if col not in wind_columns]
-                all_columns = wind_columns + tushare_only_columns
+                     wind_columns = df_index_wind.columns.tolist()
+                     tushare_only_columns = [col for col in df_index_tushare.columns if col not in wind_columns]
+                     all_columns = wind_columns + tushare_only_columns
+                else:
+                     all_codes=list(set(df_index_tushare['code']))
+                     all_columns=df_index_tushare.columns.tolist()
                 # 创建新的DataFrame，包含所有列
                 df_indexdata = pd.DataFrame(columns=all_columns)
                 # 设置code列
@@ -644,8 +649,9 @@ class futureData_update:
         inputpath_future_uni = glv.get('input_futuredata_info_tushare')
         df_uni = gt.readcsv(inputpath_future_uni)
         df_uni = df_uni[['ts_code', 'multiplier', 'per_unit']]
+        df_uni.columns=['code','multiplier', 'per_unit']
         df_uni.loc[df_uni['multiplier'].isna(), ['multiplier']] = df_uni[df_uni['multiplier'].isna()]['per_unit']
-        df_uni = df_uni[['ts_code', 'multiplier']]
+        df_uni = df_uni[['code', 'multiplier']]
         df_uni.columns=['code','multiplier']
         df=df.merge(df_uni,on='code',how='left')
         return df
@@ -685,7 +691,7 @@ class futureData_update:
                     df_future = self.standardize_column_names(df_future)
                     # 如果multiplier不在列名中且存在code列，则添加multiplier列
                     if 'multiplier' not in df_future.columns and 'code' in df_future.columns:
-                        df_future['multiplier'] = df_future['code'].apply(self.get_code_multiplier)
+                        df_future = self.get_code_multiplier(df_future)
                 except:
                     pass
                 if len(df_future) != 0:
@@ -984,7 +990,9 @@ class etfData_update:
             'OI' : 'oi',
             # 持仓量变化
             'oi_chg' : 'oi_chg',
-            'oi_CHG': 'oi_chg'
+            'oi_CHG': 'oi_chg',
+            'adjfactor': 'adjfactor',
+            'adj_factor': 'adjfactor'
         }
         # 处理列名：先转小写
         df.columns = df.columns.str.lower()
@@ -1003,7 +1011,7 @@ class etfData_update:
         columns_to_keep = [col for col in df.columns if col in standardized_columns]
         df = df[columns_to_keep]
         # 定义固定的列顺序
-        fixed_columns = ['code', 'close', 'pre_close', 'open', 'high', 'low', 'volume', 'amt', 'oi', 'oi_chg']
+        fixed_columns = ['code', 'close', 'pre_close', 'open', 'high', 'low', 'volume', 'amt', 'oi', 'oi_chg','adjfactor']
         # 只选择实际存在的列，并按固定顺序排列
         existing_columns = [col for col in fixed_columns if col in df.columns]
         df = df[existing_columns]

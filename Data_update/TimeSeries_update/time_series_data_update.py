@@ -558,6 +558,6 @@ class timeSeries_data_update:
         self.USData_update()
 
 if __name__ == "__main__":
-    ts=timeSeries_data_update('2015-01-01','2025-05-21')
-    ts.intData_update()
+    ts=timeSeries_data_update('2005-01-04','2025-05-28')
+    ts.indexMktData_update()
     

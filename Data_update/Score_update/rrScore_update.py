@@ -82,7 +82,7 @@ class rrScore_update:
             self.raw_rr_time_checking(date3, date)
             slice_df_score = df_score[df_score['valuation_date'] == date3]
             slice_df_score = gt.rr_score_processing(slice_df_score)
-            slice_df_score['valuation_date'] = date
+            slice_df_score['valuation_date'] = available_date
             slice_df_score2=slice_df_score.copy()
             slice_df_score2['score_name']=mode_name
             slice_df_score['score_name']='rr_'+str(mode_type)

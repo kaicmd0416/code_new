@@ -30,6 +30,6 @@ def FactorData_history_main(start_date,end_date,is_sql):
 def MacroData_history_main(start_date,end_date,is_sql):
     MacroData_update_main(start_date, end_date, is_sql)
 if __name__ == '__main__':
-    start_date='2024-01-01'
-    end_date='2025-05-19'
+    start_date='2022-05-05'
+    end_date='2023-06-01'
     FactorData_history_main(start_date, end_date,True)

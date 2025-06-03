@@ -17,4 +17,4 @@ def score_update_main(score_type,start_date,end_date,is_sql): #这里面的date�
     else:
         print('非生产时间段')
 if __name__ == '__main__':
-    score_update_main('fm', '2025-05-16', '2025-05-22',True)
+    score_update_main('fm', '2016-01-05', '2025-05-27',True)

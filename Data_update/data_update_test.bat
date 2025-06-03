@@ -15,6 +15,6 @@ echo Start Time:%time%
 
 echo Running data_update...
 cd /d "%SCRIPT_DIR%"
-%ANACONDAPATH%\python -c "from update_main import daily_update_auto2; daily_update_auto2()"
+%ANACONDAPATH%\python -c "from update_main import daily_update_auto; daily_update_auto()"
 
-call "D:\OSS\Data_nk\Data_nk.bat"
+

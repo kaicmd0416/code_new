@@ -146,7 +146,7 @@ def check_sql_database(target_date):
             check_logger.error(f"Portfolio {portfolio} has no stocks in database for date {target_date}")
             continue
             
-        if not (0.99 <= total_weight <= 1.01):
+        if not (0.99 <= float(total_weight) <= 1.01):
             error_portfolios.append(portfolio)
             check_logger.error(f"Portfolio {portfolio} has invalid weight sum ({total_weight}) in database for date {target_date}")
             continue
@@ -165,7 +165,7 @@ def check_sql_database(target_date):
             max_weight = stock_df['max_weight'].iloc[0]
             
             # Check if weights are within acceptable range (-0.001 to 1)
-            if min_weight < -0.001 or max_weight > 1:
+            if float(min_weight) < -0.001 or float(max_weight) > 1:
                 error_portfolios.append(portfolio)
                 check_logger.error(f"Portfolio {portfolio} has invalid individual weights (min: {min_weight}, max: {max_weight})")
     
@@ -290,7 +290,7 @@ SQL Database:
 
 if __name__ == '__main__':
     # Example usage
-    results = check_data_completeness()
+    results = check_data_completeness('2025-06-03')
     print("\nCheck Results:")
     print(f"Target Date: {results['target_date']}")
     print("\nLocal Files:")
