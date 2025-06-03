@@ -1,0 +1,136 @@
+{
+    "components": {
+        "data_source": {
+            "mode": "sql"
+        },
+        "database": {
+            "database1": {
+                "host": "rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com",
+                "port": 3306,
+                "user": "kai",
+                "password": "Abcd1234#",
+                "database": "data_prepared",
+                "charset": "utf8mb4"
+            },
+            "database2": {
+                "host": "localhost",
+                "port": 3306,
+                "user": "root",
+                "password": "root",
+                "database": "data_prepared",
+                "charset": "utf8mb4"
+            }
+        }
+    },
+    "main_folder": [
+        {
+            "folder_type": "input_folder",
+            "path": "onedrive\\Data_prepared",
+            "disk": "D:"
+        },
+        {
+            "folder_type": "output_folder",
+            "path": "Optimizer_python_data_re",
+            "disk": "D"
+        },
+        {
+            "folder_type": "output_folder_result",
+            "path": "Optimizer_python_data_re\\optimizer_result",
+            "disk": "D"
+        },
+        {
+            "folder_type": "config",
+            "path": "code_new\\Optimizer_re\\global_setting",
+            "disk": "D"
+        }
+    ],
+    "sub_folder": [
+        {
+            "data_type": "backtest_config",
+            "folder_name": "opt_project_config.xlsx",
+            "folder_type": "config"
+        },
+        {
+            "data_type": "input_indexcomponent",
+            "folder_name": "data_index\\index_component",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_indexcomponent"
+        },
+        {
+            "data_type": "input_factorexposure",
+            "folder_name": "data_factor\\factor_exposure",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_factorexposure"
+        },
+        {
+            "data_type": "input_factorstockpool",
+            "folder_name": "data_factor\\factor_stockpool",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_factorpool"
+        },
+        {
+            "data_type": "input_factorstockpool",
+            "folder_name": "data_factor\\factor_stockpool",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_factorpool"
+        },
+        {
+            "data_type": "input_factorcov",
+            "folder_name": "data_factor\\FactorCov",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_factorcov"
+        },
+        {
+            "data_type": "input_factorrisk",
+            "folder_name": "data_factor\\FactorSpecificRisk",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_factorspecificrisk"
+        },
+        {
+            "data_type": "input_index_exposure",
+            "folder_name": "data_index\\index_exposure",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_factorindexexposure"
+        },
+        {
+            "data_type": "input_score",
+            "folder_name": "score",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_score"
+        },
+        {
+            "data_type": "input_timeseriesstock",
+            "folder_name": "data_timeSeries\\stock_data\\stockClose.csv",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_stock"
+        },
+        {
+            "data_type": "input_timeseriesstockreturn",
+            "folder_name": "data_timeSeries\\stock_data\\stockReturn.csv",
+            "folder_type": "input_folder",
+            "sql_sheet": "data_stock"
+        },
+        {
+            "data_type": "stock_universe_new",
+            "folder_name": "data_other\\StockUniverse_new.csv",
+            "folder_type": "input_folder",
+            "sql_sheet": "stockuniverse"
+        },
+        {
+            "data_type": "st_stock",
+            "folder_name": "data_other\\st_stock.xlsx",
+            "folder_type": "input_folder",
+            "sql_sheet": "st_stock"
+        },
+        {
+            "data_type": "output_optimizer",
+            "folder_name": "processing_data",
+            "folder_type": "output_folder"
+        },
+        {
+            "data_type": "output_backtest",
+            "folder_name": "portfolio_history",
+            "folder_type": "output_folder_result"
+        }
+    ]
+} 
