@@ -368,9 +368,10 @@ class Back_testing_processing:
             df_pa_2.to_excel(outputpath_weight)
             df_h.rename(columns={'portfolio': 'return', 'index': 'index_return'}, inplace=True)
             self.PDF_Creator(outputpath=outputpath2, df2=df_h,df3=df_turn_over2, df4=df_h2, score_type=score_type, index_type=index_type,df_component=df_component,df_pa_1=df_pa_1,df_pa_2=df_pa_2)
-    def back_testing_main_history(self,index_type,score_type, start_date, end_date):
+    def back_testing_main_history(self,index_type,score_type,user_name, start_date, end_date):
         outpath_optimizer_result2=glv.get('output_backtest')
         outputpath_optimizer_python=glv.get('output_optimizer')
+        outputpath_optimizer_python=os.path.join(outputpath_optimizer_python,user_name)
         inputpath_backtesting=os.path.join(outputpath_optimizer_python,score_type)
         inputlist=os.listdir(inputpath_backtesting)
         df_config=self.portfolio_information_withdraw(inputpath_backtesting,end_date)
@@ -378,15 +379,12 @@ class Back_testing_processing:
         df_input=pd.DataFrame()
         df_input['name']=inputlist
         df_input=df_input[(df_input['name']>=start_date)&(df_input['name']<=end_date)]
-        gt.folder_creator(outpath_optimizer_result2)
-        outpath_optimizer_result2 = os.path.join(outpath_optimizer_result2, index_type)
-        gt.folder_creator(outpath_optimizer_result2)
+        outpath_optimizer_result2 = os.path.join(outpath_optimizer_result2, user_name)
+        outpath_optimizer_result2=os.path.join(outpath_optimizer_result2,index_type)
         start_date2 = str(start_date)[:4] + str(start_date)[5:7] + str(start_date)[8:10]
         end_date2 = str(end_date)[:4] + str(end_date)[5:7] + str(end_date)[8:10]
-        outpath_optimizer_result2 = os.path.join(outpath_optimizer_result2, score_type)
-        gt.folder_creator(outpath_optimizer_result2)
         outpath_optimizer_result2 = os.path.join(outpath_optimizer_result2,str(score_type) + '_' + str(start_date2) + '_' + str(end_date2))
-        gt.folder_creator(outpath_optimizer_result2)
+        gt.folder_creator2(outpath_optimizer_result2)
         df_final,df_final_code,df_final_weight=self.weight_matrix_combination(df_input, inputpath_backtesting)
         pa=portfolio_analysis(self.df_index_return,self.df_stock_return,index_type,df_final_code,df_final_weight,score_type,top_number,inputpath_backtesting)
         df_pa_1,df_pa_2=pa.portfolio_analyse_main(start_date,end_date)

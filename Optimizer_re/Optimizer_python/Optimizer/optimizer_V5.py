@@ -35,11 +35,13 @@ class Optimizer_python:
         score_type=slice_df_mode_dic['benchmark_score'].tolist()[0]
         index_type=slice_df_mode_dic['index_type'].tolist()[0]
         mode_type=slice_df_mode_dic['mode_type'].tolist()[0]
+        user_name=slice_df_mode_dic['user_name'].tolist()[0]
         optimizer_args['score_type']=score_type
         optimizer_args['index_type']=index_type
         optimizer_args['mode_type']=mode_type
         optimizer_args['portfolio_name']=portfolio_name
         optimizer_args['available_date']=self.available_date
+        optimizer_args['user_name'] = user_name
         return optimizer_args
     def top_N_stock_selecting(self,optimizer_args):  # 返回的是股票打分#目前只支持rr和y_hat
         score_type=optimizer_args.get('score_type')
@@ -184,6 +186,7 @@ class Optimizer_python:
         optimizer_args=optimizer_args_withdraw(portfolio_name)
         optimizer_args= self.optimizer_args_processing(optimizer_args,portfolio_name)
         outputpath_optimizer_python=glv.get('output_optimizer')
+        outputpath_optimizer_python=os.path.join(outputpath_optimizer_python,optimizer_args.get('user_name'))
         outputpath_optimizer_python2 = os.path.join(outputpath_optimizer_python, portfolio_name)
         try:
             gt.folder_creator2(outputpath_optimizer_python2)

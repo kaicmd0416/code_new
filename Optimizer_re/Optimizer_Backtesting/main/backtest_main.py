@@ -43,7 +43,8 @@ class backtesting_main:
             end_date=gt.last_workday_calculate(end_date)
             score_name=df_config['portfolio_name'].tolist()[i]
             index_type=df_config['index_type'].tolist()[i]
-            bt.back_testing_main_history(index_type, score_name, start_date, end_date)
+            user_name=df_config['user_name'].tolist()[i]
+            bt.back_testing_main_history(index_type, score_name,user_name, start_date, end_date)
 
 if __name__ == '__main__':
     bm=backtesting_main()
