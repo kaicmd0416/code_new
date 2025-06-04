@@ -54,16 +54,8 @@ def backtesting_update_bu(start_date,end_date):
     except:
         print('portfolio_tracking中sql数据更新出现问题')
 if __name__ == '__main__':
-<<<<<<< Updated upstream
-    backtesting_update_main()
-    # backtesting_history_main('2025-02-28', '2025-03-03')
-=======
     #backtesting_update_main()
     backtesting_history_main('2025-01-01', '2025-04-30')
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     #backtesting_history_main('2025-01-01', '2025-03-17')
     # time_series_portfolio_performance_update()
     # backtesting_update_bu(start_date='2025-03-12',end_date='2025-03-17')

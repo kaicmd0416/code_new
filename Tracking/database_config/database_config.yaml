@@ -1,0 +1,165 @@
+database:
+  host: rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com
+  port: 3306
+  database: tracking
+  user: wc
+  password: Abcd1234#
+  pool_size: 5
+  max_overflow: 10
+  # 新增连接参数
+#  connect_args:
+#    gssencmode: disable    # 禁用 GSSAPI
+#    client_encoding: utf8
+#database:
+#  host: localhost
+#  port: 3306
+#  database: tracking
+#  user: root
+#  password: root
+#  pool_size: 5
+#  max_overflow: 10
+
+tasks:
+  realtime_proinfo:
+    table_name: realtime_proinfo
+    update_interval: 5
+    primary_keys:
+      - product_code
+      - type
+      - simulation
+    columns:
+      value: float
+      simulation: varchar
+      update_time: timestamp
+
+  realtime_futureoptionholding:
+    table_name: realtime_futureoptionholding
+    update_interval: 5
+    primary_keys:
+      - product_code
+      - simulation
+      - code
+      - direction
+    columns:
+      HoldingQty: float
+      delta: float
+      mkt_value: float
+      daily_profit: float
+      proportion: float
+      update_time: timestamp
+
+  realtime_holdingchanging:
+    table_name: realtime_holdingchanging
+    update_interval: 5
+    primary_keys:
+      - product_code
+      - simulation
+      - code
+      - direction
+      - type
+    columns:
+      HoldingQty: float
+      HoldingQty_yes: float
+      difference: float
+      update_time: timestamp
+
+  realtime_productStockReturn:
+    table_name: realtime_productStockReturn
+    update_interval: 5
+    primary_keys:
+      - product_code
+    columns:
+      product_name: varchar
+      portfolio_return_bp: float
+      excess_return_bp: float
+      update_time: timestamp
+
+  realtime_portfolioReturn:
+    table_name: realtime_portfolioReturn
+    update_interval: 5
+    primary_keys:
+      - score_name
+    columns:
+      portfolio_return_bp: float
+      excess_return_bp: float
+      update_time: timestamp
+
+  product_detail:
+    table_name: product_detail
+    update_interval: 5
+    primary_keys:
+      - product_code
+    columns:
+      product_name: varchar
+      update_time: timestamp
+
+# 历史表配置
+  history_proinfo:
+    table_name: history_proinfo
+    update_interval: 5
+    primary_keys:
+      - date
+      - product_code
+      - type
+      - simulation
+    columns:
+      value: float
+      update_time: timestamp
+
+  history_futureoptionholding:
+    table_name: history_futureoptionholding
+    update_interval: 5
+    primary_keys:
+      - date
+      - product_code
+      - simulation
+      - code
+      - direction
+    columns:
+      type: varchar
+      HoldingQty: float
+      delta: float
+      mkt_value: float
+      daily_profit: float
+      proportion: float
+      update_time: timestamp
+
+  history_holdingchanging:
+    table_name: history_holdingchanging
+    update_interval: 5
+    primary_keys:
+      - date
+      - product_code
+      - simulation
+      - code
+      - direction
+      - type
+    columns:
+      action: varchar
+      HoldingQty: float
+      HoldingQty_yes: float
+      difference: float
+      update_time: timestamp
+
+  history_productStockReturn:
+    table_name: history_productStockReturn
+    update_interval: 5
+    primary_keys:
+      - date
+      - product_code
+    columns:
+      product_name: varchar
+      portfolio_return_bp: float
+      excess_return_bp: float
+      update_time: timestamp
+
+  history_portfolioReturn:
+    table_name: history_portfolioReturn
+    update_interval: 5
+    primary_keys:
+      - date
+      - score_name
+    columns:
+      excess_return_bp: float
+      portfolio_return_bp: float
+      update_time: timestamp

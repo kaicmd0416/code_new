@@ -4,6 +4,7 @@ import os
 import time
 import numpy as np
 import shutil
+import win32com.client
 from scipy.io import loadmat
 import warnings
 import sys
@@ -354,24 +355,35 @@ def rr_score_processing(df_score): #标准化分数生成
     df_score['valuation_date'] = df_score['valuation_date'].astype(str)
     return df_score
 def code_transfer(df):
-    df.dropna(subset=['code'],axis=0,inplace=True)
+    """
+    股票代码格式转换
+
+    Args:
+        df (pandas.DataFrame): 包含code列的数据框
+
+    Returns:
+        pandas.DataFrame: 处理后的数据框
+    """
+    df.dropna(subset=['code'], axis=0, inplace=True)
     df['code'] = df['code'].astype(int)
     df['code'] = df['code'].apply(lambda x: '{:06d}'.format(x))
+
     def sz_sh(x):
         if str(x)[0] == '6' or str(x)[0] == '5':
             x = str(x) + '.SH'
-        elif str(x)[0] == '0' or str(x)[0]=='3':
+        elif str(x)[0] == '0' or str(x)[0] == '3':
             x = str(x) + '.SZ'
-        elif str(x)[:2]=='51' or str(x)[:2]=='11':
+        elif str(x)[:2] == '51' or str(x)[:2] == '11':
             x = str(x) + '.SH'
-        elif str(x)[:2]=='15' or  str(x)[:2]=='16'or str(x)[:2]=='12'or str(x)[:2]=='18':
+        elif str(x)[:2] == '15' or str(x)[:2] == '16' or str(x)[:2] == '12' or str(x)[:2] == '18':
             x = str(x) + '.SZ'
-        elif str(x)[0]=='8'or str(x)[0]=='4'or str(x)[0]=='9':
+        elif str(x)[0] == '8' or str(x)[0] == '4' or str(x)[0] == '9':
             x = str(x) + '.BJ'
         else:
-            print(x+'没有找到匹配规则')
-            x=x
+            print(x + '没有找到匹配规则')
+            x = x
         return x
+
     df['code'] = df['code'].apply(lambda x: sz_sh(x))
     return df
 def code_transfer2(df):
@@ -451,3 +463,47 @@ def stock_volatility_calculate(df,available_date):
     df.set_index('valuation_date',inplace=True,drop=True)
     df=df.rolling(248).std()
     return df
+
+def close_excel(file_path):
+
+    def is_excel_file_open(file_path):
+        """
+        检查目标Excel文件是否已经打开
+        """
+        try:
+            excel = win32com.client.Dispatch("Excel.Application")
+            for workbook in excel.Workbooks:
+                if workbook.FullName.lower() == os.path.abspath(file_path).lower():
+                    return True  # 文件已打开
+            return False  # 文件未打开
+        except Exception as e:
+            print(f"检查文件是否打开时出错：{e}")
+            return False
+
+    """
+    关闭已打开的Excel文件
+    """
+    # 检查文件是否存在
+    if not os.path.exists(file_path):
+        print(f"文件 {file_path} 不存在。")
+        return
+
+    # 检查文件是否已经打开
+    if is_excel_file_open(file_path):
+        print(f"文件 {file_path} 已打开，正在尝试关闭...")
+        try:
+            excel = win32com.client.Dispatch("Excel.Application")
+            for workbook in excel.Workbooks:
+                if workbook.FullName.lower() == os.path.abspath(file_path).lower():
+                    workbook.Close(SaveChanges=False)  # 关闭工作簿，不保存更改
+            excel.Quit()  # 退出Excel应用程序
+            print(f"已成功关闭文件 {file_path}")
+        except Exception as e:
+            print(f"关闭文件时出错：{e}")
+    else:
+        print(f"文件 {file_path} 未打开，可以直接进行更新操作。")
+
+# if __name__ == '__main__':
+#     file_path=r"E:\zq\holding_20250312.csv"
+#     close_excel(file_path)
+#     pass

@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import datetime
 from Portfolio_tracking.portfolio_performance.portfolio_weight_withdraw import portfolio_weight_withdraw
+from Portfolio_tracking.real_time.realtimeStock_sqlSaving import realtimeStock_sqlSaving
 import Portfolio_tracking.global_setting.global_dic as glv
 import global_tools_func.global_tools as gt
 
@@ -29,6 +30,7 @@ def real_time_stock_return():
     df_etf=pd.read_excel(inputpath,sheet_name='etf_info')
     df = df[['代码', 'return']]
     df.columns = ['code', 'return']
+    df['return']=df['return']/100
     df_etf['return']=(df_etf['现价']-df_etf['前收'])/df_etf['前收']
     df_etf=df_etf[['代码','return']]
     df_etf.columns= ['code', 'return']
@@ -104,21 +106,28 @@ def stock_realtime_main(): #实时触发这个
     excess_return_list = []
     index_type_list = []
     portfolio_return_list = []
+    score_name_list2=[]
     for score_name in score_name_list:
         df_weight = portfolio_weight_withdraw(score_name, date,yesterday=False)
-        index_type = portfolio_index_withdraw(score_name)
-        excess_return, portfolio_return = realtime_portfolio_return(df_weight, df_return, df_index, index_type)
-        excess_return = excess_return * 10000
-        portfolio_return=portfolio_return*10000
-        excess_return=round(excess_return,2)
-        portfolio_return = round(portfolio_return, 2)
-        excess_return_list.append(excess_return)
-        portfolio_return_list.append(portfolio_return)
-        index_type_list.append(index_type)
+        if len(df_weight)==0:
+            pass
+        else:
+            index_type = portfolio_index_withdraw(score_name)
+            excess_return, portfolio_return = realtime_portfolio_return(df_weight, df_return, df_index, index_type)
+            excess_return = excess_return * 10000
+            portfolio_return = portfolio_return * 10000
+            excess_return = round(excess_return, 2)
+            portfolio_return = round(portfolio_return, 2)
+            score_name_list2.append(score_name)
+            excess_return_list.append(excess_return)
+            portfolio_return_list.append(portfolio_return)
+            index_type_list.append(index_type)
     df_final['score_name'] = score_name_list
     df_final['excess_return(bp)'] = excess_return_list
     df_final['portfolio_return(bp)'] = portfolio_return_list
     df_final2=procut_excess_return_calculate(df_final, df_index)
+    rs=realtimeStock_sqlSaving(df_final,df_final2)
+    rs.realtimeStock_savingmain()
     with pd.ExcelWriter(outputpath, engine='openpyxl') as writer:
          df_final.to_excel(writer,sheet_name='portfolio_realtime',index=False)
          df_final2.to_excel(writer, sheet_name='product_realtime', index=False)

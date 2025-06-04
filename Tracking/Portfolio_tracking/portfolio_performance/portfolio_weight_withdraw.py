@@ -22,7 +22,6 @@ def portfolio_config_withdraw():
     df_config=portfolio_config_processing(df_config)
     return df_config
 def portfolio_config_processing(df):
-
     top_list=['a1_top200','a3_top200','a3_top5']
     top_list2=top_list*4
     top_list2=['ubp500']+top_list2
@@ -34,8 +33,6 @@ def portfolio_config_processing(df):
     df_add['score_name']=top_list2
     df_add['index_type']=index_type_list
     df=pd.concat([df,df_add])
-<<<<<<< Updated upstream
-=======
     df_add2=pd.DataFrame(columns=df.columns.tolist())
     df_add2['score_name']=['timeselecting_hs300', 'timeselecting_hs300_pro','a1_hs300_top50','a3_hs300_top50','a1_hs300_top150','a3_hs300_top150']
     df_add2['index_type']='沪深300'
@@ -49,10 +46,6 @@ def portfolio_config_processing(df):
     df_add5['score_name'] = ['a3_zz2000_top100']
     df_add5['index_type'] = '中证1000'
     df=pd.concat([df,df_add2,df_add3,df_add4,df_add5])
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     return df
 def portfolio_weight_withdraw(score_name,target_date,yesterday):
     inputpath_portfolio=glv.get('portfolio_weight')

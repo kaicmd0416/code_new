@@ -29,7 +29,7 @@ def portfolio_performance_calculate(df,df_weight_yes,df_index_return,df_stock,in
     df=df.merge(df_weight_yes,on='code',how='outer')
     df.fillna(0,inplace=True)
     df['turn_over']=abs(df['weight']-df['yes_weight'])
-    df['cost'] = df['turn_over'] * 0.001
+    df['cost'] = df['turn_over'] * 0.00085
     df['return'] = df['return'] - df['cost']
     df['portfolio'] = df['return'] * df['weight']
     portfolio_return = df['portfolio'].sum()

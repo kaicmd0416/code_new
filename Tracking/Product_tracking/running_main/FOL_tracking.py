@@ -22,6 +22,8 @@ class portfolio_tracking:
         self.df_stock=self.df_stock.drop_duplicates(subset=['code'])
         df_info=prod.product_info_withdraw()
         self.stock_money = df_info['股票市值'].tolist()[0]
+        if np.isnan(self.stock_money):
+            self.stock_money=0
         self.asset_value = df_info['资产净值'].tolist()[0]
         self.net_value=df_info['产品累计净值'].tolist()[0]
         self.shuhui=df_info['赎回金额'].tolist()[0]
@@ -450,7 +452,10 @@ class portfolio_tracking:
         else:
             cb_return = cb_profit / cb_mkt_value_yes
             cb_proportion = cb_mkt_value_yes / self.asset_value_yes
-        stock_return=stock_profit/stock_money
+        if stock_money==0:
+            stock_return=None
+        else:
+            stock_return=stock_profit/stock_money
         df1 = self.option_analysis(yes=True)
         df2 = self.future_analysis(yes=True)
         df3=self.bond_analysis()
@@ -488,7 +493,7 @@ class portfolio_tracking:
         stock_proportion=stock_money/self.asset_value_yes
         etf_proportion=etf_yes/self.asset_value_yes
         sum_p=option_yes+future_yes+cb_mkt_value_yes+stock_money+etf_yes
-        sum_p2=option_proportion+future_proportion+stock_proportion+cb_proportion+etf_proportion
+        #sum_p2=option_proportion+future_proportion+stock_proportion+cb_proportion+etf_proportion
         df_pro=pd.DataFrame()
         df_pro['product_split']=['产品','股票','期权','期货','转债','国债','ETF']
         error_pro=product_profit-stock_profit-option_pro-future_pro-cb_profit-bond_pro-etf_pro
@@ -506,6 +511,7 @@ class portfolio_tracking:
         df_pro.loc[df_pro['product_split'] == '产品', ['超额贡献bp']] = df_pro[df_pro['product_split'] == '产品'][
             '超额(本身)bp']
         df_pro[['收益率(本身)bp','超额(本身)bp','超额贡献bp']]=round(df_pro[['收益率(本身)bp','超额(本身)bp','超额贡献bp']]*10000,4)
+        sum_p2=df_porinfo[df_porinfo['info_name']=='杠杆率']['money'].tolist()[0]
         leverage_attribution=float(self.index_return) * (sum_p2-1) * 10000
         error_attribution=df_pro[df_pro['product_split'] == '产品']['超额贡献bp'].tolist()[0]-df_pro[df_pro['product_split'] != '产品']['超额贡献bp'].sum()-leverage_attribution
         df_pro.loc['add2'] = ['误差', error_pro, None, None, None,round(error_attribution, 4)]
@@ -524,7 +530,10 @@ class portfolio_tracking:
         else:
             cb_return = cb_profit / cb_mkt_value_yes
             cb_proportion = cb_mkt_value_yes / self.asset_value_yes
-        stock_return=stock_profit/stock_money
+        if stock_money==0:
+            stock_return=None
+        else:
+            stock_return=stock_profit/stock_money
         df1 = self.option_analysis(yes=True)
         df2 = self.future_analysis(yes=True)
         df3=self.bond_analysis()
@@ -561,7 +570,7 @@ class portfolio_tracking:
         future_proportion=future_yes/self.asset_value_yes
         stock_proportion=stock_money/self.asset_value_yes
         etf_proportion = etf_yes / self.asset_value_yes
-        sum_p2=option_proportion+future_proportion+stock_proportion+cb_proportion+etf_proportion
+        #sum_p2=option_proportion+future_proportion+stock_proportion+cb_proportion+etf_proportion
         df_pro=pd.DataFrame()
         df_pro['product_split']=['产品','股票','期权','期货','转债','国债','ETF']
         error_pro=product_profit-stock_profit-option_pro-future_pro-cb_profit-bond_pro-etf_pro
@@ -585,6 +594,7 @@ class portfolio_tracking:
         df_pro.loc[df_pro['product_split'] == '产品', ['超额贡献bp']] = df_pro[df_pro['product_split'] == '产品'][
             '超额(本身)bp'].tolist()
         df_pro[['收益率(本身)bp','超额(本身)bp','超额贡献bp']]=round(df_pro[['收益率(本身)bp','超额(本身)bp','超额贡献bp']]*10000,4)
+        sum_p2 = df_porinfo[df_porinfo['info_name'] == '杠杆率']['money'].tolist()[0]
         leverage_attribution=float(self.index_return) * (sum_p2) * 10000
         error_attribution = df_pro[df_pro['product_split'] == '产品']['超额贡献bp'].tolist()[0] - \
                             df_pro[df_pro['product_split'] != '产品']['超额贡献bp'].sum() - leverage_attribution
@@ -603,7 +613,10 @@ class portfolio_tracking:
         else:
             cb_return = cb_profit / cb_mkt_value_yes
             cb_proportion = cb_mkt_value_yes / self.asset_value_yes
-        stock_return=stock_profit/stock_money
+        if stock_money == 0:
+            stock_return = None
+        else:
+            stock_return = stock_profit / stock_money
         df1 = self.option_analysis(yes=True)
         df2 = self.future_analysis(yes=True)
         df3=self.bond_analysis()
@@ -634,7 +647,7 @@ class portfolio_tracking:
         future_proportion=future_yes/self.asset_value_yes
         stock_proportion=stock_money/self.asset_value_yes
         etf_proportion = etf_yes / self.asset_value_yes
-        sum_p2=option_proportion+future_proportion+stock_proportion+cb_proportion+etf_proportion
+        #sum_p2=option_proportion+future_proportion+stock_proportion+cb_proportion+etf_proportion
         df_pro=pd.DataFrame()
         df_pro['product_split']=['产品','股票','期权','期货','转债','国债','ETF']
         error_pro=product_profit-stock_profit-option_pro-future_pro-cb_profit-bond_pro-etf_pro
@@ -660,6 +673,7 @@ class portfolio_tracking:
         error_attribution = df_pro[df_pro['product_split'] == '产品']['超额贡献bp'].tolist()[0] - \
                             df_pro[df_pro['product_split'] != '产品']['超额贡献bp'].sum()
         df_pro.loc['add2'] = ['误差',None, error_pro, None, None, None,round(error_attribution, 4)]
+        sum_p2 = df_porinfo[df_porinfo['info_name'] == '杠杆率']['money'].tolist()[0]
         df_pro.loc['add']=['杠杆率',None,None,0,0,sum_p2,0]
         df_pro.reset_index(inplace=True,drop=True)
         df_porinfo.reset_index(inplace=True,drop=True)

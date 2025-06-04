@@ -16,8 +16,6 @@ def portfolio_name_list(index_type):
     if index_type=='中证500':
         top_list=['a1_top200','a3_top200','timeselecting_zz500']
         portfolio_list=portfolio_list+top_list
-<<<<<<< Updated upstream
-=======
     if index_type=='沪深300':
         top_list=['timeselecting_hs300','timeselecting_hs300_pro','a1_hs300_top150','a3_hs300_top150','a1_hs300_top50','a3_hs300_top50']
         portfolio_list=portfolio_list+top_list
@@ -27,10 +25,6 @@ def portfolio_name_list(index_type):
     if index_type=='中证A500':
         top_list = ['timeselecting_zzA500','timeselecting_zzA500_pro']
         portfolio_list = portfolio_list + top_list
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     return portfolio_list
 def inputpath_withdraw(index_type):
     index_short = index_shortname_withdraw(index_type)

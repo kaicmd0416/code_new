@@ -19,6 +19,8 @@ def update_main(): #触发这个
     product_list1 = time_zoom_decision()
     for product_name in product_list1:
         print(product_name)
+        # pt = portfolio_tracking(product_name, available_date)
+        # pt.saving_main()
         try:
             pt = portfolio_tracking(product_name, available_date)
             pt.saving_main()
@@ -48,19 +50,10 @@ def history_main(product_list,start_date,end_date):#date为目标时间
        ProdTrackingSql_main(start_date, end_date,product_name)
 if __name__ == '__main__':
     # update_main()
-    # update_main()
+    #update_main()
     #ProdTracking_timeSeries_main('瑞锐500指增')
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    history_main(['高毅振英1号'],'2025-03-20','2025-03-26')
-=======
     #history_main(['宣夜惠盈1号'],'2025-02-02','2025-05-02')
     history_main(['念空瑞景39号','瑞锐500指增','瑞锐精选','仁睿价值精选1号','宣夜惠盈1号','高毅振英1号','念空知行4号'],'2025-04-01','2025-04-30')
->>>>>>> Stashed changes
-=======
-    #history_main(['宣夜惠盈1号'],'2025-02-02','2025-05-02')
-    history_main(['念空瑞景39号','瑞锐500指增','瑞锐精选','仁睿价值精选1号','宣夜惠盈1号','高毅振英1号','念空知行4号'],'2025-04-01','2025-04-30')
->>>>>>> Stashed changes
     #update_main()
     #pass
     # product_list=['念空瑞景39号','瑞锐500指增','瑞锐精选','仁睿价值精选1号','宣夜惠盈1号','高毅振英1号','念空知行4号']
