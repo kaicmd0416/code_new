@@ -1,87 +1,160 @@
-import pandas as pd
+"""
+全局路径配置模块
+
+这个模块负责管理和配置项目中使用的所有文件路径，主要功能包括：
+1. 读取路径配置文件（JSON格式）
+2. 构建完整的文件路径
+3. 提供全局路径访问接口
+
+配置文件结构 (tools_path_config.json):
+1. main_folder:
+   - folder_type: 文件夹类型标识
+   - path: 基础路径
+   - disk: 磁盘路径（可选）
+2. sub_folder:
+   - data_type: 数据类型标识
+   - folder_name: 文件夹名称
+   - folder_type: 文件夹类型标识
+3. components:
+   - data_source: 数据源配置
+     - mode: 数据源模式 (local/sql)
+
+主要依赖：
+- json：配置文件处理
+- os：路径操作
+- pathlib：路径处理
+- pandas：数据处理
+"""
+
+import json
 import os
 from pathlib import Path
-def get_top_dir_path(current_path, levels_up=2):
+import pandas as pd
+import pymysql
+from datetime import datetime
+
+# 全局字典
+global_dic = {}
+
+def init():
     """
-    从当前路径向上退指定层数，获取顶层目录的完整路径。
-    :param current_path: 当前路径（Path对象）
-    :param levels_up: 向上退的层数，默认为2
-    :return: 顶层目录的完整路径（Path对象）
+    初始化全局字典，从配置文件加载设置
     """
-    for _ in range(levels_up):
-        current_path = current_path.parent
-    return current_path
-def config_path_finding():
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
+    global global_dic
+    
+    try:
+        # 获取当前文件所在目录
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # 构建配置文件的完整路径
+        config_path = os.path.join(current_dir, 'trading_path_config.json')
+        
+        # 读取配置文件
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+            
+        # 更新全局字典
+        global_dic.update(config_data)
+        return True
+        
+    except Exception as e:
+        print(f"Error loading configuration: {str(e)}")
+        global_dic = {}
+        return False
+
+def get(key):
+    """
+    获取全局变量值，支持本地文件系统和SQL数据库两种模式
+    
+    Args:
+        key (str): 要获取的键名
+    
+    Returns:
+        any: 对应的值，可能是文件路径或SQL查询语句
+    """
+    global global_dic
+    
+    # 如果字典为空，尝试重新初始化
+    if not global_dic:
+        if not init():
+            return None
+    
+    # 特殊处理source参数
+    if key == 'source':
+        return global_dic.get('components', {}).get('data_source', {}).get('mode', 'local')
+    
+    # 特殊处理config_path参数
+    if key == 'config_path':
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(current_dir, 'trading_path_config.json')
+    
+    # 获取配置信息
+    config = None
+    for item in global_dic.get('sub_folder', []):
+        if item.get('data_type') == key:
+            config = item
             break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
+    
+    if not config:
+        return None
+    
+    # 检查数据源模式
+    data_source = global_dic.get('components', {}).get('data_source', {})
+    mode = data_source.get('mode', 'local')
+    
+    if mode == 'sql' and config.get('sql_sheet'):
+        # SQL模式且有sql_sheet配置，返回查询语句
+        table_name = config['sql_sheet']
+        return f"SELECT * FROM {table_name}"
+    else:
+        # 本地文件模式
+        if 'folder_name' not in config:
+            return None
+            
+        # 获取主文件夹路径
+        main_folder = global_dic.get('main_folder', [])
+        folder_type = config.get('folder_type', 'input_folder')
+        
+        # 查找对应的主文件夹
+        base_path = None
+        for folder in main_folder:
+            if folder.get('folder_type') == folder_type:
+                base_path = folder.get('path')
+                # 尝试获取disk配置，如果没有则使用path中的磁盘路径
+                disk = folder.get('disk', '')
+                if disk:
+                    # 确保disk以冒号结尾
+                    if not disk.endswith(':'):
+                        disk += ':'
+                    # 确保base_path不以斜杠开头
+                    base_path = base_path.lstrip('\\').lstrip('/')
+                    # 构建完整路径
+                    full_path = os.path.join(disk + os.sep, base_path, config['folder_name'])
+                    # 标准化路径分隔符
+                    return os.path.normpath(full_path)
                 break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                inputpath_output=os.path.dirname(inputpath_output)
-                should_break=True
-    return inputpath_output
-def config_path_processing():
-    # 获取当前文件的磁盘
-    current_drive = os.path.splitdrive(os.path.dirname(__file__))[0]
-    # 获取当前文件的绝对路径
-    current_file_path = Path(__file__).resolve()
-    # 获取顶层目录的名称
-    top_dir_name = get_top_dir_path(current_file_path, levels_up=3)
-    # 获取输入路径
-    inputpath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    inputpath_config = os.path.join(inputpath, 'config_path\\trading_path_config.xlsx')
-    #E:\Optimizer\Data_update\data_update_path_config.xlsx
+                
+        if not base_path:
+            return None
+        
+        # 如果没有disk配置，直接使用base_path
+        full_path = os.path.join(base_path, config['folder_name'])
+        full_path = os.path.normpath(full_path)
+        return full_path
 
-    # 读取Excel文件
-    # df_sub = pd.read_excel(inputpath_config, sheet_name='sub_folder')
-    # df_main = pd.read_excel(inputpath_config, sheet_name='main_folder')
-    try:
-        df_sub = pd.read_excel(inputpath_config, sheet_name='sub_folder')
-        df_main = pd.read_excel(inputpath_config, sheet_name='main_folder')
-    except FileNotFoundError:
-        print(f"配置文件未找到，请检查路径: {inputpath_config}")
-        return
-    inputpath_config_sbjzq=config_path_finding()
-    # 合并DataFrame
-    df_sub = df_sub.merge(df_main, on='folder_type', how='left')
-    # 检查是否有行的MPON和RON都为1
-    if ((df_sub['MPON'] == 1) & (df_sub['RON'] == 1)).any():
-        print(f"{inputpath_config}配置文件有问题：存在MPON和RON都为1的行")
-        return
-    # 构建完整路径
-    df_sub['path'] = df_sub['path'] + os.sep + df_sub['folder_name']
-    # 筛选出SON为1的行，并添加最上层的项目名
-    df_sub.loc[df_sub['MPON'] == 1, 'path'] = df_sub.loc[df_sub['MPON'] == 1, 'path'].apply(
-        lambda x: os.path.join(top_dir_name, x))
-    # 筛选出RON为1的行，并添加磁盘名
-    df_sub.loc[df_sub['RON'] == 1, 'path'] = df_sub.loc[df_sub['RON'] == 1, 'path'].apply(
-        lambda x: os.path.join(current_drive,os.sep, x))
-    df_sub.loc[df_sub['RON'] == 'config', ['path']] = df_sub.loc[df_sub['RON'] == 'config']['path'].apply(
-        lambda x: os.path.join(inputpath_config_sbjzq, x)).tolist()
-    # 选择需要的列
-    df_sub = df_sub[['data_type', 'path']]
-    return df_sub
+def set(key, value):
+    """
+    设置全局变量值
+    
+    Args:
+        key (str): 要设置的键名
+        value (any): 要设置的值
+    """
+    global global_dic
+    global_dic[key] = value
 
-def _init():
-    df=config_path_processing()
-    df.set_index('data_type',inplace=True,drop=True)
-    global inputpath_dic
-    inputpath_dic=df.to_dict()
-    inputpath_dic=inputpath_dic.get('path')
-    return inputpath_dic
-def get(name):
-    try:
-        return inputpath_dic[name]
-    except:
-        return 'not found'
-_init()
-# print(dic)
-# config_path_processing()
+# 初始化全局字典
+init()
+
+# 确保get函数可以被导出
+__all__ = ['get', 'set', 'init']

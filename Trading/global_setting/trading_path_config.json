@@ -1,0 +1,99 @@
+{
+    "components": {
+        "data_source": {
+            "mode": "sql"
+        },
+        "database": {
+            "database1": {
+                "host": "rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com",
+                "port": 3306,
+                "user": "kai",
+                "password": "Abcd1234#",
+                "database": "data_prepared",
+                "charset": "utf8mb4"
+            },
+            "database2": {
+                "host": "rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com",
+                "port": 3306,
+                "user": "kai",
+                "password": "Abcd1234#",
+                "database": "portfolio",
+                "charset": "utf8mb4"
+            }
+        }
+    },
+    "main_folder": [
+        {
+            "folder_type": "input_folder_2",
+            "path": "onedrive\\Data_prepared_test",
+            "disk": "D:"
+        },
+        {
+            "folder_type": "input_folder",
+            "path": "Portfolio",
+            "disk": "D"
+        },
+        {
+            "folder_type": "output_folder",
+            "path": "Trading_data",
+            "disk": "D"
+        },
+        {
+            "folder_type": "config",
+            "path": "code_new\\Trading\\global_setting",
+            "disk": "D"
+        }
+    ],
+    "sub_folder": [
+        {
+            "data_type": "portfolio_weight",
+            "folder_name": "portfolio_weight",
+            "folder_type": "input_folder",
+            "sql_sheet": "portfolio"
+        },
+        {
+            "data_type": "product_weight",
+            "folder_name": "product_weight",
+            "folder_type": "output_folder"
+        },
+        {
+            "data_type": "input_holding",
+            "folder_name": "data_product\\product_info",
+            "folder_type": "input_folder_2",
+            "sql_sheet": "stockholding"
+        },
+        {
+            "data_type": "input_info",
+            "folder_name": "data_product\\product_info",
+            "folder_type": "input_folder_2",
+            "sql_sheet": "productinfo"
+        },
+        {
+            "data_type": "input_info_temp",
+            "folder_name": "data_product\\product_info",
+            "folder_type": "input_folder_2",
+            "sql_sheet": "productinfo_temp"
+        },
+        {
+            "data_type": "input_info_l4",
+            "folder_name": "data_product\\product_info",
+            "folder_type": "input_folder_2",
+            "sql_sheet": "data_l4info"
+        },
+        {
+            "data_type": "config_product",
+            "folder_name": "config_product.xlsx",
+            "folder_type": "config"
+        },
+        {
+            "data_type": "config_sql",
+            "folder_name": "trading_sql.yaml",
+            "folder_type": "config"
+        },
+        {
+            "data_type": "config_trading",
+            "folder_name": "config_trading.xlsx",
+            "folder_type": "config"
+        }
+    ]
+} 

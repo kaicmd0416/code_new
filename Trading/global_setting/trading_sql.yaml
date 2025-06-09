@@ -1,0 +1,21 @@
+Portfolio_holding:
+    table_name: "portfolio_holding"
+    db_url: "mysql+pymysql://root:root@localhost:3306/portfolio?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'code'
+      - 'portfolio_name'
+      - 'product_code'
+Portfolio_product:
+    table_name: "portfolio_product"
+    db_url: "mysql+pymysql://root:root@localhost:3306/portfolio?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'portfolio_name'
+      - 'product_code'
+
+
