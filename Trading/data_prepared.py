@@ -46,7 +46,7 @@ class data_prepared:
     def productCode_withdraw(self):
         inputpath_config = glv.get('config_trading')
         df = pd.read_excel(inputpath_config, sheet_name='info_sheet')
-        productCode_list = df['product_code'].tolist()
+        productCode_list = df['product_code'].unique().tolist()
         return productCode_list
 
     def productInfo_withdraw(self, product_code):
@@ -84,6 +84,7 @@ class data_prepared:
             account_money = account_money
         stock_money = account_money - t0_money
         return stock_money
+
 if __name__ == '__main__':
     dp=data_prepared('2025-06-09')
     dp.productInfo_withdraw('SST132')

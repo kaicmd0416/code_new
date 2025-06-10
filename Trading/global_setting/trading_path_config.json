@@ -52,6 +52,12 @@
             "sql_sheet": "portfolio"
         },
         {
+            "data_type": "portfolio_holding",
+            "folder_name": "portfolio_holding",
+            "folder_type": "input_folder",
+            "sql_sheet": "portfolio_holding"
+        },
+        {
             "data_type": "product_weight",
             "folder_name": "product_weight",
             "folder_type": "output_folder"
@@ -94,6 +100,10 @@
             "data_type": "config_trading",
             "folder_name": "config_trading.xlsx",
             "folder_type": "config"
+        },
+        {
+            "data_type": "product_Realholding",
+            "sql_sheet": "stock_holding"
         }
     ]
 } 
