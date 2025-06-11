@@ -13,6 +13,8 @@ class data_prepared:
     def __init__(self,target_date,realtime=False):
         self.target_date=target_date
         self.realtime=realtime
+        if realtime==True:
+            self.target_date=gt.strdate_transfer(datetime.today())
     def indexType_getting(self,product_code):
         inputpath_config = glv.get('config_product')
         excel_file = pd.ExcelFile(inputpath_config)
@@ -30,8 +32,9 @@ class data_prepared:
         df_etf=gt.etfdata_withdraw(available_date,self.realtime)
         df_stock=df_stock[['code','close']]
         df_etf=df_etf[['code','close']]
+        etf_pool=df_etf['code'].tolist()
         df_mkt=pd.concat([df_stock,df_etf])
-        return df_mkt
+        return df_mkt,etf_pool
     def portfolioList_withdraw(self):
         inputpath = glv.get('portfolio_weight')
         inputpath = str(inputpath) + f" Where valuation_date='{self.target_date}'"
@@ -48,7 +51,11 @@ class data_prepared:
         df = pd.read_excel(inputpath_config, sheet_name='info_sheet')
         productCode_list = df['product_code'].unique().tolist()
         return productCode_list
-
+    def tradingTime_withdraw(self,product_code):
+        inputpath_config = glv.get('config_trading')
+        df = pd.read_excel(inputpath_config, sheet_name='info_sheet')
+        trading_time = df[df['product_code']==product_code]['trading_time'].tolist()[0]
+        return trading_time
     def productInfo_withdraw(self, product_code):
         inputpath_config = glv.get('config_trading')
         df = pd.read_excel(inputpath_config, sheet_name='info_sheet')
@@ -84,7 +91,34 @@ class data_prepared:
             account_money = account_money
         stock_money = account_money - t0_money
         return stock_money
+    def productHolding_withdraw(self,product_code):
+        if self.realtime==False:
+             inputpath=glv.get('product_Realholding_daily')
+             available_date=gt.last_workday_calculate(self.target_date)
+        else:
+            inputpath=glv.get('product_Realholding_realtime')
+            available_date=self.target_date
+        inputpath=str(inputpath)+f" Where product_code='{product_code}' And valuation_date='{available_date}'"
+        df=gt.data_getting(inputpath,config_path)
+        update_time_list=df['update_time'].unique().tolist()
+        update_time_list.sort()
+        lastest_time=update_time_list[-1]
+        df=df[df['update_time']==lastest_time]
+        df=df[['code','quantity']]
+        df['code']=df['code'].astype(float)
+        df=gt.code_transfer(df)
+        df.columns=['code','holding']
+        return df
+    def productTargetWeight_withdraw(self,product_code):
+        inputpath=glv.get('productTarget_weight')
+        inputpath = str(inputpath) + f" Where product_code='{product_code}' And valuation_date='{self.target_date}'"
+        df = gt.data_getting(inputpath, config_path)
+        update_time_list = df['update_time'].unique().tolist()
+        update_time_list.sort()
+        lastest_time = update_time_list[-1]
+        df = df[df['update_time'] == lastest_time]
+        return df
 
 if __name__ == '__main__':
-    dp=data_prepared('2025-06-09')
-    dp.productInfo_withdraw('SST132')
+    dp=data_prepared('2025-06-09',realtime=True)
+    dp.productTargetHolding_withdraw('SGS958')

@@ -14,11 +14,14 @@ config_path=glv.get('config_path')
 if source=='local':
     print('暂不支持local模式')
     raise ValueError
-class portfolio_saving:
-    def __init__(self,target_date,realtime=True):
+class portfolio_saving_main:
+    def __init__(self,target_date,realtime=False):
         self.dp=data_prepared(target_date,realtime)
-        self.target_date=target_date
-        self.df_mkt=self.dp.mktData_withdraw()
+        if realtime==True:
+             self.target_date=gt.strdate_transfer(datetime.today())
+        else:
+            self.target_date=target_date
+        self.df_mkt,self.etfpool=self.dp.mktData_withdraw()
     def PortfolioInfo_saving(self):
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
         inputpath_config = glv.get('config_product')
@@ -43,6 +46,7 @@ class portfolio_saving:
         sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio_product')
         sm.df_to_sql(df_final)
         return df_final
+
     def PortfolioHolinng_saving(self):
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
         productCode_list = self.dp.productCode_withdraw()
@@ -132,24 +136,23 @@ class portfolio_saving:
             df_final['update_time']=current_time
             sm.df_to_sql(df_final)
     def sqlSaving_main(self):
-        try:
-            df_info=self.PortfolioInfo_saving()
-        except:
-            print('PortfolioInfo更新有误')
+        df_info = self.PortfolioInfo_saving()
         df_holding = self.PortfolioHolinng_saving()
+        self.ProductWeight_saving(df_info)
+        self.ProductHolding_saving(df_info, df_holding)
+        # try:
+        #     df_info=self.PortfolioInfo_saving()
+        # except:
+        #     print('PortfolioInfo更新有误')
         # try:
         #     df_holding=self.PortfolioHolinng_saving()
         # except:
         #     print('PortfolioHoling更新有误')
-        try:
-            self.ProductWeight_saving(df_info)
-        except:
-            print('ProductWeight更新有误')
-        try:
-            self.ProductHolding_saving(df_info,df_holding)
-        except:
-            print('ProductHolding更新有误')
-if __name__ == '__main__':
-    ps=portfolio_saving('2025-06-10')
-    ps.sqlSaving_main()
-     # productInfo_withdraw('2025-06-09','STH580')
+        # try:
+        #     self.ProductWeight_saving(df_info)
+        # except:
+        #     print('ProductWeight更新有误')
+        # try:
+        #     self.ProductHolding_saving(df_info,df_holding)
+        # except:
+        #     print('ProductHolding更新有误')

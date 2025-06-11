@@ -17,6 +17,13 @@ class trading_renrui:
         self.target_date=target_date
         self.stock_money=stock_money
     def trading_order_renrui(self):
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Trading_renr')
+            outputpath=glv.get('product_weight')
+            outputpath=os.path.join(outputpath,'仁睿')
+            gt.folder_creator2(outputpath)
+            outputpath=os.path.join(outputpath,'renr_' + str(gt.intdate_transfer(self.target_date)) + '_trading_list.csv')
             inputpath = os.path.split(os.path.realpath(__file__))[0]
             inputpath = os.path.join(inputpath, '模板')
             inputpath = os.path.join(inputpath, '仁睿')
@@ -25,6 +32,14 @@ class trading_renrui:
             df_today=self.df_weight.copy()
             code_list_today = df_today['code'].tolist()
             df_today = df_today.merge(self.df_mkt, on='code', how='left')
+            df_today['weight'] = pd.to_numeric(df_today['weight'], errors='coerce')
+            df_today['close'] = pd.to_numeric(df_today['close'], errors='coerce')
+            df_error = df_today[(df_today['close'] == 0.0) | (df_today['close'].isna()) | (df_today['weight'].isna())]
+            df_today = df_today.dropna(subset=['weight', 'close'])
+            df_today = df_today[~(df_today['close'] == 0.0)]
+            if len(df_error) > 0:
+                print('以下数据close或weight出现问题')
+                print(df_error)
             df_today['quantity'] = self.stock_money * df_today['weight'] / df_today['close']
             df_today['quantity'] = round(df_today['quantity'] / 100, 0) * 100
             df_today = df_today[['code', 'quantity', 'close']]
@@ -72,4 +87,7 @@ class trading_renrui:
             df['方向'] = action_list
             df_final = df
             df_final.to_csv(outputpath, index=False, encoding='utf_8_sig')
-            return df_final
+            df.rename(columns={'代码':'code'},inplace=True)
+            df_final['valuation_date']=self.target_date
+            df_final['update_time']=current_time
+            sm.df_to_sql(df_final)

@@ -63,6 +63,11 @@
             "folder_type": "output_folder"
         },
         {
+            "data_type": "product_trading",
+            "folder_name": "trading_order",
+            "folder_type": "output_folder"
+        },
+        {
             "data_type": "input_holding",
             "folder_name": "data_product\\product_info",
             "folder_type": "input_folder_2",
@@ -102,8 +107,16 @@
             "folder_type": "config"
         },
         {
-            "data_type": "product_Realholding",
-            "sql_sheet": "stock_holding"
+            "data_type": "product_Realholding_daily",
+            "sql_sheet": "stockholding"
+        },
+        {
+            "data_type": "product_Realholding_realtime",
+            "sql_sheet": "stockholding_temp"
+        },
+        {
+            "data_type": "productTarget_weight",
+            "sql_sheet": "product_weight"
         }
     ]
 } 
