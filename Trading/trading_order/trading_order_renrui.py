@@ -20,7 +20,7 @@ class trading_renrui:
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
             inputpath_configsql = glv.get('config_sql')
             sm = gt.sqlSaving_main(inputpath_configsql, 'Trading_renr')
-            outputpath=glv.get('product_weight')
+            outputpath=glv.get('product_trading')
             outputpath=os.path.join(outputpath,'仁睿')
             gt.folder_creator2(outputpath)
             outputpath=os.path.join(outputpath,'renr_' + str(gt.intdate_transfer(self.target_date)) + '_trading_list.csv')
@@ -86,6 +86,7 @@ class trading_renrui:
             df['数量'] = quantity_list
             df['方向'] = action_list
             df_final = df
+            df['代码']=df['代码'].apply(lambda x: str(x)[:-3])
             df_final.to_csv(outputpath, index=False, encoding='utf_8_sig')
             df.rename(columns={'代码':'code'},inplace=True)
             df_final['valuation_date']=self.target_date

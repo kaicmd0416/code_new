@@ -83,6 +83,7 @@ class trading_xuanye:
         df_weight.loc[
             (df_weight['new_code'] == '68') & (df_weight['action'] == '买入') & (df_weight['difference'] == 100), [
                 'difference']] = 200
+        df_weight['code'] = df_weight['code'].apply(lambda x: str(x)[:-3])
         df_weight1 = df_weight[df_weight['code'].isin(etf_code)]
         df_weight1 = df_weight1[['code', 'difference', 'action']]
         df_weight1.columns = ['code', 'quantity', '方向']
@@ -180,9 +181,11 @@ class trading_xuanye:
         df_weight.loc[
             (df_weight['new_code'] == '68') & (df_weight['action'] == '买入') & (df_weight['difference'] == 100), [
                 'difference']] = 200
+        df_weight['code'] = df_weight['code'].apply(lambda x: str(x)[:-3])
         df_weight1 = df_weight[df_weight['code'].isin(etf_code)]
         df_weight1 = df_weight1[['code', 'difference', 'action']]
         df_weight1.columns = ['code', 'quantity', '方向']
+
         df_weight2 = df_weight[~(df_weight['code'].isin(etf_code))]
         code_list_today = df_weight2['code'].tolist()
         quantity_list = df_weight2['difference'].tolist()

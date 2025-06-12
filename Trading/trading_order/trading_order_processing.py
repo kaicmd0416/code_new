@@ -47,10 +47,16 @@ def trading_xy_main(trading_mode,is_realtime):
     df_holding=dp.productHolding_withdraw('SGS958')
     nontrading_code_list=nontrading_list_getting('SGS958')
     trading_time=dp.tradingTime_withdraw('SGS958')
+
     if len(nontrading_code_list)>0:
+         df_nontrading=df_holding[df_holding['code'].isin(nontrading_code_list)]
+         df_nontrading=df_nontrading.merge(df_mkt,on='code',how='left')
+         df_nontrading['mkt_value']=df_nontrading['holding']*df_nontrading['close']
+         lock_money=df_nontrading['mkt_value'].sum()
          df_holding=df_holding[~(df_holding['code'].isin(nontrading_code_list))]
          df_weight = df_weight[~(df_weight['code'].isin(nontrading_code_list))]
          df_weight['weight']=df_weight['weight']/df_weight['weight'].sum()
+         stock_money=stock_money-lock_money
     trading_xy=trading_xuanye(df_weight,df_holding,df_mkt,target_time,stock_money,etf_pool,trading_time)
     trading_xy.trading_order_xy_main(trading_mode)
 def trading_rr_main(is_realtime):
@@ -64,8 +70,14 @@ def trading_rr_main(is_realtime):
     df_holding = dp.productHolding_withdraw('SLA626')
     nontrading_code_list = nontrading_list_getting('SLA626')
     if len(nontrading_code_list) > 0:
+        df_nontrading = df_holding[df_holding['code'].isin(nontrading_code_list)]
+        df_nontrading = df_nontrading.merge(df_mkt, on='code', how='left')
+        df_nontrading['mkt_value'] = df_nontrading['holding'] * df_nontrading['close']
+        lock_money = df_nontrading['mkt_value'].sum()
         df_holding = df_holding[~(df_holding['code'].isin(nontrading_code_list))]
         df_weight = df_weight[~(df_weight['code'].isin(nontrading_code_list))]
         df_weight['weight'] = df_weight['weight'] / df_weight['weight'].sum()
+        stock_money = stock_money - lock_money
+        print(stock_money)
     trading_renr=trading_renrui(df_weight,df_holding,df_mkt,target_date,stock_money)
     trading_renr.trading_order_renrui()

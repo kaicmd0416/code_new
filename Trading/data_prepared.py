@@ -34,6 +34,7 @@ class data_prepared:
         df_etf=df_etf[['code','close']]
         etf_pool=df_etf['code'].tolist()
         df_mkt=pd.concat([df_stock,df_etf])
+        df_mkt['close']=df_mkt['close'].astype(float)
         return df_mkt,etf_pool
     def portfolioList_withdraw(self):
         inputpath = glv.get('portfolio_weight')
@@ -108,6 +109,10 @@ class data_prepared:
         df['code']=df['code'].astype(float)
         df=gt.code_transfer(df)
         df.columns=['code','holding']
+        df['holding']=df['holding'].astype(float)
+        df['new_code']=df['code'].apply(lambda x: str(x)[:2])
+        df=df[~(df['new_code']=='20')]
+        df=df[['code','holding']]
         return df
     def productTargetWeight_withdraw(self,product_code):
         inputpath=glv.get('productTarget_weight')
