@@ -9,6 +9,7 @@ import datetime
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
+from trading_check import Holding_checking_main
 global source,config_path
 from datetime import date
 source=glv.get('source')
@@ -35,6 +36,8 @@ def PortfolioSaving_main(is_realtime=False):
 def TradingOder_main(is_realtime=False):
     trading_xy_main('v2',is_realtime)
     trading_rr_main(is_realtime)
+    if is_realtime==False:
+        Holding_checking_main()
 if __name__ == '__main__':
-    #PortfolioSaving_main()
+    PortfolioSaving_main()
     TradingOder_main()
