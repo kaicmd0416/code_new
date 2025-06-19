@@ -125,5 +125,6 @@ class data_prepared:
         return df
 
 if __name__ == '__main__':
-    dp=data_prepared('2025-06-09',realtime=True)
-    dp.productTargetHolding_withdraw('SGS958')
+    print(gt.crossSection_index_return_withdraw('中证A500', '2025-06-11'))
+    # dp=data_prepared('2025-06-09',realtime=True)
+    # dp.productTargetHolding_withdraw('SGS958')

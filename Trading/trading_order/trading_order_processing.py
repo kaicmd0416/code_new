@@ -78,6 +78,5 @@ def trading_rr_main(is_realtime):
         df_weight = df_weight[~(df_weight['code'].isin(nontrading_code_list))]
         df_weight['weight'] = df_weight['weight'] / df_weight['weight'].sum()
         stock_money = stock_money - lock_money
-        print(stock_money)
     trading_renr=trading_renrui(df_weight,df_holding,df_mkt,target_date,stock_money)
     trading_renr.trading_order_renrui()

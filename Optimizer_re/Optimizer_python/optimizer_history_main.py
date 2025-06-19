@@ -23,3 +23,6 @@ def history_optimizer_main(): #部署自动化
     history_running_main()
 if __name__ == '__main__':
     history_optimizer_main()
+    # config_path = glv.get('config_path')
+    # df=gt.data_getting("SELECT * FROM data_indexcomponent WHERE valuation_date='2022-01-05' AND organization='zz2000'",config_path)
+    # print(df)

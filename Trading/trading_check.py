@@ -25,7 +25,7 @@ def renrHolding_check():
     target_date=target_date_decision()
     target_date=gt.intdate_transfer(target_date)
     inputpath = 'D:\Trading_data\\trading_order\仁睿'
-    inputpath2 = 'D:\OneDrive\Trading_data_test\\trading_order\仁睿价值精选1号'
+    inputpath2 = 'D:\Trading_data_test\\trading_order\仁睿价值精选1号'
     inputpath = os.path.join(inputpath, 'renr_'+str(target_date)+'_trading_list.csv')
     inputpath2 = os.path.join(inputpath2, '仁睿价值精选1号_'+str(target_date)+'_trading_list.csv')
     df=gt.readcsv(inputpath)
@@ -43,7 +43,7 @@ def xyHolding_check():
     target_date=target_date_decision()
     target_date=gt.intdate_transfer(target_date)
     inputpath = 'D:\Trading_data\\trading_order\宣夜'
-    inputpath2 = 'D:\OneDrive\Trading_data_test\\trading_order\宣夜惠盈1号'
+    inputpath2 = 'D:\Trading_data_test\\trading_order\宣夜惠盈1号'
     inputpath = os.path.join(inputpath, 'xy_'+str(target_date)+'_trading_list.csv')
     inputpath2 = os.path.join(inputpath2, '宣夜惠盈1号_'+str(target_date)+'_trading_list.csv')
     df = pd.read_csv(inputpath, header=None)

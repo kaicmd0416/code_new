@@ -36,8 +36,8 @@ def PortfolioSaving_main(is_realtime=False):
 def TradingOder_main(is_realtime=False):
     trading_xy_main('v2',is_realtime)
     trading_rr_main(is_realtime)
-    if is_realtime==False:
-        Holding_checking_main()
+    # if is_realtime==False:
+    #     Holding_checking_main()
 if __name__ == '__main__':
-    PortfolioSaving_main()
+    #PortfolioSaving_main()
     TradingOder_main()

@@ -25,7 +25,7 @@
     "main_folder": [
         {
             "folder_type": "input_folder_2",
-            "path": "onedrive\\Data_prepared_test",
+            "path": "Data_prepared_test",
             "disk": "D:"
         },
         {

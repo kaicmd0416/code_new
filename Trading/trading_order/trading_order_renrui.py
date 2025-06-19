@@ -15,7 +15,40 @@ class trading_renrui:
         self.df_holding=df_holding
         self.df_mkt=df_mkt
         self.target_date=target_date
-        self.stock_money=stock_money
+        self.stock_money=self.stockmoney_rebalance(stock_money)
+    def stockmoney_rebalance(self,stock_money):
+        df_today = self.df_weight.copy()
+        code_list_today = df_today['code'].tolist()
+        df_today = df_today.merge(self.df_mkt, on='code', how='left')
+        df_today['weight'] = pd.to_numeric(df_today['weight'], errors='coerce')
+        df_today['close'] = pd.to_numeric(df_today['close'], errors='coerce')
+        df_today = df_today.dropna(subset=['weight', 'close'])
+        df_today = df_today[~(df_today['close'] == 0.0)]
+        df_today['quantity'] = stock_money * df_today['weight'] / df_today['close']
+        df_today['quantity'] = round(df_today['quantity'] / 100, 0) * 100
+        df_today['mkt'] = df_today['quantity'] * df_today['close']
+        df_today = df_today[['code', 'quantity']]
+        df_weight = pd.DataFrame()
+        code_list_yes = self.df_holding['code'].tolist()
+        code_list = list(set(code_list_yes) | set(code_list_today))
+        df_weight['code'] = code_list
+        df_weight = df_weight.merge(self.df_holding, on='code', how='left')
+        df_weight = df_weight.merge(df_today, on='code', how='left')
+        df_weight = df_weight.merge(self.df_mkt, on='code', how='left')
+        df_weight.fillna(0, inplace=True)
+        df_weight['difference'] = df_weight['quantity'] - df_weight['holding']
+        df_weight_check = df_weight.copy()
+        df_buying_check = df_weight_check[df_weight_check['difference'] > 0]
+        df_selling_check = df_weight_check[df_weight_check['difference'] < 0]
+        df_buying_check['mkt_value'] = df_buying_check['close'] * abs(df_buying_check['difference'])
+        df_selling_check['mkt_value'] = df_selling_check['close'] * abs(df_selling_check['difference'])
+        mkt_buying = df_buying_check['mkt_value'].sum()
+        mkt_selling = df_selling_check['mkt_value'].sum()
+        stock_money=stock_money-(mkt_buying-mkt_selling)
+        print('rr1号试运行买额为:' + str(mkt_buying),
+              '卖额为' + str(mkt_selling) + '买卖额差为' + str(mkt_buying - mkt_selling)+'将自动把stock_money调整为:'+str(stock_money))
+        return stock_money
+
     def trading_order_renrui(self):
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
             inputpath_configsql = glv.get('config_sql')
@@ -42,13 +75,15 @@ class trading_renrui:
                 print(df_error)
             df_today['quantity'] = self.stock_money * df_today['weight'] / df_today['close']
             df_today['quantity'] = round(df_today['quantity'] / 100, 0) * 100
-            df_today = df_today[['code', 'quantity', 'close']]
+            df_today['mkt']=df_today['quantity']*df_today['close']
+            df_today = df_today[['code', 'quantity']]
             df_weight = pd.DataFrame()
             code_list_yes = self.df_holding['code'].tolist()
             code_list = list(set(code_list_yes) | set(code_list_today))
             df_weight['code'] = code_list
             df_weight = df_weight.merge(self.df_holding, on='code', how='left')
             df_weight = df_weight.merge(df_today, on='code', how='left')
+            df_weight=df_weight.merge(self.df_mkt,on='code',how='left')
             df_weight.fillna(0, inplace=True)
             df_weight['difference'] = df_weight['quantity'] - df_weight['holding']
             df_weight_check = df_weight.copy()

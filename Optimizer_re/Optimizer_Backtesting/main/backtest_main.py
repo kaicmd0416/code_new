@@ -40,7 +40,7 @@ class backtesting_main:
         for i in range(len(df_config)):
             start_date=df_config['start_date'].tolist()[i]
             end_date=df_config['end_date'].tolist()[i]
-            end_date=gt.last_workday_calculate(end_date)
+            #end_date=gt.last_workday_calculate(end_date)
             score_name=df_config['portfolio_name'].tolist()[i]
             index_type=df_config['index_type'].tolist()[i]
             user_name=df_config['user_name'].tolist()[i]
