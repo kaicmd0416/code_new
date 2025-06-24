@@ -5,6 +5,7 @@ import sys
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
+from datetime import datetime
 from tools_func.tools_func import *
 from MktData_update.Mktdata_preparing import (indexdata_prepare, stockData_preparing,
                                               indexComponent_prepare,futureData_preparing,
@@ -250,6 +251,8 @@ class indexData_update:
                 df_indexdata.to_csv(outputpath_index_return, index=False, encoding='gbk')
                 self.logger.info(f'Successfully saved index data for date: {available_date}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    df_indexdata['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_indexdata)
             else:
                 self.logger.warning(f'index_data {available_date} 四个数据源都没有数据')
@@ -343,6 +346,8 @@ class indexComponent_update:
                     df_daily.to_csv(outputpath_component_update, index=False)
                     self.logger.info(f'Successfully saved {index_type} component data for date: {available_date}')
                     if self.is_sql == True:
+                        now = datetime.now()
+                        df_daily['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_daily)
                 else:
                     self.logger.warning(f'{index_type}_component在{available_date}暂无数据')
@@ -542,6 +547,8 @@ class stockData_update:
                 df_stock.to_csv(outputpath_stock_daily, index=False)
                 self.logger.info(f'Successfully saved stock data for date: {available_date}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    df_stock['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_stock)
             else:
                 self.logger.warning(f'stock_data {available_date} 四个数据源更新有问题')
@@ -703,6 +710,8 @@ class futureData_update:
                 df_future.to_csv(outputpath_future, index=False)
                 self.logger.info(f'Successfully saved future data for date: {available_date}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    df_future['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_future)
             else:
                 self.logger.warning(f'stock_data {available_date} 三个数据源更新有问题')
@@ -930,6 +939,8 @@ class optionData_update:
                     df_option.rename(columns={'Delta': 'delta', 'sigma': 'impliedvol'}, inplace=True)
                     df_option.to_csv(outputpath_option, index=False)
                     if self.is_sql == True:
+                        now = datetime.now()
+                        df_option['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_option)
             else:
                 self.logger.info('option_data在'+str(available_date)+'更新有问题')
@@ -1061,6 +1072,8 @@ class etfData_update:
                 df_etf.to_csv(outputpath_etf, index=False)
                 self.logger.info(f'Successfully saved ETF data for date: {available_date}')
                 if self.is_sql == True:
+                    now = datetime.now()
+                    df_etf['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_etf)
             else:
                 self.logger.warning(f'etf_data {available_date} 三个数据源更新有问题')
@@ -1194,6 +1207,8 @@ class cbData_update:
                 df_cb.to_csv(outputpath_cb, index=False)
                 self.logger.info(f'Successfully saved convertible bond data for date: {available_date}')
                 if self.is_sql == True:
+                    now = datetime.now()
+                    df_cb['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_cb)
             else:
                 self.logger.warning(f'cb_data {available_date} 三个数据源更新有问题')
@@ -1253,6 +1268,8 @@ class lhb_amt_update_main:
                     df_final.to_csv(outputpath_daily,index=False)
                     self.logger.info(f'Successfully saved lhb amt for date: {available_date}')
                     if self.is_sql == True:
+                        now = datetime.now()
+                        df_final['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_final)
                 else:
                     self.logger.error(f'处理龙虎榜数据时: {available_date2} 发生错误')
@@ -1321,6 +1338,8 @@ class nlb_update_main:
                     self.logger.info(f'Successfully saved nlb data for date: {available_date}')
                     df_final.to_csv(outputpath_daily, index=False)
                     if self.is_sql == True:
+                        now = datetime.now()
+                        df_final['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_final)
                 else:
                     self.logger.error(f'处理融资融券时: {available_date2} 发生错误')
@@ -1403,6 +1422,8 @@ class futureDifference_update_main:
                     df_add.to_csv(outputpath_daily,index=False)
                     self.logger.info(f'Successfully saved future difference data for date: {available_date}')
                     if self.is_sql == True:
+                        now = datetime.now()
+                        df_add['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_add)
                 else:
                     self.logger.error(f"处理基差日期 {available_date} 时出错: {str(e)}")

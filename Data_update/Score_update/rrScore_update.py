@@ -5,9 +5,8 @@ import sys
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
-import datetime
 from setup_logger.logger_setup import setup_logger
-
+from datetime import date,datetime
 inputpath_score=glv.get('input_score')
 outputpath_score=glv.get('output_score')
 inputpath_score_config=glv.get('score_mode')
@@ -31,7 +30,7 @@ class rrScore_update:
         self.logger.info('\n' + '*'*50 + '\nSCORE UPDATE PROCESSING\n' + '*'*50)
 
     def raw_rr_time_checking(self,score_date, target_date):
-        today=datetime.date.today()
+        today = date.today() 
         today=gt.strdate_transfer(today)
         if target_date>today:
             available_date2 = gt.last_weeks_lastday2(target_date)
@@ -93,6 +92,9 @@ class rrScore_update:
                 slice_df_score2.to_csv(outputpath_saving2, index=False)
                 self.logger.info(f'Successfully saved RR score data for date: {available_date2}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    slice_df_score['update_time'] = now
+                    slice_df_score2['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, slice_df_score)
                     capture_file_withdraw_output(sm.df_to_sql, slice_df_score2)
 

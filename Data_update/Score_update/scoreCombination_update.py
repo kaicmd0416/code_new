@@ -8,6 +8,7 @@ import global_tools as gt
 from setup_logger.logger_setup import setup_logger
 import io
 import contextlib
+from datetime import datetime
 def capture_file_withdraw_output(func, *args, **kwargs):
     """捕获file_withdraw的输出并记录到日志"""
     logger = setup_logger('Score_update_sql')
@@ -111,6 +112,8 @@ class combineScore_update:
                 df_result.to_csv(outputpath_1, index=False)
                 self.logger.info(f'Successfully saved combined scores for date: {available_date}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    df_result['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_result)
             except:
                 self.logger.warning(f'index_component没有更新导致{target_date}的combine_zz500没有更新')

@@ -80,6 +80,9 @@ class scorePortfolio_update:
                 slice_a1.to_csv(daily_outputpath_a1, index=False)
                 slice_a3.to_csv(daily_outputpath_a3, index=False)
                 if self.is_sql==True:
+                    now = datetime.now()
+                    slice_a1['update_time'] = now
+                    slice_a3['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, slice_a1)
                     capture_file_withdraw_output(sm.df_to_sql, slice_a3)
                 self.logger.info(f'Successfully saved top {number} portfolio data for date: {date2}')
@@ -139,6 +142,9 @@ class scorePortfolio_update:
                 slice_a1=slice_a1[['valuation_date','portfolio_name','code','weight']]
                 slice_a3 = slice_a3[['valuation_date', 'portfolio_name', 'code', 'weight']]
                 if self.is_sql==True:
+                    now = datetime.now()
+                    slice_a1['update_time'] = now
+                    slice_a3['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, slice_a1)
                     capture_file_withdraw_output(sm.df_to_sql, slice_a3)
                 slice_a1.to_csv(daily_outputpath_a1, index=False)
@@ -225,6 +231,8 @@ class scorePortfolio_update:
                 df.to_csv(daily_outputpath, index=False)
                 self.logger.info(f'Successfully saved UBP top portfolio data for date: {date2}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    df['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df)
             else:
                 self.logger.warning(f'ubp_500 {date} 暂时没有数据')
@@ -270,6 +278,8 @@ class scorePortfolio_update:
                 df.to_csv(outputpath_daily, index=False, encoding='gbk')
                 self.logger.info(f'Successfully saved ETF portfolio data for date: {date2}')
                 if self.is_sql == True:
+                    now = datetime.now()
+                    df['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df)
                 else:
                     self.logger.warning(f'ubpETF {date} ETF_tracking 为空')

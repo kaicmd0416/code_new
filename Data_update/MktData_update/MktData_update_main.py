@@ -4,9 +4,9 @@ from MktData_update.Mktdata_update import (indexData_update,indexComponent_updat
 import os
 import sys
 path = os.getenv('GLOBAL_TOOLSFUNC')
-print(path)
 sys.path.append(path)
 import global_tools as gt
+
 def MktData_update_main(start_date,end_date,is_sql):
     IRU = indexData_update(start_date,end_date, is_sql)
     ICU = indexComponent_update(start_date,end_date, is_sql)
@@ -55,5 +55,5 @@ def MktData_update_main2(start_date,end_date,is_sql):
 if __name__ == '__main__':
     #CBData_update_main('2025-01-03', '2025-05-09',True)
     # MktData_update_main2('2005-01-04', '2015-01-05',True)
-    MktData_update_main2('2025-05-28', '2025-05-28',True)
+    MktData_update_main('2025-06-18','2025-06-18',True)
 
