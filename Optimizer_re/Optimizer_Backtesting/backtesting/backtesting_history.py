@@ -20,6 +20,10 @@ class Back_testing_processing:
         self.df_index_return=df_index_return
         self.df_stock_return=df_stock_return
     def portfolio_information_withdraw(self,inputpath,end_date):
+        if gt.is_workday(end_date):
+            end_date=end_date
+        else:
+            end_date=gt.last_workday_calculate(end_date)
         inputpath_end = os.path.join(inputpath, end_date)
         inputpath_end = os.path.join(inputpath_end, 'parameter_selecting.xlsx')
         df_config = pd.read_excel(inputpath_end, header=None)
@@ -281,7 +285,7 @@ class Back_testing_processing:
         df_h2 = df_backtesting[['valuation_date', '组合净值', '超额净值', '基准净值']]
         df_h2.fillna(method='ffill', inplace=True)
         return df_h, df_h2
-    def PDF_Creator(self,outputpath, df2, df3, df4, score_type, index_type,df_component,df_pa_1,df_pa_2):  # df2收益率 df3为权重矩阵 df4为净值
+    def PDF_Creator(self,outputpath, df2, df3, df4, score_type, index_type,df_component,df_pa_1,df_pa_2,start_date,end_date):  # df2收益率 df3为权重矩阵 df4为净值
         list_com,list_top=self.portoflio_contribution_list(df_pa_1)
         df_pa_11=df_pa_1[list_com]
         df_pa_12=df_pa_1[list_top]
@@ -289,7 +293,7 @@ class Back_testing_processing:
         df_pa_22=df_pa_2[list_top]
         df_pa_check=self.portfolio_weight_check(df_pa_2)
         pdf_filename = os.path.join(outputpath,
-                                        '{}回测分析报告.pdf'.format(str(score_type)))
+                                        '{}回测分析报告'.format(str(score_type))+str(start_date)+'_'+str(end_date)+'.pdf')
         pdf = PDFCreator(pdf_filename)
         pdf.title('<b>{}指增分析</b>'.format(index_type))
         pdf.text('参数:{}'.format(str(score_type)))
@@ -351,7 +355,7 @@ class Back_testing_processing:
         pdf.image(fig_filename)
         pdf.build()
         return
-    def back_testing_history(self,df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,df_pa_1,df_pa_2,cost=0.00085):  # 计算analyse_type为history的回测function
+    def back_testing_history(self,df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,df_pa_1,df_pa_2,start_date,end_date,cost=0.00085):  # 计算analyse_type为history的回测function
             outputpath2=outpath_optimizer_result2
             gt.folder_creator2(outputpath2)
             outputpath_huice = os.path.join(outputpath2, str(score_type)+'_回测.xlsx')
@@ -367,7 +371,7 @@ class Back_testing_processing:
             df_pa_1.to_excel(outputpath_contribution)
             df_pa_2.to_excel(outputpath_weight)
             df_h.rename(columns={'portfolio': 'return', 'index': 'index_return'}, inplace=True)
-            self.PDF_Creator(outputpath=outputpath2, df2=df_h,df3=df_turn_over2, df4=df_h2, score_type=score_type, index_type=index_type,df_component=df_component,df_pa_1=df_pa_1,df_pa_2=df_pa_2)
+            self.PDF_Creator(outputpath=outputpath2, df2=df_h,df3=df_turn_over2, df4=df_h2, score_type=score_type, index_type=index_type,df_component=df_component,df_pa_1=df_pa_1,df_pa_2=df_pa_2,start_date=start_date,end_date=end_date)
     def back_testing_main_history(self,index_type,score_type,user_name, start_date, end_date):
         outpath_optimizer_result2=glv.get('output_backtest')
         outputpath_optimizer_python=glv.get('output_optimizer')
@@ -388,4 +392,4 @@ class Back_testing_processing:
         df_final,df_final_code,df_final_weight=self.weight_matrix_combination(df_input, inputpath_backtesting)
         pa=portfolio_analysis(self.df_index_return,self.df_stock_return,index_type,df_final_code,df_final_weight,score_type,top_number,inputpath_backtesting)
         df_pa_1,df_pa_2=pa.portfolio_analyse_main(start_date,end_date)
-        self.back_testing_history(df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,df_pa_1,df_pa_2,cost=0.00085)
+        self.back_testing_history(df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,df_pa_1,df_pa_2,start_date2,end_date2,cost=0.00085)

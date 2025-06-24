@@ -11,10 +11,10 @@ def score_update_main(score_type,start_date,end_date,is_sql): #这里面的date�
     su=scorePortfolio_update(start_date,end_date,is_sql)
     cu=combineScore_update(start_date,end_date,is_sql)
     if score_type=='fm':
-          rr.rr_update_main()
-          su.scorePortfolio_update_main()
-          cu.score_combination_main()
+        rr.rr_update_main()
+        su.scorePortfolio_update_main()
+        cu.score_combination_main()
     else:
         print('非生产时间段')
 if __name__ == '__main__':
-    score_update_main('fm', '2016-01-05', '2025-05-27',True)
+    score_update_main('fm', '2020-01-01', '2022-01-27',True)

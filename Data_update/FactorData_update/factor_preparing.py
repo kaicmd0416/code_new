@@ -54,10 +54,7 @@ class FactorData_prepare:
         return df_factor_exposure
 
     def jy_factor_exposure_update(self):  # available_date这里是YYYYMMDD格式
-        if self.available_date <= '20240531':
-            inputpath_factor = glv.get('input_factor_jy_old')
-        else:
-            inputpath_factor = glv.get('input_factor_jy')
+        inputpath_factor = glv.get('input_factor_jy')
         inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(self.available_date) + '.mat')
         try:
             annots = loadmat(inputpath_factor)['lnmodel_active_daily']['factorexposure'][0][0]
@@ -96,10 +93,7 @@ class FactorData_prepare:
         return df_factor_return
 
     def jy_factor_return_update(self):
-        if self.available_date <= '20220801':
-            inputpath_factor = glv.get('input_factor_jy_old')
-        else:
-            inputpath_factor = glv.get('input_factor_jy')
+        inputpath_factor = glv.get('input_factor_jy')
         try:
             inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(self.available_date) + '.mat')
             annots = loadmat(inputpath_factor)['lnmodel_active_daily']['factorret'][0][0]
@@ -143,10 +137,7 @@ class FactorData_prepare:
 
     def jy_factor_stockpool_update(self):  # 计算每天因子有效的股票数据
         df_stockpool = pd.DataFrame()
-        if self.available_date <= '20220801':
-            inputpath_factor = glv.get('input_factor_jy_old')
-        else:
-            inputpath_factor = glv.get('input_factor_jy')
+        inputpath_factor = glv.get('input_factor_jy')
         inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(self.available_date) + '.mat')
         try:
             df_factor_exposure = self.jy_factor_exposure_update()
@@ -225,12 +216,8 @@ class FactorData_prepare:
         dic_index = self.index_dic_processing2()
         file_name = dic_index[index_type]
         inputpath_stockuniverse = glv.get('data_other')
-        if self.available_date <= '20220801':
-            inputpath_factor = glv.get('input_factor_jy_old')
-            inputpath_stockuniverse = os.path.join(inputpath_stockuniverse, 'StockUniverse_old.csv')
-        else:
-            inputpath_factor = glv.get('input_factor_jy')
-            inputpath_stockuniverse = os.path.join(inputpath_stockuniverse, 'StockUniverse_new.csv')
+        inputpath_factor = glv.get('input_factor_jy')
+        inputpath_stockuniverse = os.path.join(inputpath_stockuniverse, 'StockUniverse_new.csv')
         inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(self.available_date) + '.mat')
         inputpath_indexcomponent = glv.get('output_indexcomponent')
         inputpath_indexcomponent = os.path.join(inputpath_indexcomponent, file_name)
@@ -281,10 +268,7 @@ class FactorData_prepare:
 
     def factor_jy_covariance_update(self):
         barra_name, industry_name = gt.factor_name_new()
-        if self.available_date <= '20220801':
-            inputpath = glv.get('input_factor_cov_jy_old')
-        else:
-            inputpath = glv.get('input_factor_cov_jy')
+        inputpath = glv.get('input_factor_cov_jy')
         input_list = os.listdir(inputpath)
         input_list = [i for i in input_list if str(i)[-3:] == 'csv']
         try:
@@ -333,10 +317,7 @@ class FactorData_prepare:
         return df
 
     def factor_jy_SpecificRisk_update(self):
-        if self.available_date <= '20220801':
-            inputpath = glv.get('input_factor_specific_jy_old')
-        else:
-            inputpath = glv.get('input_factor_specific_jy')
+        inputpath = glv.get('input_factor_specific_jy')
         input_list = os.listdir(inputpath)
         input_list = [i for i in input_list if str(i)[-3:] == 'csv']
         df_universe = gt.factor_universe_withdraw()
