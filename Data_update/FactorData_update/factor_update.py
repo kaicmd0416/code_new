@@ -13,6 +13,7 @@ import numpy as np
 from setup_logger.logger_setup import setup_logger
 import io
 import contextlib
+from datetime import datetime
 def capture_file_withdraw_output(func, *args, **kwargs):
     """捕获file_withdraw的输出并记录到日志"""
     logger = setup_logger('Factordata_update_sql')
@@ -117,6 +118,12 @@ class FactorData_update:
 
                 self.logger.info(f'Successfully saved factor data for date: {available_date}')
                 if self.is_sql==True:
+                    now = datetime.now()
+                    df_factorexposure['update_time'] = now
+                    df_factorreturn['update_time'] = now
+                    df_stockpool['update_time'] = now
+                    df_factorcov['update_time'] = now
+                    df_factorrisk['update_time'] = now
                     capture_file_withdraw_output(sm1.df_to_sql, df_factorexposure)
                     capture_file_withdraw_output(sm2.df_to_sql, df_factorreturn)
                     capture_file_withdraw_output(sm3.df_to_sql,  df_stockpool)
@@ -170,6 +177,8 @@ class FactorData_update:
                     df_index_exposure.to_csv(outputpath_factor_index1, index=False, encoding='gbk')
                     self.logger.info(f'Successfully saved index exposure data for {index_type} on {available_date}')
                     if self.is_sql==True:
+                        now = datetime.now()
+                        df_index_exposure['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_index_exposure)
                 else:
                     self.logger.warning(f'{index_type}index_factor在{available_date}数据存在缺失')
@@ -262,6 +271,8 @@ class FactorData_update:
                     df_final.to_csv(outputpath_daily, index=False)
                     self.logger.info(f'Successfully saved yg factor exposure data for date: {available_date}')
                     if self.is_sql==True:
+                        now = datetime.now()
+                        df_final['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_final)
 
 
@@ -276,7 +287,7 @@ def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
     fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2023-05-05','2025-06-09', True)
+    FactorData_history_main('2025-06-18','2025-06-18',True)
 
 
 

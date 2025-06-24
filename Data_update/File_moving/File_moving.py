@@ -8,6 +8,7 @@ import global_setting.global_dic as glv
 from setup_logger.logger_setup import setup_logger
 import io
 import contextlib
+from datetime import datetime
 def capture_file_withdraw_output(func, *args, **kwargs):
     """捕获file_withdraw的输出并记录到日志"""
     logger = setup_logger('DataOther_sql')
@@ -45,12 +46,16 @@ class DataOther_sql:
     def valuationData_sql(self):
         inputpath=os.path.join(self.inputpath,'chinese_valuation_date.xlsx')
         df=pd.read_excel(inputpath)
+        now = datetime.now()
+        df['update_time'] = now
         inputpath_configsql = glv.get('config_sql')
         sm = gt.sqlSaving_main(inputpath_configsql, 'ChineseValuationDate')
         capture_file_withdraw_output(sm.df_to_sql, df)
     def st_stock_sql(self):
         inputpath=os.path.join(self.inputpath,'st_stock.xlsx')
         df=pd.read_excel(inputpath)
+        now = datetime.now()
+        df['update_time'] = now
         inputpath_configsql = glv.get('config_sql')
         sm = gt.sqlSaving_main(inputpath_configsql, 'STstock')
         capture_file_withdraw_output(sm.df_to_sql, df)
@@ -64,6 +69,8 @@ class DataOther_sql:
         df2['type']='stockuni_old'
         df['type']='stockuni_new'
         df_final=pd.concat([df,df2])
+        now = datetime.now()
+        df_final['update_time'] = now
         inputpath_configsql = glv.get('config_sql')
         sm = gt.sqlSaving_main(inputpath_configsql, 'Stock_uni')
         capture_file_withdraw_output(sm.df_to_sql, df_final)
@@ -78,6 +85,8 @@ class DataOther_sql:
         df2['type']='weeksFirstDay'
         df3['type']='weeksLastDay'
         df_final=pd.concat([df,df2,df3])
+        now = datetime.now()
+        df_final['update_time'] = now
         inputpath_configsql = glv.get('config_sql')
         sm = gt.sqlSaving_main(inputpath_configsql, 'SpecialDay')
         capture_file_withdraw_output(sm.df_to_sql, df_final)
