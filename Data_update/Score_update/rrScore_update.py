@@ -30,7 +30,7 @@ class rrScore_update:
         self.logger.info('\n' + '*'*50 + '\nSCORE UPDATE PROCESSING\n' + '*'*50)
 
     def raw_rr_time_checking(self,score_date, target_date):
-        today = date.today() 
+        today = date.today()
         today=gt.strdate_transfer(today)
         if target_date>today:
             available_date2 = gt.last_weeks_lastday2(target_date)
@@ -71,7 +71,7 @@ class rrScore_update:
         working_day_list = gt.working_days_list(self.start_date, self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm = gt.sqlSaving_main(inputpath_configsql, 'Score')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Score',delete=True)
         for date in working_day_list:
             self.logger.info(f'Processing date: {date}')
             available_date = gt.last_workday_calculate(date)
@@ -95,8 +95,8 @@ class rrScore_update:
                     now = datetime.now()
                     slice_df_score['update_time'] = now
                     slice_df_score2['update_time'] = now
-                    capture_file_withdraw_output(sm.df_to_sql, slice_df_score)
-                    capture_file_withdraw_output(sm.df_to_sql, slice_df_score2)
+                    capture_file_withdraw_output(sm.df_to_sql, slice_df_score,'score_name','rr_'+str(mode_type))
+                    capture_file_withdraw_output(sm.df_to_sql, slice_df_score2,'score_name',mode_name)
 
 
 

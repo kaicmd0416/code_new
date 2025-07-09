@@ -127,8 +127,6 @@ class MacroData_update:
                 df_m1m2.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved M1M2 data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_m1m2['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_m1m2)
             else:
                 self.logger.warning(f'M1M2数据在：{available_date}数据更新出现错误')
@@ -170,8 +168,6 @@ class MacroData_update:
                 df_final.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved Shibor data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_final['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_final)
             else:
                 self.logger.warning(f'Shibor数据在：{available_date}数据更新出现错误')
@@ -206,8 +202,6 @@ class MacroData_update:
                 df_cb.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved China Government Bonds data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_cb['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_cb)
             else:
                 self.logger.warning(f'ChinaGovernmentBonds数据在：{available_date}数据更新出现错误')
@@ -242,8 +236,6 @@ class MacroData_update:
                 df_cdb.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved China Development Bank Bonds data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_cdb['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_cdb)
             else:
                 self.logger.warning(f'ChinaDevelopmentBankBonds数据在：{available_date}数据更新出现错误')
@@ -278,8 +270,6 @@ class MacroData_update:
                 df_cmn.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved China Medium Term Notes data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_cmn['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_cmn)
             else:
                 self.logger.warning(f'ChinaMediumTermNotes数据在：{available_date}数据更新出现错误')
@@ -314,8 +304,6 @@ class MacroData_update:
                 df_cpi.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved CPI data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_cpi['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_cpi)
             else:
                 self.logger.warning(f'CPI数据在：{available_date}数据更新出现错误')
@@ -350,8 +338,6 @@ class MacroData_update:
                 df_ppi.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved PPI data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_ppi['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_ppi)
             else:
                 self.logger.warning(f'PPI数据在：{available_date}数据更新出现错误')
@@ -386,8 +372,6 @@ class MacroData_update:
                 df_pmi.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved PMI data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_pmi['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_pmi)
             else:
                 self.logger.warning(f'PMI数据在：{available_date}数据更新出现错误')
@@ -422,8 +406,6 @@ class MacroData_update:
                 df_sf.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved Social Finance data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_sf['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_sf)
             else:
                 self.logger.warning(f'SocialFinance数据在：{available_date}数据更新出现错误')
@@ -475,8 +457,6 @@ class MacroData_update:
                 df_li.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved Large Order Inflow data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_li['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, df_li)
             else:
                 self.logger.warning(f'LargeOrderInflow数据在：{available_date}数据更新出现错误')
@@ -515,8 +495,6 @@ class MacroData_update:
                 df_usd.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved USD data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_usd['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_usd)
             else:
                 self.logger.warning(f'UsDollar数据在：{available_date}数据更新出现错误')
@@ -552,8 +530,6 @@ class MacroData_update:
                 df_final.to_csv(outputpath_daily, index=False)
                 self.logger.info(f'Successfully saved international Index data for date: {available_date}')
                 if self.is_sql==True:
-                    now = datetime.now()
-                    df_final['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql,df_final)
             else:
                 self.logger.warning(f'internationalIndex数据在：{available_date}数据更新出现错误')
@@ -597,8 +573,6 @@ class MacroData_update:
                     df_final.to_csv(outputpath_daily, index=False)
                     self.logger.info(f'Successfully saved Index Score data for date: {available_date}')
                     if self.is_sql == True:
-                        now = datetime.now()
-                        df_final['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_final)
             else:
                 self.logger.warning(f'Index Score data数据在：{available_date}数据更新出现错误')

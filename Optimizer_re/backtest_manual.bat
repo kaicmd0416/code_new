@@ -23,3 +23,4 @@ cd /d "%SCRIPT_DIR%\Optimizer_python"
 echo End Time:%time%
 echo Script execution completed.
 
+pause

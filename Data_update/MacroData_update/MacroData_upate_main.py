@@ -36,4 +36,4 @@ def MacroData_update_main2(start_date,end_date,is_sql):
     #MDU.intindex_data_update()
     #MDU.IndexScore_data_update()
 if __name__ == '__main__':
-    MacroData_update_main('2025-06-18', '2025-06-18',True)
+    MacroData_update_main('2025-07-07', '2025-07-07',True)

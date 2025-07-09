@@ -48,7 +48,7 @@ class scorePortfolio_update:
         working_list = gt.working_days_list(start_date, end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
         for date in working_list:
             self.logger.info(f'Processing date: {date}')
             date2 = gt.intdate_transfer(date)
@@ -83,8 +83,8 @@ class scorePortfolio_update:
                     now = datetime.now()
                     slice_a1['update_time'] = now
                     slice_a3['update_time'] = now
-                    capture_file_withdraw_output(sm.df_to_sql, slice_a1)
-                    capture_file_withdraw_output(sm.df_to_sql, slice_a3)
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a1,'portfolio_name','a1_top' + str(number))
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a3,'portfolio_name','a3_top' + str(number))
                 self.logger.info(f'Successfully saved top {number} portfolio data for date: {date2}')
         self.logger.info('Completed RR top portfolio update')
     def rr_hs300_top_update_main(self):
@@ -104,7 +104,7 @@ class scorePortfolio_update:
         working_list = gt.working_days_list(start_date, end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
         for date in working_list:
             self.logger.info(f'Processing date: {date}')
             yes=gt.last_workday_calculate(date)
@@ -145,8 +145,8 @@ class scorePortfolio_update:
                     now = datetime.now()
                     slice_a1['update_time'] = now
                     slice_a3['update_time'] = now
-                    capture_file_withdraw_output(sm.df_to_sql, slice_a1)
-                    capture_file_withdraw_output(sm.df_to_sql, slice_a3)
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a1,'portfolio_name','a1_hs300_top' + str(number))
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a3,'portfolio_name','a3_hs300_top' + str(number))
                 slice_a1.to_csv(daily_outputpath_a1, index=False)
                 slice_a3.to_csv(daily_outputpath_a3, index=False)
 
@@ -164,7 +164,9 @@ class scorePortfolio_update:
         except:
             start_date = '2024-01-01'
         working_list = gt.working_days_list(start_date, end_date)
-
+        if self.is_sql == True:
+            inputpath_configsql = glv.get('config_sql')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
         for date in working_list:
             yes=gt.last_workday_calculate(date)
             yes=gt.last_workday_calculate(yes)
@@ -188,6 +190,12 @@ class scorePortfolio_update:
                 slice_a3['final_score']=(slice_a3['final_score']-slice_a3['final_score'].min())/(slice_a3['final_score'].max()-slice_a3['final_score'].min())
                 slice_a3['weight'] = slice_a3['final_score']/slice_a3['final_score'].sum()
                 slice_a3 = slice_a3[['code', 'weight']]
+                slice_a3['valuation_date']=date
+                slice_a3['portfolio_name'] = 'a3_zz2000_top' + str(number)
+                if self.is_sql==True:
+                    now = datetime.now()
+                    slice_a3['update_time'] = now
+                    capture_file_withdraw_output(sm.df_to_sql, slice_a3,'portfolio_name','a3_zz2000_top' + str(number))
                 slice_a3.to_csv(daily_outputpath_a3, index=False)
     def ubp_top_update_main(self):
         self.logger.info('\nProcessing UBP top portfolio update...')
@@ -208,7 +216,7 @@ class scorePortfolio_update:
         working_days_list = gt.working_days_list(start_date, end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
         for date in working_days_list:
             self.logger.info(f'Processing date: {date}')
             date2 = gt.intdate_transfer(date)
@@ -233,7 +241,7 @@ class scorePortfolio_update:
                 if self.is_sql==True:
                     now = datetime.now()
                     df['update_time'] = now
-                    capture_file_withdraw_output(sm.df_to_sql, df)
+                    capture_file_withdraw_output(sm.df_to_sql, df,'portfolio_name','ubp500')
             else:
                 self.logger.warning(f'ubp_500 {date} 暂时没有数据')
         self.logger.info('Completed UBP top portfolio update')
@@ -251,7 +259,7 @@ class scorePortfolio_update:
         working_days_list = gt.working_days_list(start_date, end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+            sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
         for date in working_days_list:
             self.logger.info(f'Processing date: {date}')
             difference_date=(pd.to_datetime(date)-pd.to_datetime(d)).days
@@ -280,16 +288,16 @@ class scorePortfolio_update:
                 if self.is_sql == True:
                     now = datetime.now()
                     df['update_time'] = now
-                    capture_file_withdraw_output(sm.df_to_sql, df)
+                    capture_file_withdraw_output(sm.df_to_sql, df,'portfolio_name','gms')
                 else:
                     self.logger.warning(f'ubpETF {date} ETF_tracking 为空')
             self.logger.info('Completed ETF portfolio update')
     def scorePortfolio_update_main(self):
         self.logger.info('\nStarting score portfolio update main process...')
-        self.ubp_top_update_main()
         self.rr_top_update_main()
         self.rr_hs300_top_update_main()
         self.rr_zz2000_top_update_main()
+        self.ubp_top_update_main()
         try:
             self.etf_update_main()
         except:

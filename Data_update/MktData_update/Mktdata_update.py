@@ -132,7 +132,7 @@ class indexData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'indexData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'indexData',delete=True)
         for available_date in working_days_list:
             self.logger.info(f'Processing date: {available_date}')
             available_date=gt.intdate_transfer(available_date)
@@ -299,7 +299,7 @@ class indexComponent_update:
         outputpath_component = glv.get('output_indexcomponent')
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'indexComponent')
+            sm=gt.sqlSaving_main(inputpath_configsql,'indexComponent',delete=True)
         for index_type in ['上证50', '沪深300', '中证500', '中证1000', '中证2000', '中证A500','国证2000']:
             self.logger.info(f'\nProcessing index type: {index_type}')
             file_name = self.file_name_withdraw(index_type)
@@ -348,7 +348,7 @@ class indexComponent_update:
                     if self.is_sql == True:
                         now = datetime.now()
                         df_daily['update_time'] = now
-                        capture_file_withdraw_output(sm.df_to_sql, df_daily)
+                        capture_file_withdraw_output(sm.df_to_sql, df_daily,'organization',index_code)
                 else:
                     self.logger.warning(f'{index_type}_component在{available_date}暂无数据')
 
@@ -451,7 +451,7 @@ class stockData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'stockData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'stockData',delete=True)
         for available_date in working_days_list:
             self.logger.info(f'Processing date: {available_date}')
             df_stock=pd.DataFrame()
@@ -678,7 +678,7 @@ class futureData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'futureData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'futureData',delete=True)
         for available_date in working_days_list:
             self.logger.info(f'Processing date: {available_date}')
             available_date=gt.intdate_transfer(available_date)
@@ -854,7 +854,7 @@ class optionData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'optionData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'optionData',delete=True)
         for available_date in working_days_list:
             self.logger.info(f'Processing date: {available_date}')
             available_date=gt.intdate_transfer(available_date)
@@ -1043,7 +1043,7 @@ class etfData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'etfData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'etfData',delete=True)
         for available_date in working_days_list:
             self.logger.info(f'Processing date: {available_date}')
             available_date=gt.intdate_transfer(available_date)
@@ -1172,7 +1172,7 @@ class cbData_update:
         df_stock_return=gt.readcsv(inputpath_timeseries)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'convertibleBondData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'convertibleBondData',delete=True)
         for available_date in working_days_list:
             self.logger.info(f'Processing date: {available_date}')
             available_date=gt.intdate_transfer(available_date)
@@ -1233,7 +1233,7 @@ class lhb_amt_update_main:
             start_date=self.start_date
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'lhbData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'lhbData',delete=True)
         working_days_list=gt.working_days_list(start_date,self.end_date)
         for available_date in working_days_list:
             df_final=pd.DataFrame()
@@ -1338,8 +1338,6 @@ class nlb_update_main:
                     self.logger.info(f'Successfully saved nlb data for date: {available_date}')
                     df_final.to_csv(outputpath_daily, index=False)
                     if self.is_sql == True:
-                        now = datetime.now()
-                        df_final['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_final)
                 else:
                     self.logger.error(f'处理融资融券时: {available_date2} 发生错误')
@@ -1422,8 +1420,6 @@ class futureDifference_update_main:
                     df_add.to_csv(outputpath_daily,index=False)
                     self.logger.info(f'Successfully saved future difference data for date: {available_date}')
                     if self.is_sql == True:
-                        now = datetime.now()
-                        df_add['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_add)
                 else:
                     self.logger.error(f"处理基差日期 {available_date} 时出错: {str(e)}")

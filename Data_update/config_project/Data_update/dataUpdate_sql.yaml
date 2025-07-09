@@ -280,7 +280,7 @@ L4InfoData:
       - 'product_code'
 Score:
     table_name: "data_score"
-    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared?autocommit=True "
+    db_url: "mysql+pymysql://root:root@localhost:3306/data_prepared?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
@@ -289,7 +289,7 @@ Score:
       - 'score_name'
 Portfolio:
     table_name: "portfolio"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/portfolio?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/portfolio?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:

@@ -399,7 +399,7 @@ class L4Data_processing:
                 result['derivative'], result['unit_pure'], result['accumulated_pure'],
                 result['accumulated_pure_d'], result['shuhui_value'], result['shengou_value']
             )
-
+            # pure_value=self.safe_float_convert(pure_value)
             # 创建输出字典
             output_dict = {
                 '持仓日期': date,

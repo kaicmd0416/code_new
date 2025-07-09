@@ -68,11 +68,11 @@ class FactorData_update:
         working_days_list=gt.working_days_list(start_date,self.end_date)
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm1=gt.sqlSaving_main(inputpath_configsql,'FactorExposrue')
-            sm2=gt.sqlSaving_main(inputpath_configsql,'FactorReturn')
-            sm3=gt.sqlSaving_main(inputpath_configsql,'FactorPool')
-            sm4 = gt.sqlSaving_main(inputpath_configsql, 'FactorCov')
-            sm5 = gt.sqlSaving_main(inputpath_configsql, 'FactorSpecificrisk')
+            sm1=gt.sqlSaving_main(inputpath_configsql,'FactorExposrue',delete=True)
+            sm2=gt.sqlSaving_main(inputpath_configsql,'FactorReturn',delete=True)
+            sm3=gt.sqlSaving_main(inputpath_configsql,'FactorPool',delete=True)
+            sm4 = gt.sqlSaving_main(inputpath_configsql, 'FactorCov',delete=True)
+            sm5 = gt.sqlSaving_main(inputpath_configsql, 'FactorSpecificrisk',delete=True)
         for available_date in working_days_list:
 
             self.logger.info(f'\nProcessing date: {available_date}')
@@ -271,8 +271,6 @@ class FactorData_update:
                     df_final.to_csv(outputpath_daily, index=False)
                     self.logger.info(f'Successfully saved yg factor exposure data for date: {available_date}')
                     if self.is_sql==True:
-                        now = datetime.now()
-                        df_final['update_time'] = now
                         capture_file_withdraw_output(sm.df_to_sql, df_final)
 
 
@@ -287,7 +285,7 @@ def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
     fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2025-06-18','2025-06-18',True)
+    FactorData_history_main('2025-07-08','2025-07-08',True)
 
 
 

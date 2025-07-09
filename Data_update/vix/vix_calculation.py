@@ -439,6 +439,6 @@ def VIX_calculation_main(start_date,end_date,realtime,is_sql): #将前面计算�
 
 
 if __name__ == '__main__':
-       VIX_calculation_main('2025-05-11','2025-05-16',False,True)
+       VIX_calculation_main('2025-07-08','2025-07-08',False,True)
 
 
