@@ -1,0 +1,55 @@
+proinfo:
+    table_name: "realtime_proinfo"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "product_code"
+      - 'type'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      type: { type: String, length: 50 }
+      simulation: { type: String, length: 50 }
+      value: { type: Float }
+      update_time: { type: String, length: 50 }
+optionfuture_holding:
+    table_name: "realtime_futureoptionholding"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "product_code"
+      - 'code'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      simulation: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      code: { type: String, length: 50 }
+      direction: { type: String, length: 50 }
+      HoldingQty: { type: Float }
+      delta: { type: Float }
+      mkt_value: { type: Float }
+      daily_profit: { type: Float }
+      update_time: { type: String, length: 50 }
+holding_changing:
+    table_name: "realtime_holdingchanging"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "product_code"
+      - 'code'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      simulation: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      code: { type: String, length: 50 }
+      direction: { type: String, length: 50 }
+      type: { type: String, length: 50 }
+      action: { type: String, length: 50 }
+      HoldingQty: { type: Float }
+      HoldingQty_yes: { type: Float }
+      difference: { type: Float }
+      update_time: { type: String, length: 50 }
+
