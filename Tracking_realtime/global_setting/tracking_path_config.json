@@ -19,6 +19,15 @@
                 "password": "Abcd1234#",
                 "database": "portfolio",
                 "charset": "utf8mb4"
+            },
+
+            "database3": {
+                "host": "rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com",
+                "port": 3306,
+                "user": "kai",
+                "password": "Abcd1234#",
+                "database": "tracking_realtime",
+                "charset": "utf8mb4"
             }
         }
     },

@@ -534,33 +534,49 @@ class weight_withdraw:
         today = datetime.date.today()
         today = gt.strdate_transfer(today)
         self.available_date = today
+        self.yes=gt.last_workday_calculate(self.available_date)
         self.realtime = True
-    def portfolio_list_getting(self):
+    def portfolio_list_getting(self,yes=False):
         inputpath=glv.get('portfolio_weight')
+        if yes==True:
+            available_date=self.yes
+        else:
+            available_date=self.available_date
         if source=='local':
             portfolio_list=os.listdir(inputpath)
         else:
-            inputpath=str(inputpath)+f" Where valuation_date='{self.available_date}'"
+            inputpath=str(inputpath)+f" Where valuation_date='{available_date}'"
             df=gt.data_getting(inputpath,config_path,update_time=False)
             portfolio_list=df['portfolio_name'].unique().tolist()
         return portfolio_list
-    def portfolio_withdraw(self,portfolio_name):
+    def product_list_getting(self):
+        product_list=['SGS958','SVU353','SNY426','SSS044','STH580','SST132','SLA626']
+        return product_list
+    def portfolio_withdraw(self,portfolio_name,yes=False):
         inputpath = glv.get('portfolio_weight')
+        if yes==True:
+            available_date=self.yes
+        else:
+            available_date=self.available_date
         if source == 'local':
             inputpath=os.path.join(inputpath,portfolio_name)
-            inputpath=gt.file_withdraw(inputpath,gt.intdate_transfer(self.available_date))
+            inputpath=gt.file_withdraw(inputpath,gt.intdate_transfer(available_date))
         else:
-            inputpath = str(inputpath) + f" Where valuation_date='{self.available_date}' And portfolio_name='{portfolio_name}'"
+            inputpath = str(inputpath) + f" Where valuation_date='{available_date}' And portfolio_name='{portfolio_name}'"
         df = gt.data_getting(inputpath, config_path)
         df=df[['code','weight']]
         return df
-    def product_withdraw(self,product_code):
+    def product_withdraw(self,product_code,yes=False):
         inputpath = glv.get('product_weight')
+        if yes==True:
+            available_date=self.yes
+        else:
+            available_date=self.available_date
         if source == 'local':
             inputpath=os.path.join(inputpath,product_code)
-            inputpath=gt.file_withdraw(inputpath,gt.intdate_transfer(self.available_date))
+            inputpath=gt.file_withdraw(inputpath,gt.intdate_transfer(available_date))
         else:
-            inputpath = str(inputpath) + f" Where valuation_date='{self.available_date}' And product_code='{product_code}'"
+            inputpath = str(inputpath) + f" Where valuation_date='{available_date}' And product_code='{product_code}'"
         df = gt.data_getting(inputpath, config_path)
         df=df[['code','weight']]
         return df

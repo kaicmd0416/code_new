@@ -1,134 +1,120 @@
-import sys
-import os
 import pandas as pd
+import os
+import sys
+path = os.getenv('GLOBAL_TOOLSFUNC')
+sys.path.append(path)
 import datetime
-from Portfolio_tracking.portfolio_performance.portfolio_weight_withdraw import portfolio_weight_withdraw
-from Portfolio_tracking.real_time.realtimeStock_sqlSaving import realtimeStock_sqlSaving
-import Portfolio_tracking.global_setting.global_dic as glv
-import global_tools_func.global_tools as gt
-def index_code_withdraw(index_type):
-    if index_type == '沪深300':
-        index_code = '000300.SH'
-    elif index_type == '中证500':
-        index_code = '000905.SH'
-    elif index_type=='中证1000':
-        index_code = '000852.SH'
-    elif index_type=='中证A500':
-        index_code='000510.CSI'
-    elif index_type=='中证2000':
-         index_code='932000.CSI'
-    else:
-        raise ValueError
-    return index_code
-
-
-def real_time_stock_return():
-    inputpath = glv.get('realtime_data')
-    df = pd.read_excel(inputpath, sheet_name='stockprice')
-    df_etf=pd.read_excel(inputpath,sheet_name='etf_info')
-    df = df[['代码', 'return']]
-    df.columns = ['code', 'return']
-    df['return']=df['return']/100
-    df_etf['return']=(df_etf['现价']-df_etf['前收'])/df_etf['前收']
-    df_etf=df_etf[['代码','return']]
-    df_etf.columns= ['code', 'return']
-    df=pd.concat([df,df_etf])
-    return df
-
-def real_time_index_return():
-    inputpath = glv.get('realtime_data')
-    df = pd.read_excel(inputpath, sheet_name='indexreturn')
-    columns_list=df.columns.tolist()
-    if '000510.SH' in columns_list:
-        df.rename(columns={'000510.SH':'000510.CSI'},inplace=True)
-    return df
-
-def realtime_portfolio_return(df_weight, df_return, df_index, index_type):
-    df_weight['code']=df_weight['code'].apply(lambda x: str(x)[:6])
-    df_weight=gt.code_transfer(df_weight)
-    df_weight = df_weight.merge(df_return, on='code', how='left')
-    df_weight['portfolio_return'] = df_weight['weight'] * df_weight['return']
-    portfolio_return = df_weight['portfolio_return'].sum()
-    index_code = index_code_withdraw(index_type)
-    index_return = df_index[index_code].tolist()[0]
-    excess_return = portfolio_return - index_return
-    return excess_return, portfolio_return
-def portfolio_index_withdraw(score_name):
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath = os.path.join(os.path.dirname(inputpath), 'realtime_config.xlsx')
-    df_config = pd.read_excel(inputpath)
-    index_type=df_config[df_config['score_name']==score_name]['index_type'].tolist()[0]
-    return index_type
-def procut_excess_return_calculate(df_final,df_index):
-    inputpath_config=glv.get('product_detail')
-    df_proindex=pd.read_excel(inputpath_config,sheet_name='product_detail')
-    xls=pd.ExcelFile(inputpath_config)
-    sheet_name_list=xls.sheet_names
-    portfolio_return_list=[]
-    excess_return_list=[]
-    for product_name in sheet_name_list[1:]:
-        index_type=df_proindex[df_proindex['product_name']==product_name]['index_type'].tolist()[0]
-        index_code = index_code_withdraw(index_type)
-        index_return = df_index[index_code].tolist()[0]
-        index_return_bp=round(index_return*10000,2)
-        df = pd.read_excel(inputpath_config,sheet_name=product_name)
-        df=df.merge(df_final,on='score_name',how='left')
-        df['excess_return(bp)'] = df['portfolio_return(bp)'] - index_return_bp
-        df['portfolio_return(bp)']=df['portfolio_return(bp)']*df['weight']
-        df['excess_return(bp)'] = df['excess_return(bp)']*df['weight']
-        portfolio_return=df['portfolio_return(bp)'].sum()
-        excess_return=df['excess_return(bp)'].sum()
-        portfolio_return_list.append(portfolio_return)
-        excess_return_list.append(excess_return)
-    df_final=pd.DataFrame()
-    df_final['product_name']=sheet_name_list[1:]
-    df_final['portfolio_return(bp)']=portfolio_return_list
-    df_final['excess_return(bp)']=excess_return_list
-    return df_final
-def stock_realtime_main(): #实时触发这个
-    outputpath=glv.get('realtime_output')
-    #outputpath2=glv.get('realtime_output2')
-    gt.folder_creator2(outputpath)
-    #outputpath2 = gt.folder_creator2(outputpath2)
-    outputpath=os.path.join(outputpath,'portfolio_realtime.xlsx')
-    #outputpath2=os.path.join(outputpath2,'portfolio_realtime.xlsx')
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath = os.path.join(os.path.dirname(inputpath), 'realtime_config.xlsx')
-    df_config=pd.read_excel(inputpath)
-    score_name_list=df_config['score_name'].tolist()
-    df_final = pd.DataFrame()
-    date = datetime.date.today()
-    date = gt.strdate_transfer(date)
-    df_index = real_time_index_return()
-    df_return = real_time_stock_return()
-    excess_return_list = []
-    index_type_list = []
-    portfolio_return_list = []
-    score_name_list2=[]
-    for score_name in score_name_list:
-        df_weight = portfolio_weight_withdraw(score_name, date,yesterday=False)
-        if len(df_weight)==0:
-            pass
+import global_tools as gt
+import global_setting.global_dic as glv
+import numpy as np
+from data.data_prepared import weight_withdraw,mkt_data,prod_info
+def sql_path():
+    yaml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'project_config', 'trackingrealtime_sql.yaml')
+    return yaml_path
+global inputpath_sql
+inputpath_sql=sql_path()
+class portfolio_tracking:
+    def __init__(self, realtime_data_stock, realtime_data_future, realtime_data_etf, realtime_data_option,
+                 realtime_data_cb, realtime_data_adj):
+        self.realtime_data_stock, self.realtime_data_future, self.realtime_data_etf, self.realtime_data_option, self.realtime_data_cb, self.realtime_data_adj = \
+            realtime_data_stock, realtime_data_future, realtime_data_etf, realtime_data_option, realtime_data_cb, realtime_data_adj
+        today = datetime.date.today()
+        self.ww=weight_withdraw()
+        self.date = gt.strdate_transfer(today)
+        self.now = datetime.datetime.now().replace(tzinfo=None)
+    def index_type_decision(self,x):
+        if 'hs300' in x:
+            return '沪深300'
+        elif 'sz50' in x:
+            return '上证50'
+        elif 'zz500' in x:
+            return '中证500'
+        elif 'zzA500' in x:
+            return '中证A500'
+        elif 'zz1000' in x:
+            return '中证1000'
+        elif 'zz2000' in x:
+            return '中证2000'
+        elif 'top' in x:
+            return '中证500'
         else:
-            index_type = portfolio_index_withdraw(score_name)
-            excess_return, portfolio_return = realtime_portfolio_return(df_weight, df_return, df_index, index_type)
-            excess_return = excess_return * 10000
-            portfolio_return = portfolio_return * 10000
-            excess_return = round(excess_return, 2)
-            portfolio_return = round(portfolio_return, 2)
-            score_name_list2.append(score_name)
-            excess_return_list.append(excess_return)
-            portfolio_return_list.append(portfolio_return)
-            index_type_list.append(index_type)
-    df_final['score_name'] = score_name_list
-    df_final['excess_return(bp)'] = excess_return_list
-    df_final['portfolio_return(bp)'] = portfolio_return_list
-    df_final2=procut_excess_return_calculate(df_final, df_index)
-    rs=realtimeStock_sqlSaving(df_final,df_final2)
-    rs.realtimeStock_savingmain()
-    with pd.ExcelWriter(outputpath, engine='openpyxl') as writer:
-         df_final.to_excel(writer,sheet_name='portfolio_realtime',index=False)
-         df_final2.to_excel(writer, sheet_name='product_realtime', index=False)
-    # with pd.ExcelWriter(outputpath2, engine='openpyxl') as writer:
-    #      df_final.to_excel(writer,sheet_name='portfolio_realtime',index=False)
-    #      df_final2.to_excel(writer, sheet_name='product_realtime', index=False)
+            return None
+    def paperportfolio_calculation(self):
+        portfolio_list=self.ww.portfolio_list_getting()
+        df_por=pd.DataFrame()
+        return_list=[]
+        excess_list=[]
+        for portfolio_name in portfolio_list:
+            index_type=self.index_type_decision(portfolio_name)
+            df=self.ww.portfolio_withdraw(portfolio_name)
+            df_yes=self.ww.portfolio_withdraw(portfolio_name,yes=False)
+            if len(df)>0:
+                df_final= gt.portfolio_analyse_manual(self.date, self.date, df_yes,
+                                                           df, False,
+                                                           self.realtime_data_stock, self.realtime_data_future,
+                                                           self.realtime_data_etf, self.realtime_data_option,
+                                                           self.realtime_data_cb, self.realtime_data_adj, realtime=True,index_type=index_type)
+                paper_return=df_final['paper_return'].tolist()[0]
+                excess_return=df_final['excess_return'].tolist()[0]
+            else:
+                paper_return = 0
+                excess_return = 0
+            return_list.append(paper_return)
+            excess_list.append(excess_return)
+        df_por['portfolio_name'] = portfolio_list
+        df_por['valuation_date']=self.date
+        df_por['Excess_Return_bp']=excess_list
+        df_por['Portfolio_Return_bp']=return_list
+        df_por['update_time']=self.now
+        df_por['Excess_Return_bp']=round(df_por['Excess_Return_bp']*10000,2)
+        df_por['Portfolio_Return_bp'] = round(df_por['Portfolio_Return_bp'] * 10000, 2)
+        return df_por
+    def productportfolio_calculation(self):
+        product_list=self.ww.product_list_getting()
+        df_por=pd.DataFrame()
+        return_list=[]
+        excess_list=[]
+        for product_code in product_list:
+            pi=prod_info(product_code)
+            index_type=pi.get_product_detail('index')
+            df=self.ww.product_withdraw(product_code)
+            df_yes=self.ww.product_withdraw(product_code,yes=False)
+            if len(df)>0:
+                df_final= gt.portfolio_analyse_manual(self.date, self.date, df_yes,
+                                                           df, False,
+                                                           self.realtime_data_stock, self.realtime_data_future,
+                                                           self.realtime_data_etf, self.realtime_data_option,
+                                                           self.realtime_data_cb, self.realtime_data_adj, realtime=True,index_type=index_type)
+                paper_return=df_final['paper_return'].tolist()[0]
+                excess_return=df_final['excess_return'].tolist()[0]
+            else:
+                paper_return = 0
+                excess_return = 0
+            return_list.append(paper_return)
+            excess_list.append(excess_return)
+        df_por['product_code'] = product_list
+        df_por['valuation_date']=self.date
+        df_por['Excess_Return_bp']=excess_list
+        df_por['Portfolio_Return_bp']=return_list
+        df_por['update_time']=self.now
+        df_por['Excess_Return_bp']=round(df_por['Excess_Return_bp']*10000,2)
+        df_por['Portfolio_Return_bp'] = round(df_por['Portfolio_Return_bp'] * 10000, 2)
+        return df_por
+    def portfolioTracking_main(self):
+        df_port=self.paperportfolio_calculation()
+        df_prod=self.productportfolio_calculation()
+        if len(df_port)>0:
+            sm = gt.sqlSaving_main(inputpath_sql, 'portfolioreturn', delete=True)
+            sm.df_to_sql(df_port, 'product_code')
+        if len(df_prod)>0:
+            sm = gt.sqlSaving_main(inputpath_sql, 'productreturn', delete=True)
+            sm.df_to_sql(df_prod, 'product_code')
+
+
+if __name__ == '__main__':
+    rd = mkt_data()
+    realtime_data_stock, realtime_data_future, realtime_data_etf, realtime_data_option, realtime_data_cb, realtime_data_adj = rd.realtimeData_withdraw()
+    pt = portfolio_tracking( realtime_data_stock, realtime_data_future, realtime_data_etf,
+                            realtime_data_option, realtime_data_cb, realtime_data_adj)
+    # print(pt.product_info_processing())
+    print(pt.portfolioTracking_main())
