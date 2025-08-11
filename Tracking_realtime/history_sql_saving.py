@@ -11,7 +11,7 @@ def sql_path():
     yaml_path = os.path.join(os.path.dirname(__file__), 'project_config', 'trackingrealtime_sql.yaml')
     return yaml_path
 global inputpath_sql,config_path
-config_path=glv.get('path_config')
+config_path=glv.get('config_path')
 inputpath_sql=sql_path()
 class historySql_saving:
     def __init__(self):
@@ -19,7 +19,7 @@ class historySql_saving:
         self.date = gt.strdate_transfer(today)
         self.now = datetime.datetime.now().replace(tzinfo=None)
     def foHolding_saving(self):
-        inputpath = f"Select * from realtime_futureoptionholding Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.realtime_futureoptionholding Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final) > 0:
             df_final['update_time']=self.now
@@ -27,7 +27,7 @@ class historySql_saving:
             sm.df_to_sql(df_final)
         return df_final
     def foHolding_check(self):
-        inputpath = f"Select * from history_futureoptionholding Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.history_futureoptionholding Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final)>0:
             status='exist'
@@ -35,7 +35,7 @@ class historySql_saving:
             status='not_exist'
         return status
     def portfolioreturn_saving(self):
-        inputpath = f"Select * from realtime_portfolioreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.realtime_portfolioreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final) > 0:
             df_final['update_time'] = self.now
@@ -43,7 +43,7 @@ class historySql_saving:
             sm.df_to_sql(df_final)
         return df_final
     def portfolioreturn_check(self):
-        inputpath = f"Select * from history_portfolioreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.history_portfolioreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final)>0:
             status='exist'
@@ -51,7 +51,7 @@ class historySql_saving:
             status='not_exist'
         return status
     def productreturn_saving(self):
-        inputpath = f"Select * from realtime_productstockreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.realtime_productstockreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final) > 0:
             df_final['update_time'] = self.now
@@ -59,7 +59,7 @@ class historySql_saving:
             sm.df_to_sql(df_final)
         return df_final
     def productreturn_check(self):
-        inputpath = f"Select * from history_productstockreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.history_productstockreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final)>0:
             status='exist'
@@ -67,7 +67,7 @@ class historySql_saving:
             status='not_exist'
         return status
     def proinfo_saving(self):
-        inputpath = f"Select * from realtime_proinfo Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.realtime_proinfo Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final) > 0:
             df_final['update_time'] = self.now
@@ -75,7 +75,7 @@ class historySql_saving:
             sm.df_to_sql(df_final)
         return df_final
     def proinfo_check(self):
-        inputpath = f"Select * from history_proinfo Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.history_proinfo Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final)>0:
             status='exist'
@@ -83,7 +83,7 @@ class historySql_saving:
             status='not_exist'
         return status
     def holdingchanging_saving(self):
-        inputpath = f"Select * from realtime_holdingchanging Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.realtime_holdingchanging Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final) > 0:
             df_final['update_time'] = self.now
@@ -91,7 +91,7 @@ class historySql_saving:
             sm.df_to_sql(df_final)
         return df_final
     def holdingchanging_check(self):
-        inputpath = f"Select * from history_holdingchanging Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_realtime.history_holdingchanging Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         if len(df_final)>0:
             status='exist'
@@ -117,4 +117,4 @@ class historySql_saving:
 
 if __name__ == '__main__':
     hs=historySql_saving()
-    hs.foHolding_check()
+    print(hs.historySql_main())

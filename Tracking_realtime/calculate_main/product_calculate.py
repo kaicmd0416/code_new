@@ -7,14 +7,14 @@ import datetime
 import global_tools as gt
 import global_setting.global_dic as glv
 import numpy as np
-from data.data_prepared import futureoption_position,security_position,prod_info,mkt_data
+from data.data_prepared import futureoption_position,security_position,prod_info
 def sql_path():
     yaml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'project_config', 'trackingrealtime_sql.yaml')
     return yaml_path
 global inputpath_sql
 inputpath_sql=sql_path()
 class product_tracking:
-    def __init__(self,product_code,realtime_data_stock, realtime_data_future,realtime_data_etf,realtime_data_option,realtime_data_cb,realtime_data_adj):
+    def __init__(self,product_code):
         self.product_code=product_code
         fp=futureoption_position(product_code)
         self.df_future_ori, self.df_option_ori=fp.futureoption_withdraw()
@@ -29,8 +29,6 @@ class product_tracking:
         self.df_cb,self.df_cb_yes=self.df_processing(self.df_cb_ori)
         pi=prod_info(product_code)
         self.asset_value=pi.assetvalue_withdraw()
-        self.realtime_data_stock, self.realtime_data_future,self.realtime_data_etf,self.realtime_data_option,self.realtime_data_cb,self.realtime_data_adj=\
-        realtime_data_stock, realtime_data_future, realtime_data_etf, realtime_data_option, realtime_data_cb, realtime_data_adj
         today = datetime.date.today()
         self.date = gt.strdate_transfer(today)
         self.now=datetime.datetime.now().replace(tzinfo=None)
@@ -73,102 +71,83 @@ class product_tracking:
         df_commFuture.drop(columns='new_code', inplace=True)
         df_bond.drop(columns='new_code',inplace=True)
         return df_indexFuture,df_commFuture,df_bond
-    def indexfuture_analysis(self):
-        df = pd.DataFrame()
-        if len(self.df_indexFuture)>0:
-            df_final,df = gt.portfolio_analyse_manual(self.date, self.date,self.df_indexFuture_yes, self.df_indexFuture,True,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            future_profit = df_final['portfolio_profit'].tolist()[0]
-            future_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+    def partial_analysis(self):
+        df_indexFuture=self.df_indexFuture.copy()
+        df_indexFuture['portfolio_name'] = 'indexFuture'
+        df_commFuture=self.df_commFuture.copy()
+        df_commFuture['portfolio_name'] = 'commFuture'
+        df_bond=self.df_bond.copy()
+        df_bond['portfolio_name'] = 'bond'
+        df_stock = self.df_stock.copy()
+        df_stock['portfolio_name'] = 'stock'
+        df_option = self.df_option.copy()
+        df_option['portfolio_name'] = 'option'
+        df_etf = self.df_etf.copy()
+        df_etf['portfolio_name'] = 'etf'
+        df_cb=self.df_cb.copy()
+        df_cb['portfolio_name'] = 'convertible_bond'
+        df_port=pd.concat([df_indexFuture,df_commFuture,df_bond,df_stock,df_option,df_etf,df_cb])
+        df_port['valuation_date']=self.date
+        df_info,df_detail=gt.portfolio_analyse(df_port,cost_stock=0, cost_etf=0, cost_future=0, cost_option=0, cost_convertiblebond=0, realtime=True, weight_standardize=True)
+        df_detail = df_detail[['code', 'quantity', 'delta', 'risk_mkt_value', 'profit', 'portfolio_name']]
+        df_detail.rename(columns={'risk_mkt_value':'mkt_value'},inplace=True)
+        df_detail=self.futureOption_processing(df_detail)
+        return df_info,df_detail
+    def info_split(self,df_info,df_detail):
+        df_indexfuture_info=df_info[df_info['portfolio_name']=='indexFuture']
+        df_indexfuture=df_detail[df_detail['portfolio_name']=='indexFuture']
+        if len(df_indexfuture_info)==0:
+            indexfuture_profit=0
+            indexfuture_mktvalue=0
         else:
-            future_profit=0
-            future_mktvalue=0
-        if len(df)>0:
-           df=df[['code','quantity','delta','mkt_value','profit']]
-           df=self.futureOption_processing(df)
-        return future_profit,future_mktvalue,df
-    def commfuture_analysis(self):
-        df=pd.DataFrame()
-        if len(self.df_commFuture)>0:
-            df_final,df = gt.portfolio_analyse_manual(self.date, self.date,self.df_commFuture_yes,self.df_commFuture,True,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            future_profit = df_final['portfolio_profit'].tolist()[0]
-            future_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+            indexfuture_profit=df_indexfuture_info['portfolio_profit'].tolist()[0]
+            indexfuture_mktvalue=df_indexfuture_info['portfolio_mktvalue'].tolist()[0]
+        df_commfuture_info = df_info[df_info['portfolio_name'] == 'commFuture']
+        df_commfuture = df_detail[df_detail['portfolio_name'] == 'commFuture']
+        if len(df_commfuture_info) == 0:
+            commfuture_profit = 0
+            commfuture_mktvalue = 0
         else:
-            future_profit=0
-            future_mktvalue=0
-        if len(df)>0:
-           df=df[['code','quantity','delta','mkt_value','profit']]
-           df=self.futureOption_processing(df)
-        return future_profit,future_mktvalue,df
-    def option_analysis(self):
-        df = pd.DataFrame()
-        if len(self.df_option)>0:
-            df_final,df = gt.portfolio_analyse_manual(self.date, self.date, self.df_option_yes, self.df_option,True,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            option_profit = df_final['portfolio_profit'].tolist()[0]
-            option_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+            commfuture_profit = df_commfuture_info['portfolio_profit'].tolist()[0]
+            commfuture_mktvalue = df_commfuture_info['portfolio_mktvalue'].tolist()[0]
+        df_option_info = df_info[df_info['portfolio_name'] == 'option']
+        df_option = df_detail[df_detail['portfolio_name'] == 'option']
+        if len(df_option_info) == 0:
+            option_profit = 0
+            option_mktvalue = 0
         else:
-            option_profit=0
-            option_mktvalue=0
-        if len(df)>0:
-           df=df[['code','quantity','delta','mkt_value','profit']]
-           df=self.futureOption_processing(df)
-        return option_profit,option_mktvalue,df
-    def stock_analysis(self):
-        if len(self.df_stock)>0:
-            df_final = gt.portfolio_analyse_manual(self.date, self.date, self.df_stock_yes, self.df_stock,False,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            stock_profit = df_final['portfolio_profit'].tolist()[0]
-            stock_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+            option_profit = df_option_info['portfolio_profit'].tolist()[0]
+            option_mktvalue = df_option_info['portfolio_mktvalue'].tolist()[0]
+        df_etf_info = df_info[df_info['portfolio_name'] == 'etf']
+        if len(df_etf_info) == 0:
+            etf_profit = 0
+            etf_mktvalue = 0
         else:
-            stock_profit=0
-            stock_mktvalue=0
-        return stock_profit,stock_mktvalue
-    def etf_analysis(self):
-        if len(self.df_etf)>0:
-            df_final = gt.portfolio_analyse_manual(self.date, self.date, self.df_etf_yes, self.df_etf,False,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            etf_profit = df_final['portfolio_profit'].tolist()[0]
-            etf_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+            etf_profit = df_etf_info['portfolio_profit'].tolist()[0]
+            etf_mktvalue = df_etf_info['portfolio_mktvalue'].tolist()[0]
+        df_cb_info = df_info[df_info['portfolio_name'] == 'convertible_bond']
+        if len(df_cb_info) == 0:
+            cb_profit = 0
+            cb_mktvalue = 0
         else:
-            etf_profit=0
-            etf_mktvalue=0
-        return etf_profit,etf_mktvalue
-    def cb_analysis(self):
-        if len(self.df_cb)>0:
-            df_final = gt.portfolio_analyse_manual(self.date, self.date, self.df_cb_yes, self.df_cb,False,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            cb_profit = df_final['portfolio_profit'].tolist()[0]
-            cb_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+            cb_profit = df_cb_info['portfolio_profit'].tolist()[0]
+            cb_mktvalue = df_cb_info['portfolio_mktvalue'].tolist()[0]
+        df_stock_info = df_info[df_info['portfolio_name'] == 'stock']
+        if len(df_stock_info) == 0:
+            stock_profit = 0
+            stock_mktvalue = 0
         else:
-            cb_profit=0
-            cb_mktvalue=0
-        return cb_profit,cb_mktvalue
-    def bond_analysis(self):
-        if len(self.df_cb)>0:
-            df_final = gt.portfolio_analyse_manual(self.date, self.date, self.df_bond_yes, self.df_bond,False,
-                                                   self.realtime_data_stock, self.realtime_data_future,
-                                                   self.realtime_data_etf, self.realtime_data_option,
-                                                   self.realtime_data_cb, self.realtime_data_adj,realtime=True)
-            bond_profit = df_final['portfolio_profit'].tolist()[0]
-            bond_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+            stock_profit = df_stock_info['portfolio_profit'].tolist()[0]
+            stock_mktvalue = df_stock_info['portfolio_mktvalue'].tolist()[0]
+        df_bond_info = df_info[df_info['portfolio_name'] == 'bond']
+        if len(df_bond_info) == 0:
+            bond_profit = 0
+            bond_mktvalue = 0
         else:
-            bond_profit=0
-            bond_mktvalue=0
-        return bond_profit,bond_mktvalue
+            bond_profit = df_bond_info['portfolio_profit'].tolist()[0]
+            bond_mktvalue = df_bond_info['portfolio_mktvalue'].tolist()[0]
+        return stock_profit,stock_mktvalue,indexfuture_profit,indexfuture_mktvalue,df_indexfuture,commfuture_profit,commfuture_mktvalue,df_commfuture, \
+            option_profit,option_mktvalue,df_option,etf_profit,etf_mktvalue,cb_profit,cb_mktvalue,bond_profit,bond_mktvalue
     def trading_action_processing(self):
         df_stock=self.df_stock_ori.copy()
         df_stock['type']='stock'
@@ -204,6 +183,7 @@ class product_tracking:
         return df_final
     def futureoption_holding_processing(self,df_future,df_option):
         df_fo = pd.concat([df_future, df_option])
+        df_fo.drop(columns='portfolio_name',inplace=True)
         df_fo['valuation_date']=self.date
         df_fo['product_code']=self.product_code
         df_fo['simulation']=False
@@ -212,13 +192,9 @@ class product_tracking:
         return df_fo
     def product_info_processing(self):
         df_info=pd.DataFrame()
-        indexfuture_profit, indexfuture_mktvalue, df_indexfuture=self.indexfuture_analysis()
-        commfuture_profit, commfuture_mktvalue, df_commfuture = self.commfuture_analysis()
-        option_profit, option_mktvalue, df_option=self.option_analysis()
-        stock_profit, stock_mktvalue=self.stock_analysis()
-        etf_profit, etf_mktvalue=self.etf_analysis()
-        cb_profit, cb_mktvalue=self.cb_analysis()
-        bond_profit, bond_mktvalue=self.bond_analysis()
+        df_info2, df_detail2=self.partial_analysis()
+        stock_profit, stock_mktvalue, indexfuture_profit,indexfuture_mktvalue, df_indexfuture, commfuture_profit, commfuture_mktvalue, df_commfuture, \
+            option_profit, option_mktvalue, df_option, etf_profit, etf_mktvalue, cb_profit, cb_mktvalue, bond_profit, bond_mktvalue=self.info_split(df_info2,df_detail2)
         indexfuture_proportion=indexfuture_mktvalue/self.asset_value
         option_proportion=option_mktvalue/self.asset_value
         stock_proportion=stock_mktvalue/self.asset_value
@@ -255,19 +231,8 @@ class product_tracking:
         if len(df_action)>0:
             sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
             sm3.df_to_sql(df_action, 'product_code', self.product_code)
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
-    rd=mkt_data()
-    realtime_data_stock, realtime_data_future, realtime_data_etf, realtime_data_option, realtime_data_cb, realtime_data_adj=rd.realtimeData_withdraw()
-    pt=product_tracking('SNY426',realtime_data_stock, realtime_data_future, realtime_data_etf, realtime_data_option, realtime_data_cb, realtime_data_adj)
+    pt=product_tracking('SLA626')
     #print(pt.product_info_processing())
     print(pt.productTracking_main())
 

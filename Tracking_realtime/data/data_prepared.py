@@ -244,9 +244,9 @@ class security_position:
     def pool_withdraw(self):
         today = datetime.date.today()
         today = gt.strdate_transfer(today)
-        df_etf=gt.etfdata_withdraw(today,True)
-        df_stock=gt.stockdata_withdraw(today,True)
-        df_cb=gt.cbdata_withdraw(today,True)
+        df_etf=gt.etfData_withdraw(today,realtime=True)
+        df_stock=gt.stockData_withdraw(today,realtime=True)
+        df_cb=gt.cbData_withdraw(today,realtime=True)
         etf_pool=df_etf['code'].unique().tolist()
         stock_pool=df_stock['code'].unique().tolist()
         cb_pool=df_cb['code'].unique().tolist()
@@ -505,9 +505,11 @@ class prod_info:
             working_days_list=working_days_list[1:]
             for days in working_days_list:
                 if days!=today:
-                    index_return=gt.crossSection_index_return_withdraw(index_type,days)
+                    index_return=gt.indexData_withdraw(index_type,days,days,['pct_chg'])
+                    index_return=index_return['pct_chg'].tolist()[0]
                 else:
-                    index_return=gt.crossSection_index_return_withdraw(index_type,days,True)
+                    index_return=gt.indexData_withdraw(index_type,days,days,['pct_chg'],True)
+                    index_return = index_return['pct_chg'].tolist()[0]
                 index_return=float(index_return)
                 asset_value = (1 + index_return) * asset_value
         return asset_value
@@ -580,41 +582,6 @@ class weight_withdraw:
         df = gt.data_getting(inputpath, config_path)
         df=df[['code','weight']]
         return df
-class mkt_data:
-    def __init__(self):
-        today = datetime.date.today()
-        today = gt.strdate_transfer(today)
-        self.available_date=today
-        self.realtime=True
-    def realtimeData_withdraw(self):
-        df_stock = gt.stockdata_withdraw(self.available_date, self.realtime)
-        df_future =  gt.futuredata_withdraw(self.available_date, self.realtime)
-        df_etf =  gt.etfdata_withdraw(self.available_date, self.realtime)
-        df_option =  gt.optiondata_withdraw(self.available_date, self.realtime)
-        df_convertible_bond =  gt.cbdata_withdraw(self.available_date, self.realtime)
-        df_adj_factor =  gt.stockdata_adj_withdraw(self.available_date, self.realtime, adj_source='wind')
-        return df_stock,df_future,df_etf,df_option,df_convertible_bond,df_adj_factor
-    def factorData_withdraw(self):
-        available_date = gt.last_workday_calculate(datetime.date.today())
-        df_sz50 = gt.crossSection_index_factorexposure_withdraw_new(index_type='上证50',
-                                                                    available_date=available_date)
-        df_hs300 = gt.crossSection_index_factorexposure_withdraw_new(index_type='沪深300',
-                                                                     available_date=available_date)
-        df_zz500 = gt.crossSection_index_factorexposure_withdraw_new(index_type='中证500',
-                                                                     available_date=available_date)
-        df_zz1000 = gt.crossSection_index_factorexposure_withdraw_new(index_type='中证1000',
-                                                                      available_date=available_date)
-        df_zz2000 = gt.crossSection_index_factorexposure_withdraw_new(index_type='中证2000',
-                                                                      available_date=available_date)
-        df_zzA500 = gt.crossSection_index_factorexposure_withdraw_new(index_type='中证A500',
-                                                                      available_date=available_date)
-        df_sz50.drop(columns='valuation_date', inplace=True)
-        df_hs300.drop(columns='valuation_date', inplace=True)
-        df_zz500.drop(columns='valuation_date', inplace=True)
-        df_zz1000.drop(columns='valuation_date', inplace=True)
-        df_zz2000.drop(columns='valuation_date', inplace=True)
-        df_zzA500.drop(columns='valuation_date', inplace=True)
-        return df_sz50, df_hs300, df_zz500, df_zz1000, df_zz2000, df_zzA500
 
 if __name__ == '__main__':
     ww=weight_withdraw()
