@@ -6,7 +6,7 @@
 2. 构建完整的文件路径
 3. 提供全局路径访问接口
 
-配置文件结构 (tools_path_config.json):
+配置文件结构 (tracking_path_config.json):
 1. main_folder:
    - folder_type: 文件夹类型标识
    - path: 基础路径
@@ -24,6 +24,10 @@
 - os：路径操作
 - pathlib：路径处理
 - pandas：数据处理
+- pymysql：数据库连接
+
+作者：[作者名]
+创建时间：[创建时间]
 """
 
 import json
@@ -33,14 +37,14 @@ import pandas as pd
 import pymysql
 from datetime import datetime
 
-# 全局字典
+# 全局字典，存储所有配置信息
 global_dic = {}
 
 def init():
     """
     初始化全局字典，从配置文件加载设置
     
-    读取tools_path_config.json配置文件，解析其中的路径配置信息，
+    读取tracking_path_config.json配置文件，解析其中的路径配置信息，
     并更新全局字典供其他函数使用
     
     Returns:
@@ -91,12 +95,15 @@ def get(key):
     # 获取数据源模式
     data_source = global_dic.get('components', {}).get('data_source', {})
     mode = data_source.get('mode', 'local')
+    
+    # 特殊键处理
     if key == 'mode':
         return mode
     if key == 'config_path':
-         current_dir = os.path.dirname(os.path.abspath(__file__))
-         config_path = os.path.join(current_dir, 'tracking_path_config.json')
-         return config_path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(current_dir, 'tracking_path_config.json')
+        return config_path
+    
     # 获取配置信息
     config = None
     for item in global_dic.get('sub_folder', []):

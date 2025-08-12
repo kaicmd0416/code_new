@@ -108,6 +108,13 @@
             "sql_sheet": "data_l4holding"
         },
         {
+            "data_type": "future_info_rj",
+            "folder_name": "data_level4\\L4_read_data\\念觉沪深300",
+            "folder_type": "input_folder",
+            "database": "data_prepared",
+            "sql_sheet": "data_l4holding"
+        },
+        {
             "data_type": "future_info_zx",
             "folder_name": "data_level4\\L4_read_data\\念觉知行4号",
             "folder_type": "input_folder",

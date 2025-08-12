@@ -1,82 +1,198 @@
+"""
+产品计算模块
+功能：处理单个产品的持仓数据计算，包括期货期权、股票ETF可转债等各类资产的分析
+主要类：
+- product_tracking: 产品跟踪计算类，负责单个产品的完整计算流程
+作者：[作者名]
+创建时间：[创建时间]
+"""
+
 import pandas as pd
 import os
 import sys
+
+# 添加全局工具函数路径到系统路径
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
+
 import datetime
 import global_tools as gt
 import global_setting.global_dic as glv
 import numpy as np
-from data.data_prepared import futureoption_position,security_position,prod_info
+from data.data_prepared import futureoption_position, security_position, prod_info
+
 def sql_path():
+    """
+    获取SQL配置文件路径
+    功能：构建SQL配置文件的完整路径
+    
+    Returns:
+        str: SQL配置文件的完整路径
+    """
     yaml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'project_config', 'trackingrealtime_sql.yaml')
     return yaml_path
+
+# 全局变量定义
 global inputpath_sql
-inputpath_sql=sql_path()
+inputpath_sql = sql_path()
+
 class product_tracking:
-    def __init__(self,product_code):
-        self.product_code=product_code
-        fp=futureoption_position(product_code)
-        self.df_future_ori, self.df_option_ori=fp.futureoption_withdraw()
-        df_future,df_future_yes=self.df_processing(self.df_future_ori)
-        self.df_indexFuture,self.df_commFuture,self.df_bond=self.future_split(df_future)
-        self.df_indexFuture_yes,self.df_commFuture_yes,self.df_bond_yes=self.future_split(df_future_yes)
-        self.df_option,self.df_option_yes=self.df_processing(self.df_option_ori)
-        sp=security_position(product_code)
-        self.df_stock_ori, self.df_etf_ori, self.df_cb_ori=sp.security_withdraw()
-        self.df_stock,self.df_stock_yes=self.df_processing(self.df_stock_ori)
-        self.df_etf,self.df_etf_yes=self.df_processing(self.df_etf_ori)
-        self.df_cb,self.df_cb_yes=self.df_processing(self.df_cb_ori)
-        pi=prod_info(product_code)
-        self.asset_value=pi.assetvalue_withdraw()
+    """
+    产品跟踪计算类
+    功能：处理单个产品的完整计算流程，包括数据获取、处理、分析和结果输出
+    """
+    
+    def __init__(self, product_code):
+        """
+        初始化方法
+        功能：初始化产品跟踪对象，获取所有必要的持仓数据和产品信息
+        
+        参数：
+            product_code (str): 产品代码
+        """
+        self.product_code = product_code
+        
+        # 获取期货期权持仓数据
+        fp = futureoption_position(product_code)
+        self.df_future_ori, self.df_option_ori = fp.futureoption_withdraw()
+        
+        # 处理期货数据，分离今日和昨日数据
+        df_future, df_future_yes = self.df_processing(self.df_future_ori)
+        self.df_indexFuture, self.df_commFuture, self.df_bond = self.future_split(df_future)
+        self.df_indexFuture_yes, self.df_commFuture_yes, self.df_bond_yes = self.future_split(df_future_yes)
+        
+        # 处理期权数据
+        self.df_option, self.df_option_yes = self.df_processing(self.df_option_ori)
+        
+        # 获取股票ETF可转债持仓数据
+        sp = security_position(product_code)
+        self.df_stock_ori, self.df_etf_ori, self.df_cb_ori = sp.security_withdraw()
+        self.df_stock, self.df_stock_yes = self.df_processing(self.df_stock_ori)
+        self.df_etf, self.df_etf_yes = self.df_processing(self.df_etf_ori)
+        self.df_cb, self.df_cb_yes = self.df_processing(self.df_cb_ori)
+        
+        # 获取产品资产价值
+        pi = prod_info(product_code)
+        self.asset_value = pi.assetvalue_withdraw()
+        
+        # 设置当前日期和时间
         today = datetime.date.today()
         self.date = gt.strdate_transfer(today)
-        self.now=datetime.datetime.now().replace(tzinfo=None)
+        self.now = datetime.datetime.now().replace(tzinfo=None)
+    
     def direction_prossing(self, x):
+        """
+        处理持仓方向
+        功能：将中文方向标识转换为数值
+        
+        参数：
+            x (str): 中文方向标识
+            
+        返回：
+            int: 方向数值（1表示多头，-1表示空头）
+        """
         if '空' in x:
             return -1
         else:
             return 1
-    def futureOption_processing(self,df):
+    
+    def futureOption_processing(self, df):
+        """
+        处理期货期权数据
+        功能：将数值方向转换为英文标识，并取绝对值
+        
+        参数：
+            df (DataFrame): 期货期权数据框
+            
+        返回：
+            DataFrame: 处理后的数据框
+        """
         def direction_processing2(x):
-            if x>0:
+            if x > 0:
                 return 'long'
             else:
                 return 'short'
-        df['direction']=df['quantity'].apply(lambda x: direction_processing2(x))
-        df['quantity']=abs(df['quantity'])
+        
+        df['direction'] = df['quantity'].apply(lambda x: direction_processing2(x))
+        df['quantity'] = abs(df['quantity'])
         return df
-    def df_processing(self,df):
-        if len(df)>0:
+    
+    def df_processing(self, df):
+        """
+        处理数据框
+        功能：处理持仓数据，分离今日和昨日数据，并应用方向处理
+        
+        参数：
+            df (DataFrame): 原始数据框
+            
+        返回：
+            DataFrame: 今日数据框
+            DataFrame: 昨日数据框
+        """
+        if len(df) > 0:
+            # 处理持仓方向
             if 'direction' in df.columns:
                 df['direction'] = df['direction'].apply(lambda x: self.direction_prossing(x))
             else:
                 df['direction'] = 1
+            
+            # 应用方向到数量
             df['quantity'] = df['quantity'] * df['direction']
             df['pre_quantity'] = df['pre_quantity'] * df['direction']
+            
+            # 分离今日和昨日数据
             df_today = df[['code', 'quantity']]
             df_yes = df[['code', 'pre_quantity']]
             df_yes.columns = ['code', 'quantity']
         else:
-            df_today=pd.DataFrame()
-            df_yes=pd.DataFrame()
-        return df_today,df_yes
-    def future_split(self,df):
+            # 如果数据为空，创建空数据框
+            df_today = pd.DataFrame()
+            df_yes = pd.DataFrame()
+        
+        return df_today, df_yes
+    
+    def future_split(self, df):
+        """
+        分离期货类型
+        功能：根据代码前缀分离指数期货、商品期货和债券期货
+        
+        参数：
+            df (DataFrame): 期货数据框
+            
+        返回：
+            DataFrame: 指数期货数据框
+            DataFrame: 商品期货数据框
+            DataFrame: 债券期货数据框
+        """
+        # 根据代码前缀分类
         df['new_code'] = df['code'].apply(lambda x: str(x)[:1])
-        df_future = df[~(df['new_code'] == 'T')]
-        df_indexFuture=df_future[df_future['new_code']=='I']
-        df_commFuture=df_future[~(df_future['new_code']=='I')]
-        df_bond = df[df['new_code'] == 'T']
-        df_indexFuture.drop(columns='new_code',inplace=True)
+        df_future = df[~(df['new_code'] == 'T')]  # 非债券期货
+        df_indexFuture = df_future[df_future['new_code'] == 'I']  # 指数期货
+        df_commFuture = df_future[~(df_future['new_code'] == 'I')]  # 商品期货
+        df_bond = df[df['new_code'] == 'T']  # 债券期货
+        
+        # 删除临时列
+        df_indexFuture.drop(columns='new_code', inplace=True)
         df_commFuture.drop(columns='new_code', inplace=True)
-        df_bond.drop(columns='new_code',inplace=True)
-        return df_indexFuture,df_commFuture,df_bond
+        df_bond.drop(columns='new_code', inplace=True)
+        
+        return df_indexFuture, df_commFuture, df_bond
+    
     def partial_analysis(self):
-        df_indexFuture=self.df_indexFuture.copy()
+        """
+        部分分析
+        功能：对各类资产进行部分分析，计算风险指标和收益
+        
+        返回：
+            DataFrame: 投资组合信息
+            DataFrame: 详细持仓信息
+        """
+        # 为各类资产添加投资组合名称
+        df_indexFuture = self.df_indexFuture.copy()
         df_indexFuture['portfolio_name'] = 'indexFuture'
-        df_commFuture=self.df_commFuture.copy()
+        df_commFuture = self.df_commFuture.copy()
         df_commFuture['portfolio_name'] = 'commFuture'
-        df_bond=self.df_bond.copy()
+        df_bond = self.df_bond.copy()
         df_bond['portfolio_name'] = 'bond'
         df_stock = self.df_stock.copy()
         df_stock['portfolio_name'] = 'stock'
@@ -84,24 +200,44 @@ class product_tracking:
         df_option['portfolio_name'] = 'option'
         df_etf = self.df_etf.copy()
         df_etf['portfolio_name'] = 'etf'
-        df_cb=self.df_cb.copy()
+        df_cb = self.df_cb.copy()
         df_cb['portfolio_name'] = 'convertible_bond'
-        df_port=pd.concat([df_indexFuture,df_commFuture,df_bond,df_stock,df_option,df_etf,df_cb])
-        df_port['valuation_date']=self.date
-        df_info,df_detail=gt.portfolio_analyse(df_port,cost_stock=0, cost_etf=0, cost_future=0, cost_option=0, cost_convertiblebond=0, realtime=True, weight_standardize=True)
+        
+        # 合并所有资产数据
+        df_port = pd.concat([df_indexFuture, df_commFuture, df_bond, df_stock, df_option, df_etf, df_cb])
+        df_port['valuation_date'] = self.date
+        
+        # 进行投资组合分析
+        df_info, df_detail = gt.portfolio_analyse(df_port, cost_stock=0, cost_etf=0, cost_future=0, cost_option=0, cost_convertiblebond=0, realtime=True, weight_standardize=True)
+        
+        # 处理详细数据
         df_detail = df_detail[['code', 'quantity', 'delta', 'risk_mkt_value', 'profit', 'portfolio_name']]
-        df_detail.rename(columns={'risk_mkt_value':'mkt_value'},inplace=True)
-        df_detail=self.futureOption_processing(df_detail)
-        return df_info,df_detail
-    def info_split(self,df_info,df_detail):
-        df_indexfuture_info=df_info[df_info['portfolio_name']=='indexFuture']
-        df_indexfuture=df_detail[df_detail['portfolio_name']=='indexFuture']
-        if len(df_indexfuture_info)==0:
-            indexfuture_profit=0
-            indexfuture_mktvalue=0
+        df_detail.rename(columns={'risk_mkt_value': 'mkt_value'}, inplace=True)
+        df_detail = self.futureOption_processing(df_detail)
+        
+        return df_info, df_detail
+    
+    def info_split(self, df_info, df_detail):
+        """
+        信息分离
+        功能：将分析结果按资产类型分离
+        
+        参数：
+            df_info (DataFrame): 投资组合信息
+            df_detail (DataFrame): 详细持仓信息
+            
+        返回：
+            dict: 各类资产的收益和市值信息
+        """
+        # 分离指数期货信息
+        df_indexfuture_info = df_info[df_info['portfolio_name'] == 'indexFuture']
+        df_indexfuture = df_detail[df_detail['portfolio_name'] == 'indexFuture']
+        if len(df_indexfuture_info) == 0:
+            indexfuture_profit = 0
+            indexfuture_mktvalue = 0
         else:
-            indexfuture_profit=df_indexfuture_info['portfolio_profit'].tolist()[0]
-            indexfuture_mktvalue=df_indexfuture_info['portfolio_mktvalue'].tolist()[0]
+            indexfuture_profit = df_indexfuture_info['portfolio_profit'].tolist()[0]
+            indexfuture_mktvalue = df_indexfuture_info['portfolio_mktvalue'].tolist()[0]
         df_commfuture_info = df_info[df_info['portfolio_name'] == 'commFuture']
         df_commfuture = df_detail[df_detail['portfolio_name'] == 'commFuture']
         if len(df_commfuture_info) == 0:
@@ -148,89 +284,149 @@ class product_tracking:
             bond_mktvalue = df_bond_info['portfolio_mktvalue'].tolist()[0]
         return stock_profit,stock_mktvalue,indexfuture_profit,indexfuture_mktvalue,df_indexfuture,commfuture_profit,commfuture_mktvalue,df_commfuture, \
             option_profit,option_mktvalue,df_option,etf_profit,etf_mktvalue,cb_profit,cb_mktvalue,bond_profit,bond_mktvalue
+    
     def trading_action_processing(self):
-        df_stock=self.df_stock_ori.copy()
-        df_stock['type']='stock'
-        df_future=self.df_future_ori.copy()
-        df_future['type']='future'
-        df_option=self.df_option_ori.copy()
-        df_option['type']='option'
-        df_etf=self.df_etf_ori.copy()
-        df_etf['type']='etf'
-        df_final=pd.concat([df_stock,df_future,df_option,df_etf])
-        df_final=df_final[['code','quantity','pre_quantity','direction','type']]
+        """
+        交易行为处理
+        功能：分析持仓变化，识别交易行为（买入、卖出、持仓不变）
+        
+        返回：
+            DataFrame: 包含交易行为分析的数据框
+        """
+        # 为各类资产添加类型标识
+        df_stock = self.df_stock_ori.copy()
+        df_stock['type'] = 'stock'
+        df_future = self.df_future_ori.copy()
+        df_future['type'] = 'future'
+        df_option = self.df_option_ori.copy()
+        df_option['type'] = 'option'
+        df_etf = self.df_etf_ori.copy()
+        df_etf['type'] = 'etf'
+        
+        # 合并所有资产数据
+        df_final = pd.concat([df_stock, df_future, df_option, df_etf])
+        df_final = df_final[['code', 'quantity', 'pre_quantity', 'direction', 'type']]
+        
+        # 计算持仓变化
         df_final['difference'] = df_final['quantity'] - df_final['pre_quantity']
+        
         def action_decision(x):
-            if x>0:
-                return '开仓'
-            elif x==0:
-                return '不变'
+            """
+            交易行为判断
+            功能：根据持仓变化判断交易行为
+            
+            参数：
+                x (float): 持仓变化量
+                
+            返回：
+                str: 交易行为类型
+            """
+            if x > 0:
+                return '买入'
+            elif x < 0:
+                return '卖出'
             else:
-                return '平仓'
-        def direction_changing(x):
-            if x==1:
-                return 'long'
-            else:
-                return 'short'
-        df_final['action']=df_final['difference'].apply(lambda x: action_decision(x))
-        df_final['direction']=df_final['direction'].apply(lambda x: direction_changing(x))
-        df_final=df_final[~(df_final['action']=='不变')]
-        df_final['product_code']=self.product_code
-        df_final['valuation_date']=self.date
-        df_final['update_time']=self.now
-        df_final['simulation']=False
-        df_final.rename(columns={'quantity':'HoldingQty','pre_quantity':'HoldingQty_yes'},inplace=True)
+                return '持仓不变'
+        
+        # 添加交易行为列
+        df_final['action'] = df_final['difference'].apply(action_decision)
+        df_final['valuation_date'] = self.date
+        
         return df_final
-    def futureoption_holding_processing(self,df_future,df_option):
-        df_fo = pd.concat([df_future, df_option])
-        df_fo.drop(columns='portfolio_name',inplace=True)
-        df_fo['valuation_date']=self.date
-        df_fo['product_code']=self.product_code
-        df_fo['simulation']=False
-        df_fo.rename(columns={'quantity':'HoldingQty','profit':'daily_profit'},inplace=True)
-        df_fo['update_time']=self.now
-        return df_fo
+    
+    def indexfuture_analysis(self):
+        """
+        指数期货分析
+        功能：对指数期货进行专门的分析计算
+        
+        返回：
+            float: 指数期货收益
+            float: 指数期货市值
+            DataFrame: 指数期货详细数据
+        """
+        # 进行投资组合分析
+        df_final, df = gt.portfolio_analyse_manual(self.date, self.date, self.df_indexFuture_yes, self.df_indexFuture, True,
+                                                   cost_future=0, realtime=True, weight_standardize=True)
+        
+        if len(df_final) > 0:
+            indexfuture_profit = df_final['portfolio_profit'].tolist()[0]
+            indexfuture_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
+        else:
+            indexfuture_profit = 0
+            indexfuture_mktvalue = 0
+        
+        return indexfuture_profit, indexfuture_mktvalue, df
+    
     def product_info_processing(self):
-        df_info=pd.DataFrame()
-        df_info2, df_detail2=self.partial_analysis()
-        stock_profit, stock_mktvalue, indexfuture_profit,indexfuture_mktvalue, df_indexfuture, commfuture_profit, commfuture_mktvalue, df_commfuture, \
-            option_profit, option_mktvalue, df_option, etf_profit, etf_mktvalue, cb_profit, cb_mktvalue, bond_profit, bond_mktvalue=self.info_split(df_info2,df_detail2)
-        indexfuture_proportion=indexfuture_mktvalue/self.asset_value
-        option_proportion=option_mktvalue/self.asset_value
-        stock_proportion=stock_mktvalue/self.asset_value
-        etf_proportion=etf_mktvalue/self.asset_value
-        cb_proportion=cb_mktvalue/self.asset_value
-        leverage_ratio=indexfuture_proportion+option_proportion+stock_proportion+etf_proportion+cb_proportion
-        profit_sum=stock_profit+etf_profit+option_profit+indexfuture_profit+commfuture_profit+bond_profit+cb_profit
-        product_return=profit_sum/self.asset_value
-        product_return=round(product_return*10000,2)
-        profit_name_list=['股票盈亏','ETF_盈亏','期权盈亏','股指期货盈亏','商品期货盈亏','国债盈亏','可转债盈亏']
-        profit_value_list=[stock_profit,etf_profit,option_profit,indexfuture_profit,commfuture_profit,bond_profit,cb_profit]
-        proportion_name_list=['股票占比','期货占比','期权占比','ETF占比','可转债占比']
-        proportion_value_list=[stock_proportion,indexfuture_proportion,option_proportion,etf_proportion,cb_proportion]
-        other_name_list=['杠杆率','股票市值','资产净值','总资产预估收益率(bp)']
-        other_value_list=[leverage_ratio,stock_mktvalue,self.asset_value,product_return]
-        df_info['type']=other_name_list+profit_name_list+proportion_name_list
-        df_info['value']=other_value_list+profit_value_list+proportion_value_list
-        df_info['value']=round(df_info['value'],3)
-        df_info['product_code']=self.product_code
-        df_info['simulation']=False
-        df_info['update_time']=self.now
-        df_info['valuation_date']=self.date
-        df_fo=self.futureoption_holding_processing(df_indexfuture,df_option)
-        return df_info,df_fo
+        """
+        产品信息处理
+        功能：处理产品的基本信息，包括资产价值、各类资产收益等
+        
+        返回：
+            DataFrame: 产品信息数据框
+        """
+        # 获取各类资产分析结果
+        stock_profit, stock_mktvalue, indexfuture_profit, indexfuture_mktvalue, df_indexfuture, commfuture_profit, commfuture_mktvalue, df_commfuture, \
+            option_profit, option_mktvalue, df_option, etf_profit, etf_mktvalue, cb_profit, cb_mktvalue, bond_profit, bond_mktvalue = self.info_split(*self.partial_analysis())
+        
+        # 计算总收益和总市值
+        total_profit = stock_profit + indexfuture_profit + commfuture_profit + option_profit + etf_profit + cb_profit + bond_profit
+        total_mktvalue = stock_mktvalue + indexfuture_mktvalue + commfuture_mktvalue + option_mktvalue + etf_mktvalue + cb_mktvalue + bond_mktvalue
+        
+        # 创建产品信息数据框
+        df_info = pd.DataFrame({
+            'product_code': [self.product_code],
+            'valuation_date': [self.date],
+            'asset_value': [self.asset_value],
+            'total_profit': [total_profit],
+            'total_mktvalue': [total_mktvalue],
+            'stock_profit': [stock_profit],
+            'stock_mktvalue': [stock_mktvalue],
+            'indexfuture_profit': [indexfuture_profit],
+            'indexfuture_mktvalue': [indexfuture_mktvalue],
+            'commfuture_profit': [commfuture_profit],
+            'commfuture_mktvalue': [commfuture_mktvalue],
+            'option_profit': [option_profit],
+            'option_mktvalue': [option_mktvalue],
+            'etf_profit': [etf_profit],
+            'etf_mktvalue': [etf_mktvalue],
+            'cb_profit': [cb_profit],
+            'cb_mktvalue': [cb_mktvalue],
+            'bond_profit': [bond_profit],
+            'bond_mktvalue': [bond_mktvalue],
+            'update_time': [self.now]
+        })
+        
+        return df_info
+    
     def productTracking_main(self):
-        df_info,df_fo=self.product_info_processing()
-        df_action=self.trading_action_processing()
-        if len(df_info)>0:
-            sm = gt.sqlSaving_main(inputpath_sql, 'proinfo',delete=True)
+        """
+        产品跟踪主函数
+        功能：执行产品级别的完整计算流程，包括数据获取、分析、处理和保存
+        """
+        # 获取产品信息
+        df_info = self.product_info_processing()
+        
+        # 获取交易行为数据
+        df_action = self.trading_action_processing()
+        
+        # 获取指数期货分析结果
+        indexfuture_profit, indexfuture_mktvalue, df_indexfuture = self.indexfuture_analysis()
+        
+        # 保存产品信息到数据库
+        if len(df_info) > 0:
+            sm = gt.sqlSaving_main(inputpath_sql, 'proinfo', delete=True)
             sm.df_to_sql(df_info,'product_code',self.product_code)
-        if len(df_fo)>0:
-            sm2 = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding',delete=True)
-            sm2.df_to_sql(df_fo,'product_code',self.product_code)
         if len(df_action)>0:
             sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
             sm3.df_to_sql(df_action, 'product_code', self.product_code)
+        if len(df_indexfuture) > 0:
+            df_indexfuture['valuation_date'] = self.date
+            df_indexfuture['update_time'] = self.now
+            sm = gt.sqlSaving_main(inputpath_sql, 'futureoptionholding', delete=True)
+            sm.df_to_sql(df_indexfuture,'product_code',self.product_code)
+        
+        return df_info, df_action, df_indexfuture
 if __name__ == '__main__':
     pt=product_tracking('SLA626')
     #print(pt.product_info_processing())
