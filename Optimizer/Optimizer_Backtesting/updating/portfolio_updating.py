@@ -11,7 +11,7 @@ import pandas as pd
 from Optimizer_Backtesting.portfolio_checking.portfolio_checking import portfolio_checking,portfolio_Error_raising
 import os
 from Optimizer_python.utils.logger import setup_logger
-
+from datetime import datetime
 # Setup logger for this module
 logger = setup_logger('portfolio_updating')
 
@@ -67,7 +67,8 @@ def target_date_decision():
         today = date.today()
         next_day = gt.next_workday_calculate(today)
         critical_time = '20:00'
-        time_now = datetime.datetime.now().strftime("%H:%M")
+        # time_now = datetime.datetime.now().strftime("%H:%M")
+        time_now = datetime.now().strftime("%H:%M")
         if time_now >= critical_time:
             logger.info(f"After critical time, using next workday: {next_day}")
             return next_day
@@ -142,7 +143,6 @@ def portfolio_updating(score_type,is_sql):
         
         if df_final['weight'].sum()<0.99 or df_final['weight'].sum()>1.01:
             logger.warning(f"Portfolio {score_name} weights sum is not 1: {df_final['weight'].sum()}")
-            continue
             
         df_final['weight']=df_final['weight']/df_final['weight'].sum()
         df_style, df_industry = portfolio_checking(score_name, target_date)
@@ -155,6 +155,8 @@ def portfolio_updating(score_type,is_sql):
             df_final['portfolio_name'] = score_name
             df_final['valuation_date'] = target_date
             df_final = df_final[['valuation_date', 'portfolio_name'] + df_final.columns.tolist()[:-2]]
+            now = datetime.now()
+            df_final['update_time'] = now
             sm.df_to_sql(df_final)
             logger.info(f"Successfully saved {score_name} to SQL database")
         
@@ -205,6 +207,8 @@ def portfolio_updating2(score_name,start_date,end_date,is_sql):
             df_final['portfolio_name'] = score_name
             df_final['valuation_date'] = target_date
             df_final = df_final[['valuation_date', 'portfolio_name'] + df_final.columns.tolist()[:-2]]
+            now = datetime.now()
+            df_final['update_time'] = now
             sm.df_to_sql(df_final)
             logger.info(f"Successfully saved {score_name} to SQL database for date {target_date}")
         
@@ -233,4 +237,5 @@ def portfolio_updating_bu(is_sql):
     logger.info("Batch update completed")
 
 if __name__ == '__main__':
-    portfolio_updating_auto(False)
+    portfolio_updating_auto(True)
+    #print(gt.is_workday2())

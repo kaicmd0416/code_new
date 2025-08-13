@@ -76,7 +76,7 @@ fclose(fileID);
         x0 = max(min(x0, ub), lb);
         nonlcon=@(x)fun2(x,stock_risk,index_risk,style_weight_upper,style_weight_lower,industry_weight_upper,industry_weight_lower,V,index_initial_weight,te_value,style_len);
         A = []; b = []; Aeq =ones(1,stock_number) ; beq = ones(1,1);
-        options = optimoptions('fmincon','Display','iter','Algorithm','sqp','MaxFunctionEvaluations',200000, 'UseParallel', true); % Set options
+        options = optimoptions('fmincon','Display','iter','Algorithm','sqp','MaxFunctionEvaluations',200000, 'UseParallel', false); % Set options
         %options = optimoptions('fmincon', 'Display','iter', 'MaxFunctionEvaluations', 2000000, 'Algorithm', 'inferior-point', 'UseParallel', true);
         x = fmincon(f,x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
         portfolio_risk=sqrt((x-index_initial_weight)'*V*(x-index_initial_weight)*252);

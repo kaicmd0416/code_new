@@ -6,7 +6,7 @@
 2. 构建完整的文件路径
 3. 提供全局路径访问接口
 
-配置文件结构 (tools_path_config.json):
+配置文件结构 (tracking_path_config.json):
 1. main_folder:
    - folder_type: 文件夹类型标识
    - path: 基础路径
@@ -24,6 +24,10 @@
 - os：路径操作
 - pathlib：路径处理
 - pandas：数据处理
+- pymysql：数据库连接
+
+作者：[作者名]
+创建时间：[创建时间]
 """
 
 import json
@@ -33,12 +37,18 @@ import pandas as pd
 import pymysql
 from datetime import datetime
 
-# 全局字典
+# 全局字典，存储所有配置信息
 global_dic = {}
 
 def init():
     """
     初始化全局字典，从配置文件加载设置
+    
+    读取tracking_path_config.json配置文件，解析其中的路径配置信息，
+    并更新全局字典供其他函数使用
+    
+    Returns:
+        bool: 初始化是否成功
     """
     global global_dic
     
@@ -66,11 +76,14 @@ def get(key):
     """
     获取全局变量值，支持本地文件系统和SQL数据库两种模式
     
+    根据配置的数据源模式，返回对应的文件路径或SQL查询语句。
+    支持动态切换本地文件和数据库模式。
+    
     Args:
-        key (str): 要获取的键名
+        key (str): 要获取的键名，对应配置文件中的data_type
     
     Returns:
-        any: 对应的值，可能是文件路径或SQL查询语句
+        any: 对应的值，可能是文件路径或SQL查询语句，失败时返回None
     """
     global global_dic
     
@@ -78,6 +91,18 @@ def get(key):
     if not global_dic:
         if not init():
             return None
+    
+    # 获取数据源模式
+    data_source = global_dic.get('components', {}).get('data_source', {})
+    mode = data_source.get('mode', 'local')
+    
+    # 特殊键处理
+    if key == 'mode':
+        return mode
+    if key == 'config_path':
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(current_dir, 'optimizer_path_config.json')
+        return config_path
     
     # 获取配置信息
     config = None
@@ -89,16 +114,18 @@ def get(key):
     if not config:
         return None
     
-    # 检查数据源模式
-    data_source = global_dic.get('components', {}).get('data_source', {})
-    mode = data_source.get('mode', 'local')
+    if mode == 'sql':
+        # SQL模式：返回 select * from db_name.table_name
+        if 'sql_sheet' not in config or 'database' not in config:
+            # 如果没有sql_sheet或database，降级到local模式
+            mode = 'local'
+        else:
+            table_name = config['sql_sheet']
+            db_name = config['database']
+            return (f"SELECT * FROM {db_name}.{table_name}")
     
-    if mode == 'sql' and config.get('sql_sheet'):
-        # SQL模式且有sql_sheet配置，返回查询语句
-        table_name = config['sql_sheet']
-        return f"SELECT * FROM {table_name}"
-    else:
-        # 本地文件模式
+    if mode == 'local':
+        # 本地模式：返回文件路径
         if 'folder_name' not in config:
             return None
             
@@ -136,6 +163,8 @@ def get(key):
 def set(key, value):
     """
     设置全局变量值
+    
+    手动设置全局字典中的键值对，用于动态配置
     
     Args:
         key (str): 要设置的键名

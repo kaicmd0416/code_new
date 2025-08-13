@@ -92,6 +92,7 @@ def select_target_date_decision(date):
 def update_optimizer_main(is_sql=True): #部署自动化
     score_name_list=score_name_withdraw()
     target_date = target_date_decision()
+    print(target_date)
     if len(score_name_list)!=0:
         stable_data = stable_data_preparing()
         df_st, df_stockuniverse=stable_data.stable_data_preparing()
@@ -166,8 +167,14 @@ def update_optimizer_main2(is_sql=True): #部署自动化
     check_data_completeness(target_date)
 
 if __name__ == '__main__':
-    d = update_optimizer_main()
-    print(d)
+    update_optimizer_main(is_sql=True)
+    # portfolio_updating_auto(is_sql=True)
+    # print(d)
     # update_optimizer_main_manual()
+    # today = date.today()
+    # next_day = gt.next_workday_calculate(today)
+    # print(next_day)
+    pass
+
 
 

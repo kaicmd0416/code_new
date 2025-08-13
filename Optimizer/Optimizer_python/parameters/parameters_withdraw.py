@@ -12,7 +12,6 @@ def optimizer_args_withdraw(score_type):
     parameters=df_config.to_dict()
     parameters=parameters.get(score_type)
     parameters['score_type']=score_type
-    print(parameters)
     return parameters
 def factor_constraint_withdraw(score_type):
       inputpath_config = glv.get('factor_constraint')

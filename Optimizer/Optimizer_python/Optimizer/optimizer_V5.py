@@ -66,6 +66,8 @@ class Optimizer_python:
         opt_type=optimizer_args.get('opt_type')
         st_list = self.df_st['code'].tolist()
         df_score=score_withdraw_main(score_type,self.available_date,mode_type,index_type,self.df_hs300,self.df_zz500,self.df_zz1000,self.df_zz2000,self.df_zzA500)
+        # print(mode_type)
+        # print(df_score[df_score['code']=='000009.SZ'])
         stock_pool = self.df_stockpool['code']
         stock_pool.dropna(inplace=True, axis=0)
         stock_pool2 = stock_pool.tolist()

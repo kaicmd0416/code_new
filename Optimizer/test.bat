@@ -15,11 +15,9 @@ echo Start Time:%time%
 
 echo Running optimizer_update...
 cd /d "%SCRIPT_DIR%\Optimizer_python"
-%ANACONDAPATH%\python -c "from optimizer_update_main import update_optimizer_main; update_optimizer_main()"
-
+echo dir: %CD%
 cd ..\..
+echo dir: %CD%
 cd Trading
-%ANACONDAPATH%\python -c "from running_main import PortfolioSaving_main;PortfolioSaving_main(is_realtime=False)"
-%ANACONDAPATH%\python -c "from running_main import TradingOder_main;TradingOder_main(is_realtime=False)"
-
-
+echo dir: %CD%
+pause

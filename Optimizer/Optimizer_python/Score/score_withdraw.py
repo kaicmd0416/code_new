@@ -127,3 +127,6 @@ def score_withdraw_main(score_type,available_date,mode_type,index_type,df_hs300,
         print('there is no mode type: '+str(mode_type))
         raise ValueError
     return df_final
+if __name__ == '__main__':
+    df=basic_score_withdraw('combine_zz500','2025-06-20')
+    print(df[df['code']=='000009.SZ'])

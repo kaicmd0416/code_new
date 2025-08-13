@@ -181,6 +181,6 @@ if __name__ == '__main__':
     # 获取配置文件路径
     config_path = glv.get('config_path')
     # 清理实时期货期权持仓表
-    gt.table_manager(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
+    gt.table_manager(config_path, 'data_prepared_new', 'stockholding_temp')
     # pt = portfolio_tracking()
     # pt.portfolioTracking_main()

@@ -22,4 +22,4 @@ def history_optimizer_main(is_sql=True): #部署自动化
     call_matlab_running_main(outputpath_list, outputpath_list_yes)
     portfolio_updating(df_config,is_sql)
 if __name__ == '__main__':
-    history_optimizer_main()
+    history_optimizer_main(False)

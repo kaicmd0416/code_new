@@ -76,3 +76,4 @@ def main_update_auto(priority): #priority为true的时候先跑,新版本
                 j += 1
     else:
         print('today is not working day')
+
