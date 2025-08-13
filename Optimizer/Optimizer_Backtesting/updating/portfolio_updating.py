@@ -10,7 +10,7 @@ import global_tools as gt
 import pandas as pd
 from Optimizer_Backtesting.portfolio_checking.portfolio_checking import portfolio_checking,portfolio_Error_raising
 import os
-from Optimizer_python.utils.logger import setup_logger
+from Optimizer_python.utils_log.logger import setup_logger
 from datetime import datetime
 # Setup logger for this module
 logger = setup_logger('portfolio_updating')
@@ -63,7 +63,7 @@ def score_name_withdraw(score_type):
 
 def target_date_decision():
     logger.info("Deciding target date...")
-    if gt.is_workday2() == True:
+    if gt.is_workday_auto() == True:
         today = date.today()
         next_day = gt.next_workday_calculate(today)
         critical_time = '20:00'
@@ -105,7 +105,7 @@ def portfolio_updating(score_type,is_sql):
         logger.info("SQL mode enabled, initializing SQL connection")
         current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         inputpath_configsql = os.path.join(current_dir, 'global_setting\\optimizer_sql.yaml')
-        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
     
     target_date = target_date_decision()
     logger.info(f"Processing {len(score_name_list)} portfolios for date: {target_date}")
@@ -157,7 +157,7 @@ def portfolio_updating(score_type,is_sql):
             df_final = df_final[['valuation_date', 'portfolio_name'] + df_final.columns.tolist()[:-2]]
             now = datetime.now()
             df_final['update_time'] = now
-            sm.df_to_sql(df_final)
+            sm.df_to_sql(df_final,'portfolio_name',score_name)
             logger.info(f"Successfully saved {score_name} to SQL database")
         
         logger.info(f"Successfully updated portfolio: {score_name}")
@@ -172,7 +172,7 @@ def portfolio_updating2(score_name,start_date,end_date,is_sql):
         logger.info("SQL mode enabled, initializing SQL connection")
         current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         inputpath_configsql = os.path.join(current_dir, 'global_setting\\optimizer_sql.yaml')
-        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
     
     for target_date in working_days_list:
         logger.info(f"Processing date: {target_date}")
@@ -209,7 +209,7 @@ def portfolio_updating2(score_name,start_date,end_date,is_sql):
             df_final = df_final[['valuation_date', 'portfolio_name'] + df_final.columns.tolist()[:-2]]
             now = datetime.now()
             df_final['update_time'] = now
-            sm.df_to_sql(df_final)
+            sm.df_to_sql(df_final,'portfolio_name',score_name)
             logger.info(f"Successfully saved {score_name} to SQL database for date {target_date}")
         
         logger.info(f"Successfully updated portfolio {score_name} for date {target_date}")

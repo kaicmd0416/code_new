@@ -264,7 +264,7 @@ class Back_testing_processing:
             portfolio_return_list.append(portfolio_return)
         portfolio_return2 = list(np.concatenate(portfolio_return_list))
         df_backtesting = pd.DataFrame()
-        df_backtesting['valuation_date'] = valuation_date[1:]
+        df_backtesting['valuation_date'] = valuation_date
         df_backtesting['portfolio'] = portfolio_return2
         df_turn_over['turnover_ratio'] = df_turn_over['turnover_ratio'] * cost
         df_backtesting['valuation_date'] = pd.to_datetime(df_backtesting['valuation_date'])

@@ -7,7 +7,7 @@ path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd
-from Optimizer_python.utils.logger import setup_logger
+from Optimizer_python.utils_log.logger import setup_logger
 
 # Setup logger for this module
 logger = setup_logger('portfolio_history')
@@ -52,7 +52,7 @@ def portfolio_updating(df_config,is_sql):
         logger.info("SQL mode enabled, initializing SQL connection")
         current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         inputpath_configsql = os.path.join(current_dir, 'global_setting\\optimizer_sql.yaml')
-        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio',delete=True)
     
     for score_name in score_name_list:
         logger.info(f"Processing portfolio: {score_name}")
@@ -94,7 +94,7 @@ def portfolio_updating(df_config,is_sql):
                 df_final['portfolio_name'] = score_name
                 df_final['valuation_date'] = target_date
                 df_final = df_final[['valuation_date', 'portfolio_name'] + df_final.columns.tolist()[:-2]]
-                sm.df_to_sql(df_final)
+                sm.df_to_sql(df_final,'portfolio_name',score_name)
                 logger.info(f"Successfully saved {score_name} to SQL database for date {target_date}")
             
             logger.info(f"Successfully updated portfolio {score_name} for date {target_date}")

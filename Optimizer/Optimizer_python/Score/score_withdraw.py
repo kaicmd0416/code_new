@@ -66,12 +66,13 @@ def component_bu(df_score,index_type,df_hs300,df_zz500,df_zz1000,df_zz2000,df_zz
     return daily_df
 def basic_score_withdraw(score_type,available_date):
     available_date2=gt.intdate_transfer(available_date)
+    available_date3=gt.strdate_transfer(available_date)
     inputpath_score=glv.get('input_score')
     if source=='local':
            inputpath_score2=os.path.join(inputpath_score,score_type)
            inputpath_score2=gt.file_withdraw(inputpath_score2,available_date2)
     else:
-           inputpath_score2=str(inputpath_score)+f" WHERE valuation_date = '{available_date}' AND score_name = '{score_type}' "
+           inputpath_score2=str(inputpath_score)+f" WHERE valuation_date = '{available_date3}' AND score_name = '{score_type}' "
     df_score=gt.data_getting(inputpath_score2,config_path)
     df_score['final_score']=(df_score['final_score']-df_score['final_score'].mean())/df_score['final_score'].std()
     return df_score

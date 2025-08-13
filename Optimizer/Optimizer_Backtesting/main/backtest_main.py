@@ -44,23 +44,21 @@ def config_path_finding():
 source,config_path= source_getting()
 config_path2=config_path_finding()
 class backtesting_main:
-    def __init__(self):
-        self.df_index_return=self.index_return_withdraw()
-        self.df_stock_return=self.stock_return_withdraw()
+    def __init__(self,start_date,end_date):
+        self.df_index_return=self.index_return_withdraw(start_date,end_date)
+        self.df_stock_return=self.stock_return_withdraw(start_date,end_date)
     def portfolio_index_finding(self,score_name):
         inputpath_mode_dic=os.path.join(config_path2,'Score_config\\mode_dictionary.xlsx')
         df_mode=pd.read_excel(inputpath_mode_dic)
         index_type=df_mode[df_mode['score_name']==score_name]['index_type'].tolist()[0]
         return index_type
-    def index_return_withdraw(self):
-        df=gt.timeSeries_index_return_withdraw()
+    def index_return_withdraw(self,start_date,end_date):
+        df=gt.indexData_withdraw(start_date=start_date, end_date=end_date, columns=['pct_chg'])
+        df=gt.sql_to_timeseries(df)
         return df
-    def stock_return_withdraw(self):
-        inputpath_stockreturn = glv.get('input_timeseriesstockreturn')
-        df=gt.data_getting(inputpath_stockreturn,config_path)
-        if source=='sql':
-              df=df[['valuation_date','code','pct_chg']]
-              df=gt.sql_to_timeseries(df)
+    def stock_return_withdraw(self,start_date,end_date):
+        df = gt.stockData_withdraw(start_date=start_date, end_date=end_date, columns=['pct_chg'])
+        df=gt.sql_to_timeseries(df)
         df['valuation_date'] = pd.to_datetime(df['valuation_date'])
         df['valuation_date'] = df['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
         df.set_index('valuation_date',inplace=True,drop=True)

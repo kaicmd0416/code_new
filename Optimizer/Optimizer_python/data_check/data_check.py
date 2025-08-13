@@ -8,7 +8,7 @@ import os
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
-from Optimizer_python.utils.logger import setup_logger, setup_check_logger
+from Optimizer_python.utils_log.logger import setup_logger, setup_check_logger
 import yaml
 from sqlalchemy import create_engine
 

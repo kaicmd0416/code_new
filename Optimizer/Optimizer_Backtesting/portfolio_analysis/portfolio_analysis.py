@@ -84,7 +84,7 @@ class portfolio_analysis:
             inputpath_score2 = gt.file_withdraw(inputpath_score2, available_date)
         else:
             inputpath_score2 = str(
-                inputpath_score) + f" WHERE valuation_date = '{available_date}' AND score_name = '{self.base_score}' "
+                inputpath_score) + f" WHERE valuation_date = '{available_date2}' AND score_name = '{self.base_score}' "
         df3= gt.data_getting(inputpath_score2, config_path)
         df3.rename(columns={'final_score':'original_score'},inplace=True)
         inputpath=os.path.join(self.inputpath,target_date)

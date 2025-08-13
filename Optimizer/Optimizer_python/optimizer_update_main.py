@@ -68,7 +68,7 @@ def score_name_withdraw():
     return all_scores
 
 def target_date_decision():
-    if gt.is_workday2() == True:
+    if gt.is_workday_auto() == True:
         today = date.today()
         today=gt.strdate_transfer(today)
         next_day = gt.next_workday_calculate(today)
