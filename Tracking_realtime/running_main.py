@@ -10,7 +10,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime
@@ -67,7 +67,7 @@ def tracking_realtime_main():
                 print(f"{product_code}更新有误: {str(e)}")
         
         # 在收盘后（16:00后）执行历史数据保存
-        if time.hour >= 16:
+        if time.hour >= 17:
             hs = historySql_saving()
             hs.historySql_main()
 

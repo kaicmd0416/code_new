@@ -12,7 +12,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime

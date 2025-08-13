@@ -12,7 +12,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime
@@ -322,41 +322,21 @@ class product_tracking:
                 str: 交易行为类型
             """
             if x > 0:
-                return '买入'
+                return '开仓'
             elif x < 0:
-                return '卖出'
+                return '平仓'
             else:
-                return '持仓不变'
+                return '不变'
         
         # 添加交易行为列
         df_final['action'] = df_final['difference'].apply(action_decision)
+        df_final=df_final[~(df_final['action']=='不变')]
+        df_final['simulation']='False'
+        df_final['product_code']=self.product_code
         df_final['valuation_date'] = self.date
-        
+        df_final.rename(columns={'quantity':'HoldingQty','pre_quantity':'HoldingQty_yes'})
         return df_final
-    
-    def indexfuture_analysis(self):
-        """
-        指数期货分析
-        功能：对指数期货进行专门的分析计算
-        
-        返回：
-            float: 指数期货收益
-            float: 指数期货市值
-            DataFrame: 指数期货详细数据
-        """
-        # 进行投资组合分析
-        df_final, df = gt.portfolio_analyse_manual(self.date, self.date, self.df_indexFuture_yes, self.df_indexFuture, True,
-                                                   cost_future=0, realtime=True, weight_standardize=True)
-        
-        if len(df_final) > 0:
-            indexfuture_profit = df_final['portfolio_profit'].tolist()[0]
-            indexfuture_mktvalue = df_final['portfolio_mktvalue'].tolist()[0]
-        else:
-            indexfuture_profit = 0
-            indexfuture_mktvalue = 0
-        
-        return indexfuture_profit, indexfuture_mktvalue, df
-    
+
     def product_info_processing(self):
         """
         产品信息处理
@@ -397,21 +377,19 @@ class product_tracking:
             'update_time': [self.now]
         })
         
-        return df_info
-    
+        return df_info,df_indexfuture
+
     def productTracking_main(self):
         """
         产品跟踪主函数
         功能：执行产品级别的完整计算流程，包括数据获取、分析、处理和保存
         """
         # 获取产品信息
-        df_info = self.product_info_processing()
+        df_info,df_indexfuture = self.product_info_processing()
         
         # 获取交易行为数据
         df_action = self.trading_action_processing()
-        
-        # 获取指数期货分析结果
-        indexfuture_profit, indexfuture_mktvalue, df_indexfuture = self.indexfuture_analysis()
+
         
         # 保存产品信息到数据库
         if len(df_info) > 0:
@@ -423,7 +401,7 @@ class product_tracking:
         if len(df_indexfuture) > 0:
             df_indexfuture['valuation_date'] = self.date
             df_indexfuture['update_time'] = self.now
-            sm = gt.sqlSaving_main(inputpath_sql, 'futureoptionholding', delete=True)
+            sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding', delete=True)
             sm.df_to_sql(df_indexfuture,'product_code',self.product_code)
         
         return df_info, df_action, df_indexfuture
