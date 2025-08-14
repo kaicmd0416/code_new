@@ -7,8 +7,24 @@ path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 global source,config_path
-source=glv.get('source')
-config_path=glv.get('config_path')
+def source_getting():
+    """
+    获取数据源配置
+
+    Returns:
+        str: 数据源模式（'local' 或 'sql'）
+    """
+    try:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        config_path = os.path.join(current_dir, 'global_setting\\optimizer_path_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        source = config_data['components']['data_source']['mode']
+    except Exception as e:
+        print(f"获取配置出错: {str(e)}")
+        source = 'local'
+    return source,config_path
+source,config_path= source_getting()
 def component_bu(df_score,index_type,df_hs300,df_zz500,df_zz1000,df_zz2000,df_zzA500):
     if index_type=='沪深300':
         quantile_1=0.4
@@ -50,12 +66,13 @@ def component_bu(df_score,index_type,df_hs300,df_zz500,df_zz1000,df_zz2000,df_zz
     return daily_df
 def basic_score_withdraw(score_type,available_date):
     available_date2=gt.intdate_transfer(available_date)
+    available_date3=gt.strdate_transfer(available_date)
     inputpath_score=glv.get('input_score')
     if source=='local':
            inputpath_score2=os.path.join(inputpath_score,score_type)
            inputpath_score2=gt.file_withdraw(inputpath_score2,available_date2)
     else:
-           inputpath_score2=str(inputpath_score)+f" WHERE valuation_date = '{available_date}' AND score_name = '{score_type}' "
+           inputpath_score2=str(inputpath_score)+f" WHERE valuation_date = '{available_date3}' AND score_name = '{score_type}' "
     df_score=gt.data_getting(inputpath_score2,config_path)
     df_score['final_score']=(df_score['final_score']-df_score['final_score'].mean())/df_score['final_score'].std()
     return df_score
@@ -87,21 +104,21 @@ def score_withdraw_main(score_type,available_date,mode_type,index_type,df_hs300,
     df_score=basic_score_withdraw(score_type,available_date)
     if mode_type=='mode_v1':
         df_final=df_score
+        #if str(score_type)[:2]=='rr':
+            #f_final=component_bu(df_score, index_type, df_hs300, df_zz500, df_zz1000, df_zz2000, df_zzA500)
     elif mode_type=='mode_v2':
-        df_final=component_bu(df_score, index_type, df_hs300, df_zz500, df_zz1000, df_zz2000, df_zzA500)
-    elif mode_type=='mode_v3': #中证800股票池
         if len(df_hs300)==0 or len(df_zz500)==0:
             print('权重股数据缺失')
             raise ValueError
         else:
             df_final=score_zz800_stockpool_processing(df_score,df_hs300,df_zz500)
-    elif mode_type=='mode_v4':#中证1800股票池
+    elif mode_type=='mode_v3':
         if len(df_hs300)==0 or len(df_zz500)==0 or len(df_zz1000)==0:
             print('权重股数据缺失')
             raise ValueError
         else:
             df_final=score_zz1800_stockpool_processing(df_score,df_hs300,df_zz500,df_zz1000)
-    elif mode_type=='mode_v5':#中证3800股票池
+    elif mode_type=='mode_v4':
         if len(df_hs300)==0 or len(df_zz500)==0 or len(df_zz1000)==0 or len(df_zz2000)==0:
             print('权重股数据缺失')
             raise ValueError
@@ -111,3 +128,6 @@ def score_withdraw_main(score_type,available_date,mode_type,index_type,df_hs300,
         print('there is no mode type: '+str(mode_type))
         raise ValueError
     return df_final
+if __name__ == '__main__':
+    df=basic_score_withdraw('combine_zz500','2025-06-20')
+    print(df[df['code']=='000009.SZ'])

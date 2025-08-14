@@ -9,7 +9,6 @@
                 "port": 3306,
                 "user": "kai",
                 "password": "Abcd1234#",
-                "database": "data_prepared",
                 "charset": "utf8mb4"
             },
             "database2": {
@@ -17,7 +16,6 @@
                 "port": 3306,
                 "user": "root",
                 "password": "root",
-                "database": "data_prepared",
                 "charset": "utf8mb4"
             }
         }
@@ -54,83 +52,97 @@
             "data_type": "input_indexcomponent",
             "folder_name": "data_index\\index_component",
             "folder_type": "input_folder",
-            "sql_sheet": "data_indexcomponent"
+            "sql_sheet": "data_indexcomponent",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_factorexposure",
             "folder_name": "data_factor\\factor_exposure",
             "folder_type": "input_folder",
-            "sql_sheet": "data_factorexposure"
+            "sql_sheet": "data_factorexposure",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_factorstockpool",
             "folder_name": "data_factor\\factor_stockpool",
             "folder_type": "input_folder",
-            "sql_sheet": "data_factorpool"
+            "sql_sheet": "data_factorpool",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_factorstockpool",
             "folder_name": "data_factor\\factor_stockpool",
             "folder_type": "input_folder",
-            "sql_sheet": "data_factorpool"
+            "sql_sheet": "data_factorpool",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_factorcov",
             "folder_name": "data_factor\\FactorCov",
             "folder_type": "input_folder",
-            "sql_sheet": "data_factorcov"
+            "sql_sheet": "data_factorcov",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_factorrisk",
             "folder_name": "data_factor\\FactorSpecificRisk",
             "folder_type": "input_folder",
-            "sql_sheet": "data_factorspecificrisk"
+            "sql_sheet": "data_factorspecificrisk",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_index_exposure",
             "folder_name": "data_index\\index_exposure",
             "folder_type": "input_folder",
-            "sql_sheet": "data_factorindexexposure"
+            "sql_sheet": "data_factorindexexposure",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_score",
             "folder_name": "score",
             "folder_type": "input_folder",
-            "sql_sheet": "data_score"
+            "sql_sheet": "data_score",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_timeseriesstock",
             "folder_name": "data_timeSeries\\stock_data\\stockClose.csv",
             "folder_type": "input_folder",
-            "sql_sheet": "data_stock"
+            "sql_sheet": "data_stock",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_timeseriesstockreturn",
             "folder_name": "data_timeSeries\\stock_data\\stockReturn.csv",
             "folder_type": "input_folder",
-            "sql_sheet": "data_stock"
+            "sql_sheet": "data_stock",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "stock_universe_new",
             "folder_name": "data_other\\StockUniverse_new.csv",
             "folder_type": "input_folder",
-            "sql_sheet": "stockuniverse"
+            "sql_sheet": "stockuniverse",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "st_stock",
             "folder_name": "data_other\\st_stock.xlsx",
             "folder_type": "input_folder",
-            "sql_sheet": "st_stock"
+            "sql_sheet": "st_stock",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "output_optimizer",
             "folder_name": "processing_data",
-            "folder_type": "output_folder"
+            "folder_type": "output_folder",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "output_backtest",
             "folder_name": "portfolio_history",
-            "folder_type": "output_folder_result"
+            "folder_type": "output_folder_result",
+            "database": "data_prepared_new"
         }
     ]
 } 

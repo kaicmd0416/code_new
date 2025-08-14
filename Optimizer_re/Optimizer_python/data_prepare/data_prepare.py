@@ -11,8 +11,25 @@ import global_setting.global_dic as glv
 
 warnings.filterwarnings("ignore")
 global source,config_path
-source=glv.get('source')
-config_path=glv.get('config_path')
+
+def source_getting():
+    """
+    获取数据源配置
+
+    Returns:
+        str: 数据源模式（'local' 或 'sql'）
+    """
+    try:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        config_path = os.path.join(current_dir, 'global_setting\\optimizer_path_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        source = config_data['components']['data_source']['mode']
+    except Exception as e:
+        source = 'local'
+    return source,config_path
+
+source,config_path= source_getting()
 
 class cross_section_data_preparing:
     def __init__(self,available_date):
@@ -27,11 +44,11 @@ class cross_section_data_preparing:
         return df_hs300, df_zz500, df_zz1000, df_zz2000, df_zzA500
 
     def index_exposure_withdraw(self):
-        df_hs300 = gt.crossSection_index_factorexposure_withdraw(index_type='沪深300', available_date=self.available_date)
-        df_zz500 = gt.crossSection_index_factorexposure_withdraw(index_type='中证500', available_date=self.available_date)
-        df_zz1000 = gt.crossSection_index_factorexposure_withdraw(index_type='中证1000', available_date=self.available_date)
-        df_zz2000 = gt.crossSection_index_factorexposure_withdraw(index_type='中证2000', available_date=self.available_date)
-        df_zzA500=gt.crossSection_index_factorexposure_withdraw(index_type='中证A500', available_date=self.available_date)
+        df_hs300 = gt.indexFactor_withdraw(index_type='沪深300', start_date=self.available_date, end_date=self.available_date)
+        df_zz500 = gt.indexFactor_withdraw(index_type='中证500', start_date=self.available_date, end_date=self.available_date)
+        df_zz1000 = gt.indexFactor_withdraw(index_type='中证1000', start_date=self.available_date, end_date=self.available_date)
+        df_zz2000 = gt.indexFactor_withdraw(index_type='中证2000', start_date=self.available_date, end_date=self.available_date)
+        df_zzA500=gt.indexFactor_withdraw(index_type='中证A500', start_date=self.available_date, end_date=self.available_date)
         return df_hs300, df_zz500, df_zz1000, df_zz2000,df_zzA500
 
     def stock_pool_withdraw(self):

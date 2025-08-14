@@ -1,3 +1,5 @@
+import time
+from datetime import datetime, date, timedelta
 from Optimizer_Backtesting.PDF.PDFCreator import PDFCreator
 import matplotlib as mpl
 from matplotlib import pyplot as plt
@@ -5,43 +7,63 @@ import pandas as pd
 import numpy as np
 import os
 import warnings
+import time
+import chinese_calendar as cal
+from scipy.io import loadmat
 mpl.rcParams['font.sans-serif'] = ['Microsoft YaHei']
 mpl.rcParams['axes.unicode_minus'] = False
 warnings.filterwarnings("ignore")
+import sys
+import global_setting.global_dic as glv
 import sys
 import os
 path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
-import global_setting.global_dic as glv
-from Optimizer_Backtesting.portfolio_analysis.portfolio_analysis import portfolio_analysis
-class Back_testing_processing:
-    def __init__(self,df_index_return,df_stock_return):
-        self.df_index_return=df_index_return
-        self.df_stock_return=df_stock_return
-    def portfolio_information_withdraw(self,inputpath,end_date):
-        if gt.is_workday(end_date):
-            end_date=end_date
-        else:
-            end_date=gt.last_workday_calculate(end_date)
-        inputpath_end = os.path.join(inputpath, end_date)
-        inputpath_end = os.path.join(inputpath_end, 'parameter_selecting.xlsx')
-        df_config = pd.read_excel(inputpath_end, header=None)
-        df_config.columns = ['parameters_name', 'value']
-        return df_config
-    def portoflio_contribution_list(self,df):
-        portfolio_list=df.columns.tolist()
-        component_portfolio=[i for i in portfolio_list if str(i)[:9]=='component']
-        top_portfolio=[i for i in portfolio_list if str(i)[:3]=='top']
-        component_portfolio=component_portfolio
-        top_portfolio=['missing']+top_portfolio
-        return component_portfolio,top_portfolio
-    def portfolio_weight_check(self,df):
-        df2=df.copy()
-        df2['weight_sum']=df2.sum(axis=1)
-        df2.reset_index(inplace=True)
-        df2=df2[['valuation_date','weight_sum']]
-        return df2
+import json
+global source,config_path
+def source_getting():
+    """
+    获取数据源配置
+
+    Returns:
+        str: 数据源模式（'local' 或 'sql'）
+    """
+    try:
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        config_path = os.path.join(current_dir, 'global_setting\\optimizer_path_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        source = config_data['components']['data_source']['mode']
+    except Exception as e:
+        print(f"获取配置出错: {str(e)}")
+        source = 'local'
+    return source,config_path
+source,config_path= source_getting()
+class Back_testing:
+    def __init__(self):
+        self.df_index_return=self.index_return_withdraw()
+        self.df_stock_return=self.stock_return_withdraw()
+
+    def index_return_withdraw(self):
+        df=gt.timeSeries_index_return_withdraw()
+        return df
+    def stock_return_withdraw(self):
+        inputpath_stockreturn = glv.get('input_timeseriesstock')
+        df=gt.data_getting(inputpath_stockreturn,config_path)
+        if source=='sql':
+              df=df[['valuation_date','code','pct_chg']]
+              df=gt.sql_to_timeseries(df)
+        df['valuation_date'] = pd.to_datetime(df['valuation_date'])
+        df['valuation_date'] = df['valuation_date'].apply(lambda x: x.strftime('%Y-%m-%d'))
+        df.set_index('valuation_date',inplace=True,drop=True)
+        df=df.astype(float)
+        df.reset_index(inplace=True)
+        return df
+    def index_weight_withdraw(self,index_type, available_date):  # 提取指数权重股数据
+        df=gt.index_weight_withdraw(index_type, available_date)
+        df=df[['code','weight']]
+        return df
     def weight_matrix_combination(self, df_input, inputpath_backtesting):
         df_final = pd.DataFrame()
         df_final_weight = pd.DataFrame()
@@ -55,7 +77,6 @@ class Back_testing_processing:
             df_weight = pd.read_csv(inputpath_quanzhong, header=None)
             df_weight.columns = df_top500.columns.tolist()
             available_date = df_top500.columns.tolist()[0]
-            df_weight[df_weight.columns.tolist()[0]]=df_weight[df_weight.columns.tolist()[0]]/df_weight[df_weight.columns.tolist()[0]].sum()
             code_list = df_top500[df_top500.columns.tolist()[0]].tolist()
             weight_list = df_weight[df_weight.columns.tolist()[0]].tolist()
             number_missing = 2000 - len(code_list)
@@ -108,11 +129,11 @@ class Back_testing_processing:
             slice_df = df_final[ticker_list[i - 2:i]]  # 切片
             slice_df.rename(columns={ticker_list[i -2]: 'code',ticker_list[i - 1]: 'weight'}, inplace=True)
             slice_df.dropna(inplace=True, axis=0)
-            component_list_hs300 = gt.index_weight_withdraw(index_type='沪深300', available_date=available_date)['code'].tolist()
-            component_list_zz500 = gt.index_weight_withdraw(index_type='中证500', available_date=available_date)['code'].tolist()
-            component_list_zz1000 = gt.index_weight_withdraw(index_type='中证1000', available_date=available_date)['code'].tolist()
-            component_list_zz2000 = gt.index_weight_withdraw(index_type='中证2000', available_date=available_date)['code'].tolist()
-            component_list_zzA500= gt.index_weight_withdraw(index_type='中证A500', available_date=available_date)['code'].tolist()
+            component_list_hs300 = self.index_weight_withdraw(index_type='沪深300', available_date=available_date)['code'].tolist()
+            component_list_zz500 = self.index_weight_withdraw(index_type='中证500', available_date=available_date)['code'].tolist()
+            component_list_zz1000 = self.index_weight_withdraw(index_type='中证1000', available_date=available_date)['code'].tolist()
+            component_list_zz2000 = self.index_weight_withdraw(index_type='中证2000', available_date=available_date)['code'].tolist()
+            component_list_zzA500= self.index_weight_withdraw(index_type='中证A500', available_date=available_date)['code'].tolist()
             component_weight_hs300 = slice_df[slice_df['code'].isin(component_list_hs300)]['weight'].sum()
             component_weight_zz500 = slice_df[slice_df['code'].isin(component_list_zz500)]['weight'].sum()
             component_weight_zz1000 = slice_df[slice_df['code'].isin(component_list_zz1000)]['weight'].sum()
@@ -223,17 +244,8 @@ class Back_testing_processing:
         file_path = os.path.join(outputpath, "{}图.png".format(title))
         plt.savefig(file_path)
         plt.close()
-    def draw_gapth2(self,df, outputpath, title):  # 画折线图
-        df.plot()
-        plt.title(title)
-        plt.ylabel('weight')
-        plt.xlabel('时间')
-        file_path = os.path.join(outputpath, "{}图.png".format(title))
-        plt.savefig(file_path)
-        plt.close()
     def portfolio_return_processing(self,index_type, df_selecting, df_weight, df_turn_over, cost):
         df_turn_over['valuation_date'] = pd.to_datetime(df_turn_over['valuation_date'])
-        index_type=gt.index_mapping(index_type,type='code')
         df_index=self.df_index_return[['valuation_date',index_type]]
         df_stock=self.df_stock_return
         df_stock['valuation_date'] = pd.to_datetime(df_stock['valuation_date'])
@@ -253,7 +265,6 @@ class Back_testing_processing:
             this_time = trading_date[i]
             last_time = trading_date[i - 1]
             slice_df_weight = df_weight[last_time]
-            slice_df_weight=slice_df_weight.astype(float)
             slice_df_weight.dropna(inplace=True, axis=0)
             slice_df_selecting = df_selecting[last_time]
             slice_df_selecting.dropna(inplace=True, axis=0)
@@ -261,14 +272,14 @@ class Back_testing_processing:
             selecting_code = slice_df_selecting.tolist()
             stock_return = \
             df_stock[(df_stock['valuation_date'] > last_time) & (df_stock['valuation_date'] <= this_time)][
-                selecting_code].fillna(0).astype(float).values
+                selecting_code].fillna(0).values
             portfolio_return = np.dot(np.asmatrix(list_weight), np.asmatrix(stock_return).T).tolist()[0]
             if portfolio_return == []:
                 portfolio_return = [0]
             portfolio_return_list.append(portfolio_return)
         portfolio_return2 = list(np.concatenate(portfolio_return_list))
         df_backtesting = pd.DataFrame()
-        df_backtesting['valuation_date'] = valuation_date
+        df_backtesting['valuation_date'] = valuation_date[1:]
         df_backtesting['portfolio'] = portfolio_return2
         df_turn_over['turnover_ratio'] = df_turn_over['turnover_ratio'] * cost
         df_backtesting['valuation_date'] = pd.to_datetime(df_backtesting['valuation_date'])
@@ -285,18 +296,20 @@ class Back_testing_processing:
         df_h2 = df_backtesting[['valuation_date', '组合净值', '超额净值', '基准净值']]
         df_h2.fillna(method='ffill', inplace=True)
         return df_h, df_h2
-    def PDF_Creator(self,outputpath, df2, df3, df4, score_type, index_type,df_component,df_pa_1,df_pa_2,start_date,end_date):  # df2收益率 df3为权重矩阵 df4为净值
-        list_com,list_top=self.portoflio_contribution_list(df_pa_1)
-        df_pa_11=df_pa_1[list_com]
-        df_pa_12=df_pa_1[list_top]
-        df_pa_21=df_pa_2[list_com]
-        df_pa_22=df_pa_2[list_top]
-        df_pa_check=self.portfolio_weight_check(df_pa_2)
-        pdf_filename = os.path.join(outputpath,
-                                        '{}回测分析报告'.format(str(score_type))+'_'+str(start_date)+'_'+str(end_date)+'.pdf')
+    def PDF_Creator(self,outputpath, df2, df3, df4, score_type, analyse_type, index_type, total_rank,
+                    total_score, df_component):  # df2收益率 df3为权重矩阵 df4为净值
+        if analyse_type == 'history':
+            pdf_filename = os.path.join(outputpath,
+                                        '{}回测分析报告.pdf'.format(str(score_type)))
+        else:
+            pdf_filename = os.path.join(outputpath,
+                                        '{}压力测试.pdf'.format(str(score_type)))
         pdf = PDFCreator(pdf_filename)
         pdf.title('<b>{}指增分析</b>'.format(index_type))
         pdf.text('参数:{}'.format(str(score_type)))
+        if analyse_type == 'update':
+            pdf.text('组合综合排名:{}'.format(str(total_rank)))
+            pdf.text('组合综合分数:{}'.format(str(total_score)))
         pdf.h1('<b>一、策略表现</b>')
         df2['year'] = df2['valuation_date'].apply(lambda x: str(x)[:4])
         result_df = pd.DataFrame()
@@ -312,12 +325,13 @@ class Back_testing_processing:
             result_df = pd.concat([result_df, df_result])
         table_data = [result_df.columns.tolist()] + result_df.values.tolist()
         pdf.table(table_data, highlight_first_row=False)
-        pdf.h1('<b>回测区间策略表现</b>')
-        mean_huanshou = round(df3['年化换手率'].mean(), 3)
-        pdf.text('回测区间平均年化换手率:{}'.format(str(mean_huanshou)))
-        df_result2 = self.cal_fund_performance2(df2, year='回测区间')
-        table_data = [df_result2.columns.tolist()] + df_result2.values.tolist()
-        pdf.table(table_data, highlight_first_row=False)
+        if analyse_type == 'history':
+            pdf.h1('<b>回测区间策略表现</b>')
+            mean_huanshou = round(df3['年化换手率'].mean(), 3)
+            pdf.text('回测区间平均年化换手率:{}'.format(str(mean_huanshou)))
+            df_result2 = self.cal_fund_performance2(df2, year='回测区间')
+            table_data = [df_result2.columns.tolist()] + df_result2.values.tolist()
+            pdf.table(table_data, highlight_first_row=False)
         pdf.h1('<b>二、成分股占比</b>')
         table_data2 = [a.columns.tolist()] + a.values.tolist()
         pdf.table(table_data2, highlight_first_row=False)
@@ -332,64 +346,104 @@ class Back_testing_processing:
         self.draw_gapth(slice_df2, outputpath, '超额净值')
         fig_filename = os.path.join(outputpath, f"超额净值图.png")
         pdf.image(fig_filename)
-        pdf.h1('<b>四、年化换手率分析</b>')
-        table_data = [df3.columns.tolist()] + df3.values.tolist()
-        pdf.table(table_data, highlight_first_row=False)
-        pdf.h1('<b>五、组合收益拆解</b>')
-        self.draw_gapth(df_pa_11, outputpath, '权重股收益拆解')
-        fig_filename = os.path.join(outputpath, f"权重股收益拆解图.png")
-        pdf.image(fig_filename)
-        self.draw_gapth(df_pa_12, outputpath, 'Top收益拆解')
-        fig_filename = os.path.join(outputpath, f"Top收益拆解图.png")
-        pdf.image(fig_filename)
-        pdf.h1('<b>六、组合权重占比</b>')
-        self.draw_gapth(df_pa_21, outputpath, '权重股多空权重')
-        fig_filename = os.path.join(outputpath, f"权重股多空权重图.png")
-        pdf.image(fig_filename)
-        self.draw_gapth(df_pa_22, outputpath, 'Top多空权重')
-        fig_filename = os.path.join(outputpath, f"Top多空权重图.png")
-        pdf.image(fig_filename)
-        pdf.h1('<b>七、组合权重验证</b>')
-        self.draw_gapth(df_pa_check, outputpath, '权重验证')
-        fig_filename = os.path.join(outputpath, f"权重验证图.png")
-        pdf.image(fig_filename)
+        if analyse_type == 'history':
+            pdf.h1('<b>四、年化换手率分析</b>')
+            table_data = [df3.columns.tolist()] + df3.values.tolist()
+            pdf.table(table_data, highlight_first_row=False)
         pdf.build()
         return
-    def back_testing_history(self,df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,df_pa_1,df_pa_2,start_date,end_date,cost=0.00085):  # 计算analyse_type为history的回测function
+    def back_testing_history(self,df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,
+                                 cost=0.00085):  # 计算analyse_type为history的回测function
             outputpath2=outpath_optimizer_result2
-            gt.folder_creator2(outputpath2)
-            outputpath_huice = os.path.join(outputpath2, str(score_type)+'_回测.xlsx')
+            outputpath_huice = os.path.join(outputpath2, str(score_type)+'回测.xlsx')
             outputpath_quanzhong = os.path.join(outputpath2,
                                                 str(score_type) + '_weight.xlsx')
-            outputpath_contribution=os.path.join(outputpath2,str(score_type)+'_contribution.xlsx')
-            outputpath_weight=os.path.join(outputpath2,str(score_type)+'_contribution_weight.xlsx')
             df_component = self.index_component_calculate_history(df_final)
             df_turn_over, df_turn_over2 = self.turn_over_ratio_calculate(df_final, date_type='daily')
             df_h, df_h2 = self.portfolio_return_processing(index_type, df_final_code, df_final_weight, df_turn_over, cost)
             df_final.to_excel(outputpath_quanzhong, index=False)
             df_h2.to_excel(outputpath_huice, index=False)  # 储存文件需要自己定义
-            df_pa_1.to_excel(outputpath_contribution)
-            df_pa_2.to_excel(outputpath_weight)
             df_h.rename(columns={'portfolio': 'return', 'index': 'index_return'}, inplace=True)
-            self.PDF_Creator(outputpath=outputpath2, df2=df_h,df3=df_turn_over2, df4=df_h2, score_type=score_type, index_type=index_type,df_component=df_component,df_pa_1=df_pa_1,df_pa_2=df_pa_2,start_date=start_date,end_date=end_date)
-    def back_testing_main_history(self,index_type,score_type,user_name, start_date, end_date):
-        outpath_optimizer_result2=glv.get('output_backtest')
-        outputpath_optimizer_python=glv.get('output_optimizer')
-        outputpath_optimizer_python=os.path.join(outputpath_optimizer_python,user_name)
-        inputpath_backtesting=os.path.join(outputpath_optimizer_python,score_type)
-        inputlist=os.listdir(inputpath_backtesting)
-        df_config=self.portfolio_information_withdraw(inputpath_backtesting,end_date)
-        top_number=df_config[df_config['parameters_name']=='top_number']['value'].tolist()[0]
-        df_input=pd.DataFrame()
-        df_input['name']=inputlist
-        df_input=df_input[(df_input['name']>=start_date)&(df_input['name']<=end_date)]
-        outpath_optimizer_result2 = os.path.join(outpath_optimizer_result2, user_name)
-        outpath_optimizer_result2=os.path.join(outpath_optimizer_result2,index_type)
-        start_date2 = str(start_date)[:4] + str(start_date)[5:7] + str(start_date)[8:10]
-        end_date2 = str(end_date)[:4] + str(end_date)[5:7] + str(end_date)[8:10]
-        outpath_optimizer_result2 = os.path.join(outpath_optimizer_result2,str(score_type) + '_' + str(start_date2) + '_' + str(end_date2))
-        gt.folder_creator2(outpath_optimizer_result2)
-        df_final,df_final_code,df_final_weight=self.weight_matrix_combination(df_input, inputpath_backtesting)
-        pa=portfolio_analysis(self.df_index_return,self.df_stock_return,index_type,df_final_code,df_final_weight,score_type,top_number,inputpath_backtesting)
-        df_pa_1,df_pa_2=pa.portfolio_analyse_main(start_date,end_date)
-        self.back_testing_history(df_final,df_final_code,df_final_weight, outpath_optimizer_result2, index_type, score_type,df_pa_1,df_pa_2,start_date2,end_date2,cost=0.00085)
+            self.PDF_Creator(outputpath=outputpath2, df2=df_h,
+                        df3=df_turn_over2, df4=df_h2, score_type=score_type,
+                        analyse_type='history', index_type=index_type, total_rank=None,
+                        total_score=None, df_component=df_component)
+    def back_testing_update(self,inputpath,outpath_optimizer_result2, index_type, score_type, df_score,trading):  # 压力测试代码
+        outpath_optimizer_result=glv.get('output_weight')
+        inputpath_top500 = os.path.join(inputpath, 'stock_code.csv')
+        df_top500 = pd.read_csv(inputpath_top500, dtype=str)
+        inputpath_quanzhong = os.path.join(inputpath, 'weight.csv')
+        df_weight = pd.read_csv(inputpath_quanzhong, header=None)
+        df_weight.columns = df_top500.columns.tolist()
+        df_final = self.weight_matrix_update(df_weight, df_top500)
+        available_date = df_score['valuation_date'].unique().tolist()[0]
+        tommorow = gt.next_workday_calculate(available_date)
+        tommorow = pd.to_datetime(tommorow)
+        tommorow2 = tommorow.strftime('%Y-%m-%d')
+        tommorow = tommorow.strftime('%Y%m%d')
+        outputpath = os.path.join(outpath_optimizer_result, 'portfolio_weight')
+        outputpath = os.path.join(outputpath, score_type)
+        try:
+            gt.folder_creator2(outputpath)
+        except:
+            pass
+        outputpath = os.path.join(outputpath, str(tommorow2) + '.csv')
+        df_final.to_csv(outputpath, index=False)
+        if trading==True:
+            list_rank = []
+            for i in range(len(df_score)):
+                list_rank.append(i + 1)
+            df_score['rank'] = list_rank
+            slice_df_stock = self.df_stock_return[self.df_stock_return['valuation_date'] >= '2016-01-01']
+            slice_df_stock['valuation_date'] = pd.to_datetime(slice_df_stock['valuation_date'])
+            date_list = slice_df_stock['valuation_date'].tolist()
+            df_factordata = self.df_index_return[['valuation_date', index_type]]
+            if index_type == '中证1000':
+                index_type2 = 'zz1000'
+            elif index_type == '中证2000':
+                index_type2 = 'zz2000'
+            elif index_type == '中证500':
+                index_type2 = 'zz500'
+            else:
+                index_type2 = 'hs300'
+            df_factordata['valuation_date'] = pd.to_datetime(df_factordata['valuation_date'])
+            df_index = df_factordata
+            df_index = df_index[df_index['valuation_date'].isin(date_list)]
+            outputpath2 = os.path.join(outpath_optimizer_result2, str(tommorow))
+            gt.folder_creator(outputpath2)
+            outputpath_quanzhong = os.path.join(outputpath2,
+                                                str(index_type2) + '_' + 'weight' + '_' + str(
+                                                    tommorow) + '.csv')
+            outputpath_huice = os.path.join(outputpath2,
+                                            str(index_type) + '_historical_testing' + '.xlsx')
+            df_component = self.index_component_calculate_update(df_weight, df_top500)
+            ticker_list2 = df_final[df_final.columns.tolist()[0]].tolist()
+            weight_list2 = df_final[df_final.columns.tolist()[1]].tolist()
+            stock_return = slice_df_stock[ticker_list2]
+            stock_return.fillna(0, inplace=True)
+            stock_return_matrix = stock_return.values
+            stock_return_portfolio = np.dot(np.mat(weight_list2), np.mat(stock_return_matrix).T).tolist()[0]
+            df_h = pd.DataFrame()
+            df_h['portfolio'] = stock_return_portfolio
+            df_h['index'] = df_index[index_type].tolist()
+            df_h['valuation_date'] = date_list
+            df_h2 = df_h.copy()
+            df_h2.fillna(0, inplace=True)
+            df_h2['ex_return'] = df_h2['portfolio'] - df_h2['index']
+            df_h2['基准净值'] = (1 + df_h2['index']).cumprod()
+            df_h2['组合净值'] = (1 + df_h2['portfolio']).cumprod()
+            df_h2['超额净值'] = (1 + df_h2['ex_return']).cumprod()
+            df_h2 = df_h2[['valuation_date', '组合净值', '基准净值', '超额净值']]
+            df_final.columns = ['code', 'weight']
+            df_final2 = df_final.merge(df_score, on='code', how='left')
+            df_final2['total_rank'] = df_final2['rank'] * df_final2['weight']
+            df_final2['total_mark'] = df_final2['weight'] * df_final2['final_score']
+            total_rank = int(df_final2['total_rank'].sum())
+            total_mark = df_final2['total_mark'].sum()
+            df_final.to_csv(outputpath_quanzhong, index=False)
+            df_h2.to_excel(outputpath_huice, index=False)  # 储存文件需要自己定义
+            df_h.rename(columns={'portfolio': 'return', 'index': 'index_return'}, inplace=True)
+            self.PDF_Creator(outputpath=outputpath2, df2=df_h, df3=None,
+                             df4=df_h2, score_type=score_type, analyse_type='update', index_type=index_type,
+                             total_rank=total_rank, total_score=total_mark, df_component=df_component)
+
