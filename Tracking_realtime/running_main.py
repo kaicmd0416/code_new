@@ -10,7 +10,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 
 import datetime
@@ -74,3 +74,17 @@ def tracking_realtime_main():
 # 程序入口点
 if __name__ == "__main__":
     tracking_realtime_main()
+    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
+    # # 清理持仓变化表
+    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_holdingchanging')
+    # # 清理投资组合收益表
+    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_portfolioreturn')
+    # # 清理产品信息表
+    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_proinfo')
+    # gt.table_manager(config_path, 'tracking_realtime', 'history_futureoptionholding')
+    # # 清理持仓变化表
+    # gt.table_manager(config_path, 'tracking_realtime', 'history_holdingchanging')
+    # # 清理投资组合收益表
+    # gt.table_manager(config_path, 'tracking_realtime', 'history_portfolioreturn')
+    # # 清理产品信息表
+    # gt.table_manager(config_path, 'tracking_realtime', 'history_proinfo')

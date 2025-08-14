@@ -12,7 +12,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 
 import datetime
@@ -334,7 +334,7 @@ class product_tracking:
         df_final['simulation']='False'
         df_final['product_code']=self.product_code
         df_final['valuation_date'] = self.date
-        df_final.rename(columns={'quantity':'HoldingQty','pre_quantity':'HoldingQty_yes'})
+        df_final.rename(columns={'quantity':'HoldingQty','pre_quantity':'HoldingQty_yes'},inplace=True)
         return df_final
 
     def product_info_processing(self):
@@ -355,8 +355,6 @@ class product_tracking:
         
         # 创建产品信息数据框
         df_info = pd.DataFrame({
-            'product_code': [self.product_code],
-            'valuation_date': [self.date],
             'asset_value': [self.asset_value],
             'total_profit': [total_profit],
             'total_mktvalue': [total_mktvalue],
@@ -374,9 +372,14 @@ class product_tracking:
             'cb_mktvalue': [cb_mktvalue],
             'bond_profit': [bond_profit],
             'bond_mktvalue': [bond_mktvalue],
-            'update_time': [self.now]
         })
-        
+        df_info=df_info.T
+        df_info.reset_index(inplace=True)
+        df_info.columns=['type','value']
+        df_info['valuation_date']=self.date
+        df_info['product_code']=self.product_code
+        df_info['simulation']=False
+        df_info['update_time']=self.now
         return df_info,df_indexfuture
 
     def productTracking_main(self):
@@ -390,7 +393,6 @@ class product_tracking:
         # 获取交易行为数据
         df_action = self.trading_action_processing()
 
-        
         # 保存产品信息到数据库
         if len(df_info) > 0:
             sm = gt.sqlSaving_main(inputpath_sql, 'proinfo', delete=True)
@@ -399,11 +401,15 @@ class product_tracking:
             sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
             sm3.df_to_sql(df_action, 'product_code', self.product_code)
         if len(df_indexfuture) > 0:
+            df_indexfuture=df_indexfuture[['code','direction','quantity','delta','mkt_value','profit']]
+            df_indexfuture['simulation']='False'
+            df_indexfuture['product_code']=self.product_code
+            df_indexfuture.rename(columns={'quantity':'HoldingQty','profit':'daily_profit'},inplace=True)
             df_indexfuture['valuation_date'] = self.date
             df_indexfuture['update_time'] = self.now
             sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding', delete=True)
             sm.df_to_sql(df_indexfuture,'product_code',self.product_code)
-        
+
         return df_info, df_action, df_indexfuture
 if __name__ == '__main__':
     pt=product_tracking('SLA626')
