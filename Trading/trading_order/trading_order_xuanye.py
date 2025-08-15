@@ -1,3 +1,25 @@
+"""
+宣夜交易订单模块
+
+这个模块负责生成宣夜产品的交易订单，支持TWAP和VWAP两种交易模式。
+根据目标权重和当前持仓计算交易差异，生成相应的交易订单文件。
+
+主要功能：
+1. 资金重平衡计算
+2. TWAP模式交易订单生成
+3. VWAP模式交易订单生成
+4. 交易订单文件输出
+5. ETF和股票分类处理
+
+依赖模块：
+- pandas：数据处理
+- global_setting.global_dic：全局配置
+- global_tools：全局工具函数
+
+作者：[作者名]
+创建时间：[创建时间]
+"""
+
 import os
 import pandas as pd
 import global_setting.global_dic as glv
@@ -9,8 +31,28 @@ import global_tools as gt
 global source,config_path
 source=glv.get('source')
 config_path=glv.get('config_path')
+
 class trading_xuanye:
+    """
+    宣夜交易订单类
+    
+    负责生成宣夜产品的交易订单，支持不同的交易模式。
+    根据目标权重和当前持仓计算交易差异，生成标准格式的交易订单文件。
+    """
+    
     def __init__(self,df_weight,df_holding,df_mkt,target_date,stock_money,etf_pool,trading_time):
+        """
+        初始化宣夜交易订单对象
+        
+        Args:
+            df_weight (pandas.DataFrame): 目标权重数据
+            df_holding (pandas.DataFrame): 当前持仓数据
+            df_mkt (pandas.DataFrame): 市场数据
+            target_date (str): 目标日期
+            stock_money (float): 可用股票资金
+            etf_pool (list): ETF代码池
+            trading_time (str): 交易时间
+        """
         self.df_weight=df_weight
         self.df_holding=df_holding
         self.df_mkt=df_mkt
@@ -18,7 +60,21 @@ class trading_xuanye:
         self.stock_money=self.stockmoney_rebalance(stock_money)
         self.etf_pool=etf_pool
         self.trading_time=trading_time
+        self.current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+    
     def stockmoney_rebalance(self,stock_money):
+        """
+        资金重平衡函数
+        
+        根据买卖差异调整可用资金，确保买卖金额基本平衡。
+        如果买卖差异小于50万，则自动调整资金。
+        
+        Args:
+            stock_money (float): 原始可用资金
+            
+        Returns:
+            float: 调整后的可用资金
+        """
         df_today = self.df_weight.copy()
         code_list_today = df_today['code'].tolist()
         df_today = df_today.merge(self.df_mkt, on='code', how='left')
@@ -31,11 +87,15 @@ class trading_xuanye:
         df_today['mkt'] = df_today['quantity'] * df_today['close']
         df_today = df_today[['code', 'quantity']]
         df_weight = pd.DataFrame()
-        code_list_yes = self.df_holding['code'].tolist()
-        code_list = list(set(code_list_yes) | set(code_list_today))
-        df_weight['code'] = code_list
-        df_weight = df_weight.merge(self.df_holding, on='code', how='left')
-        df_weight = df_weight.merge(df_today, on='code', how='left')
+        if len(self.df_holding)>0:
+            code_list_yes = self.df_holding['code'].tolist()
+            code_list = list(set(code_list_yes) | set(code_list_today))
+            df_weight['code'] = code_list
+            df_weight = df_weight.merge(self.df_holding, on='code', how='left')
+            df_weight = df_weight.merge(df_today, on='code', how='left')
+        else:
+            df_weight=df_today
+            df_weight['holding']=0
         df_weight = df_weight.merge(self.df_mkt, on='code', how='left')
         df_weight.fillna(0, inplace=True)
         df_weight['difference'] = df_weight['quantity'] - df_weight['holding']
@@ -46,11 +106,19 @@ class trading_xuanye:
         df_selling_check['mkt_value'] = df_selling_check['close'] * abs(df_selling_check['difference'])
         mkt_buying = df_buying_check['mkt_value'].sum()
         mkt_selling = df_selling_check['mkt_value'].sum()
-        stock_money=stock_money-(mkt_buying-mkt_selling)
+        if abs((mkt_buying-mkt_selling))<500000:
+            stock_money=stock_money-(mkt_buying-mkt_selling)
         print('xy试运行买额为:' + str(mkt_buying),
               '卖额为' + str(mkt_selling) + '买卖额差为' + str(mkt_buying - mkt_selling)+'将自动把stock_money调整为:'+str(stock_money))
         return stock_money
+    
     def trading_order_xuanye_mode_1(self):
+        """
+        TWAP模式交易订单生成函数
+        
+        生成TWAP模式的交易订单，使用特定的模板格式。
+        将交易订单分为股票和ETF两部分，分别生成不同的文件。
+        """
         df_final = pd.DataFrame()
         etf_code =self.etf_pool
         inputpath = os.path.split(os.path.realpath(__file__))[0]
@@ -80,13 +148,16 @@ class trading_xuanye:
         df_today['quantity'] = self.stock_money * df_today['weight'] / df_today['close']
         df_today['quantity'] = round(df_today['quantity'] / 100, 0) * 100
         df_today = df_today[['code', 'quantity']]
-        df_yes=self.df_holding.copy()
-        df_weight = pd.DataFrame()
-        code_list_yes = df_yes['code'].tolist()
-        code_list = list(set(code_list_yes) | set(code_list_today))
-        df_weight['code'] = code_list
-        df_weight = df_weight.merge(df_yes, on='code', how='left')
-        df_weight = df_weight.merge(df_today, on='code', how='left')
+        df_weight=pd.DataFrame()
+        if len(self.df_holding)>0:
+            code_list_yes = self.df_holding['code'].tolist()
+            code_list = list(set(code_list_yes) | set(code_list_today))
+            df_weight['code'] = code_list
+            df_weight= df_weight.merge(self.df_holding, on='code', how='left')
+            df_weight = df_weight.merge(df_today, on='code', how='left')
+        else:
+            df_weight=df_today
+            df_weight['holding'] = 0
         df_weight = df_weight.merge(self.df_mkt, on='code', how='left')
         df_weight.fillna(0, inplace=True)
         df_weight['difference'] = df_weight['quantity'] - df_weight['holding']
@@ -98,6 +169,8 @@ class trading_xuanye:
         df_selling_check['mkt_value'] = df_selling_check['close'] * abs(df_selling_check['difference'])
         mkt_buying = df_buying_check['mkt_value'].sum()
         mkt_selling = df_selling_check['mkt_value'].sum()
+        # inputpath_configsql = glv.get('config_sql')
+        # sm = gt.sqlSaving_main(inputpath_configsql, 'Trading_xy', delete=True)
         print('hy1号买额为:' + str(mkt_buying),
               '卖额为' + str(mkt_selling) + '买卖额差为' + str(mkt_buying - mkt_selling))
         list_action = []
@@ -141,9 +214,18 @@ class trading_xuanye:
             df_final[columns_name] = final_list
         df_final.columns = df.columns.tolist()[:2] + [None] * 8
         df_final.to_csv(outputpath2, index=False, encoding='utf_8_sig')
+        # df_final['valuation_date'] = self.target_date
+        # df_final['update_time'] = self.current_time
+        # sm.df_to_sql(df_final)
         df_weight1.to_csv(outputpath3, index=False, encoding='gbk')
 
     def trading_order_xuanye_mode_2(self):
+        """
+        VWAP模式交易订单生成函数
+        
+        生成VWAP模式的交易订单，使用特定的模板格式。
+        将交易订单分为股票和ETF两部分，分别生成不同的文件。
+        """
         df_final = pd.DataFrame()
         etf_code = self.etf_pool
         inputpath = os.path.split(os.path.realpath(__file__))[0]
@@ -175,14 +257,16 @@ class trading_xuanye:
         df_today['quantity'] = self.stock_money * df_today['weight'] / df_today['close']
         df_today['quantity'] = round(df_today['quantity'] / 100, 0) * 100
         df_today = df_today[['code', 'quantity']]
-        df_yes=self.df_holding.copy()
-        df_yes.rename(columns={'StockCode': 'code'}, inplace=True)
         df_weight = pd.DataFrame()
-        code_list_yes = df_yes['code'].tolist()
-        code_list = list(set(code_list_yes) | set(code_list_today))
-        df_weight['code'] = code_list
-        df_weight = df_weight.merge(df_yes, on='code', how='left')
-        df_weight = df_weight.merge(df_today, on='code', how='left')
+        if len(self.df_holding)>0:
+            code_list_yes = self.df_holding['code'].tolist()
+            code_list = list(set(code_list_yes) | set(code_list_today))
+            df_weight['code'] = code_list
+            df_weight = df_weight.merge(self.df_holding, on='code', how='left')
+            df_weight = df_weight.merge(df_today, on='code', how='left')
+        else:
+            df_weight = df_today
+            df_weight['holding'] = 0
         df_weight = df_weight.merge(self.df_mkt, on='code', how='left')
         df_weight.fillna(0, inplace=True)
         df_weight['difference'] = df_weight['quantity'] - df_weight['holding']
@@ -195,6 +279,8 @@ class trading_xuanye:
         mkt_selling = df_selling_check['mkt_value'].sum()
         df_weight_check['mkt_holding'] = df_weight_check['close'] * df_weight_check['holding']
         mkt_holding = df_weight_check['mkt_holding'].sum()
+        # inputpath_configsql = glv.get('config_sql')
+        # sm = gt.sqlSaving_main(inputpath_configsql, 'Trading_xy', delete=True)
         print('hy1号买额为:' + str(mkt_buying),
               '卖额为' + str(mkt_selling) + '买卖额差为' + str(mkt_buying - mkt_selling),
               'holding总市值为:' + str(mkt_holding))
@@ -240,8 +326,19 @@ class trading_xuanye:
         df_final.columns = df.columns.tolist()[:2] + [None] * 6
         df_final.to_csv(outputpath2, index=False, encoding='utf_8_sig')
         df_weight1.to_csv(outputpath3, index=False, encoding='gbk')
-
+        # df_final['valuation_date']=self.target_date
+        # df_final['update_time']=self.current_time
+        # sm.df_to_sql(df_final)
+    
     def trading_order_xy_main(self,trading_mode):
+        """
+        宣夜交易订单主函数
+        
+        根据交易模式选择相应的交易订单生成方法。
+        
+        Args:
+            trading_mode (str): 交易模式，'mode_v1'为TWAP模式，其他为VWAP模式
+        """
         if trading_mode == 'mode_v1':
             self.trading_order_xuanye_mode_1()
         else:

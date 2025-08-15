@@ -1,3 +1,27 @@
+"""
+投资组合保存模块
+
+这个模块负责将投资组合相关的数据保存到数据库和本地文件。
+包括投资组合信息、持仓数据、产品权重等数据的保存操作。
+
+主要功能：
+1. 投资组合信息保存
+2. 投资组合持仓保存
+3. 产品权重保存
+4. 产品持仓保存
+5. SQL数据库保存
+
+依赖模块：
+- pandas：数据处理
+- global_setting.global_dic：全局配置
+- global_tools：全局工具函数
+- data_prepared：数据准备
+- holding_construct：持仓构建
+
+作者：[作者名]
+创建时间：[创建时间]
+"""
+
 import os
 import pandas as pd
 import global_setting.global_dic as glv
@@ -14,15 +38,40 @@ config_path=glv.get('config_path')
 if source=='local':
     print('暂不支持local模式')
     raise ValueError
+
 class portfolio_saving_main:
+    """
+    投资组合保存主类
+    
+    负责将投资组合相关的数据保存到数据库和本地文件系统。
+    包括投资组合信息、持仓数据、产品权重等。
+    """
+    
     def __init__(self,target_date,realtime=False):
+        """
+        初始化投资组合保存对象
+        
+        Args:
+            target_date (str): 目标日期，格式为'YYYY-MM-DD'
+            realtime (bool): 是否为实时模式，默认为False
+        """
         self.dp=data_prepared(target_date,realtime)
         if realtime==True:
              self.target_date=gt.strdate_transfer(datetime.today())
         else:
             self.target_date=target_date
         self.df_mkt,self.etfpool=self.dp.mktData_withdraw()
+    
     def PortfolioInfo_saving(self):
+        """
+        投资组合信息保存函数
+        
+        从产品配置文件中读取投资组合信息，包括产品名称、指数类型、
+        产品代码等，并保存到数据库中。
+        
+        Returns:
+            pandas.DataFrame: 保存的投资组合信息数据
+        """
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
         inputpath_config = glv.get('config_product')
         excel_file = pd.ExcelFile(inputpath_config)
@@ -43,16 +92,25 @@ class portfolio_saving_main:
         df_final = df_final[
             ['valuation_date', 'product_name', 'product_code', 'portfolio_name', 'weight', 'index_type', 'update_time']]
         inputpath_configsql = glv.get('config_sql')
-        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio_product')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio_product',delete=True)
         sm.df_to_sql(df_final)
         return df_final
 
     def PortfolioHolinng_saving(self):
+        """
+        投资组合持仓保存函数
+        
+        计算并保存所有产品的投资组合持仓数据。
+        为每个产品和投资组合计算持仓数量，并保存到数据库。
+        
+        Returns:
+            pandas.DataFrame: 保存的投资组合持仓数据
+        """
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
         productCode_list = self.dp.productCode_withdraw()
         portfolioList = self.dp.portfolioList_withdraw()
         inputpath_configsql = glv.get('config_sql')
-        sm=gt.sqlSaving_main(inputpath_configsql, 'Portfolio_holding')
+        sm=gt.sqlSaving_main(inputpath_configsql, 'Portfolio_holding',delete=True)
         df_total=pd.DataFrame()
         for product_code in productCode_list:
             print(product_code)
@@ -69,14 +127,28 @@ class portfolio_saving_main:
                 df_final['update_time']=current_time
                 df_total=pd.concat([df_total,df_final])
                 df_total['update_time']=current_time
-                sm.df_to_sql(df_final)
+                sm.df_to_sql(df_final,'portfolio_name',portfolio_name)
         return df_total
+    
     def ProductWeight_saving(self,df_prodInfo):
+        """
+        产品权重保存函数
+        
+        根据投资组合权重计算每个产品的目标权重，并保存到数据库和本地文件。
+        
+        Args:
+            df_prodInfo (pandas.DataFrame): 产品信息数据
+        """
+        target_date2=gt.intdate_transfer(self.target_date)
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
         product_code_list=df_prodInfo['product_code'].unique().tolist()
         inputpath_configsql = glv.get('config_sql')
-        sm = gt.sqlSaving_main(inputpath_configsql, 'Product_weight')
+        outputpath_local=glv.get('productTarget_weight_local')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Product_weight',delete=True)
         for product_code in product_code_list:
+            outputpath_local_daily=os.path.join(outputpath_local,product_code)
+            gt.folder_creator2(outputpath_local_daily)
+            outputpath_local_daily=os.path.join(outputpath_local_daily,product_code+'_'+str(target_date2)+'.csv')
             df_final=pd.DataFrame()
             count=0
             slice_df=df_prodInfo[df_prodInfo['product_code']==product_code]
@@ -101,12 +173,23 @@ class portfolio_saving_main:
             df_final['valuation_date']=self.target_date
             df_final=df_final[['valuation_date','product_code','code','weight']]
             df_final['update_time']=current_time
-            sm.df_to_sql(df_final)
+            df_final.to_csv(outputpath_local_daily,index=False)
+            sm.df_to_sql(df_final,'product_code',product_code)
+    
     def ProductHolding_saving(self,df_prodInfo,df_portHolding):
+        """
+        产品持仓保存函数
+        
+        根据投资组合持仓计算每个产品的实际持仓，并保存到数据库。
+        
+        Args:
+            df_prodInfo (pandas.DataFrame): 产品信息数据
+            df_portHolding (pandas.DataFrame): 投资组合持仓数据
+        """
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
         product_code_list=df_prodInfo['product_code'].unique().tolist()
         inputpath_configsql = glv.get('config_sql')
-        sm = gt.sqlSaving_main(inputpath_configsql, 'Product_holding')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'Product_holding',delete=True)
         for product_code in product_code_list:
             slice_portHolding=df_portHolding[df_portHolding['product_code']==product_code]
             df_final=pd.DataFrame()
@@ -134,25 +217,33 @@ class portfolio_saving_main:
             df_final['valuation_date']=self.target_date
             df_final=df_final[['valuation_date','product_code','code','quantity']]
             df_final['update_time']=current_time
-            sm.df_to_sql(df_final)
+            sm.df_to_sql(df_final,'product_code',product_code)
+    
     def sqlSaving_main(self):
-        df_info = self.PortfolioInfo_saving()
-        df_holding = self.PortfolioHolinng_saving()
-        self.ProductWeight_saving(df_info)
-        self.ProductHolding_saving(df_info, df_holding)
-        # try:
-        #     df_info=self.PortfolioInfo_saving()
-        # except:
-        #     print('PortfolioInfo更新有误')
-        # try:
-        #     df_holding=self.PortfolioHolinng_saving()
-        # except:
-        #     print('PortfolioHoling更新有误')
-        # try:
-        #     self.ProductWeight_saving(df_info)
-        # except:
-        #     print('ProductWeight更新有误')
-        # try:
-        #     self.ProductHolding_saving(df_info,df_holding)
-        # except:
-        #     print('ProductHolding更新有误')
+        """
+        SQL保存主函数
+        
+        执行所有数据保存操作，包括投资组合信息、产品权重、投资组合持仓、
+        产品持仓等。使用异常处理确保单个模块失败不影响整体执行。
+        """
+        # df_info = self.PortfolioInfo_saving()
+        # df_holding = self.PortfolioHolinng_saving()
+        # self.ProductWeight_saving(df_info)
+        # self.ProductHolding_saving(df_info, df_holding)
+        try:
+            df_info=self.PortfolioInfo_saving()
+        except:
+            print('PortfolioInfo更新有误')
+        try:
+            self.ProductWeight_saving(df_info)
+        except:
+            print('ProductWeight更新有误')
+        if self.realtime==False:
+            try:
+                df_holding = self.PortfolioHolinng_saving()
+            except:
+                print('PortfolioHoling更新有误')
+            try:
+                self.ProductHolding_saving(df_info, df_holding)
+            except:
+                print('ProductHolding更新有误')

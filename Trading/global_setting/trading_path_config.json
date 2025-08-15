@@ -7,9 +7,8 @@
             "database1": {
                 "host": "rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com",
                 "port": 3306,
-                "user": "kai",
+                "user": "wc",
                 "password": "Abcd1234#",
-                "database": "data_prepared",
                 "charset": "utf8mb4"
             },
             "database2": {
@@ -17,7 +16,6 @@
                 "port": 3306,
                 "user": "kai",
                 "password": "Abcd1234#",
-                "database": "portfolio",
                 "charset": "utf8mb4"
             }
         }
@@ -30,12 +28,12 @@
         },
         {
             "folder_type": "input_folder",
-            "path": "Portfolio",
+            "path": "Portfolio_new",
             "disk": "D"
         },
         {
             "folder_type": "output_folder",
-            "path": "Trading_data",
+            "path": "Trading_data_new",
             "disk": "D"
         },
         {
@@ -49,13 +47,15 @@
             "data_type": "portfolio_weight",
             "folder_name": "portfolio_weight",
             "folder_type": "input_folder",
-            "sql_sheet": "portfolio"
+            "sql_sheet": "portfolio",
+            "database": "portfolio"
         },
         {
             "data_type": "portfolio_holding",
             "folder_name": "portfolio_holding",
             "folder_type": "input_folder",
-            "sql_sheet": "portfolio_holding"
+            "sql_sheet": "portfolio_holding",
+            "database": "portfolio_new"
         },
         {
             "data_type": "product_weight",
@@ -71,25 +71,29 @@
             "data_type": "input_holding",
             "folder_name": "data_product\\product_info",
             "folder_type": "input_folder_2",
-            "sql_sheet": "stockholding"
+            "sql_sheet": "stockholding",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_info",
             "folder_name": "data_product\\product_info",
             "folder_type": "input_folder_2",
-            "sql_sheet": "productinfo"
+            "sql_sheet": "productinfo",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_info_temp",
             "folder_name": "data_product\\product_info",
             "folder_type": "input_folder_2",
-            "sql_sheet": "productinfo_temp"
+            "sql_sheet": "productinfo_temp",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "input_info_l4",
             "folder_name": "data_product\\product_info",
             "folder_type": "input_folder_2",
-            "sql_sheet": "data_l4info"
+            "sql_sheet": "data_l4info",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "config_product",
@@ -108,15 +112,24 @@
         },
         {
             "data_type": "product_Realholding_daily",
-            "sql_sheet": "stockholding"
+            "sql_sheet": "stockholding",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "product_Realholding_realtime",
-            "sql_sheet": "stockholding_temp"
+            "sql_sheet": "stockholding_temp",
+            "database": "data_prepared_new"
         },
         {
             "data_type": "productTarget_weight",
-            "sql_sheet": "product_weight"
+            "sql_sheet": "product_weight",
+            "database": "portfolio_new"
+        }
+        ,
+        {
+            "data_type": "productTarget_weight_local",
+            "folder_name": "product_weight",
+            "folder_type": "input_folder"
         }
     ]
 } 
