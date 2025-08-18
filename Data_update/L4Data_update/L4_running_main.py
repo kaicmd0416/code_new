@@ -8,7 +8,7 @@ import datetime
 from datetime import date
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 from setup_logger.logger_setup import setup_logger
@@ -109,4 +109,4 @@ def L4_history_main(mode,product_name_list,start_date,end_date,is_sql):
     logger.info("L4 history update process completed")
 
 if __name__ == '__main__':
-    L4_history_main('all',[], '2025-05-06','2025-05-08',True)
+    L4_history_main('all',[], '2023-12-13','2025-08-13',True)

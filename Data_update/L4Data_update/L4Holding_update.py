@@ -4,7 +4,7 @@ import global_setting.global_dic as glv
 import warnings
 warnings.filterwarnings("ignore")
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 from L4Data_update.tools_func import tools_func

@@ -1,6 +1,6 @@
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 from MacroData_update.Macrodata_update import MacroData_update
@@ -22,18 +22,18 @@ def MacroData_update_main(start_date,end_date,is_sql):
     MDU.IndexScore_data_update()
 def MacroData_update_main2(start_date,end_date,is_sql):
     MDU=MacroData_update(start_date,end_date,is_sql)
-    # MDU.Shibor_data_update()
-    # MDU.M1M2_data_update()
-    # MDU.CB_data_update()
-    # MDU.CDB_data_update()
-    # MDU.CMN_data_update()
-    # MDU.CPI_data_update()
-    # MDU.PPI_data_update()
-    # MDU.PMI_data_update()
-    # MDU.SocialFinance_data_update()
-    # MDU.LargeOrderInflow_data_update()
-    # MDU.USD_data_update()
-    #MDU.intindex_data_update()
-    #MDU.IndexScore_data_update()
+    MDU.Shibor_data_update()
+    MDU.M1M2_data_update()
+    MDU.CB_data_update()
+    MDU.CDB_data_update()
+    MDU.CMN_data_update()
+    MDU.CPI_data_update()
+    MDU.PPI_data_update()
+    MDU.PMI_data_update()
+    MDU.SocialFinance_data_update()
+    MDU.LargeOrderInflow_data_update()
+    MDU.USD_data_update()
+    MDU.intindex_data_update()
+    MDU.IndexScore_data_update()
 if __name__ == '__main__':
-    MacroData_update_main('2025-07-07', '2025-07-07',True)
+    MacroData_update_main('2015-01-05', '2025-07-14',True)

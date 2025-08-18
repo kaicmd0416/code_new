@@ -3,7 +3,7 @@ from MktData_update.Mktdata_update import (indexData_update,indexComponent_updat
                                            etfData_update,cbData_update,lhb_amt_update_main, nlb_update_main,futureDifference_update_main)
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 
@@ -53,7 +53,7 @@ def MktData_update_main2(start_date,end_date,is_sql):
         NLU.nlb_update_main()
         FDDU.FutureDifference_update_main()
 if __name__ == '__main__':
-    #CBData_update_main('2025-01-03', '2025-05-09',True)
+    CBData_update_main('2015-01-05', '2025-07-14',True)
     # MktData_update_main2('2005-01-04', '2015-01-05',True)
-    MktData_update_main('2025-07-08','2025-07-08',True)
+    # MktData_update_main('2022-07-19','2025-07-14',True)
 

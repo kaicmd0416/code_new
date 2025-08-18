@@ -3,7 +3,7 @@ from Score_update.scoreCombination_update import combineScore_update
 from Score_update.scorePortfolio_update import scorePortfolio_update
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 def score_update_main(score_type,start_date,end_date,is_sql): #这里面的date是target_date
@@ -17,4 +17,4 @@ def score_update_main(score_type,start_date,end_date,is_sql): #这里面的date�
     else:
         print('非生产时间段')
 if __name__ == '__main__':
-    score_update_main('fm', '2025-07-09','2025-07-09',True)
+    score_update_main('fm', '2023-12-30','2025-07-14',True)

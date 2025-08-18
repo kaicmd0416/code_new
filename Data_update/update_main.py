@@ -1,6 +1,6 @@
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 from FactorData_update.factor_update import FactorData_update
 from MktData_update.MktData_update_main import MktData_update_main,CBData_update_main
@@ -80,4 +80,6 @@ def daily_update_auto():
     DC=DataCheck()
     DC.DataCheckmain()
 if __name__ == '__main__':
+    # fm = File_moving()
+    # fm.file_moving_update_main()
     daily_update_auto()

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import global_setting.global_dic as glv
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 from datetime import datetime
@@ -180,15 +180,18 @@ class indexData_update:
             else:
                  # 获取所有唯一的code
                 if len(df_index_wind)!=0:
-                     all_codes = list(set(df_index_wind['code']) | set(df_index_tushare['code']))
-                     all_codes.sort()
+                    if 'code' not in df_index_tushare.columns:
+                        all_codes= list(set(df_index_wind['code']))
+                    else:
+                        all_codes = list(set(df_index_wind['code']) | set(df_index_tushare['code']))
+                    all_codes.sort()
                 # 保持Wind的列顺序，并添加Tushare独有的列
-                     wind_columns = df_index_wind.columns.tolist()
-                     tushare_only_columns = [col for col in df_index_tushare.columns if col not in wind_columns]
-                     all_columns = wind_columns + tushare_only_columns
+                    wind_columns = df_index_wind.columns.tolist()
+                    tushare_only_columns = [col for col in df_index_tushare.columns if col not in wind_columns]
+                    all_columns = wind_columns + tushare_only_columns
                 else:
-                     all_codes=list(set(df_index_tushare['code']))
-                     all_columns=df_index_tushare.columns.tolist()
+                    all_codes=list(set(df_index_tushare['code']))
+                    all_columns=df_index_tushare.columns.tolist()
                 # 创建新的DataFrame，包含所有列
                 df_indexdata = pd.DataFrame(columns=all_columns)
                 # 设置code列
@@ -297,14 +300,19 @@ class indexComponent_update:
         source_name_list = df_config['source_name'].tolist()
         dic_index = self.index_dic_processing()
         outputpath_component = glv.get('output_indexcomponent')
+        outputpath_port = glv.get('output_portfolio')
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
             sm=gt.sqlSaving_main(inputpath_configsql,'indexComponent',delete=True)
+            sm2=gt.sqlSaving_main(inputpath_configsql,'Portfolio',delete=True)
         for index_type in ['上证50', '沪深300', '中证500', '中证1000', '中证2000', '中证A500','国证2000']:
+            index_code = dic_index[index_type]
             self.logger.info(f'\nProcessing index type: {index_type}')
             file_name = self.file_name_withdraw(index_type)
             outputpath_component_update_base = os.path.join(outputpath_component, file_name)
+            outputpath_port_update_base = os.path.join(outputpath_port, str(index_code) + '_comp')
             gt.folder_creator2(outputpath_component_update_base)
+            gt.folder_creator2(outputpath_port_update_base)
             input_list=os.listdir(outputpath_component_update_base)
             if len(input_list)==0:
                 if self.start_date > '2023-06-01':
@@ -315,6 +323,8 @@ class indexComponent_update:
                 start_date=self.start_date
             working_days_list=gt.working_days_list(start_date,self.end_date)
             for available_date in working_days_list:
+                target_date = gt.next_workday_calculate(available_date)
+                target_date = gt.intdate_transfer(target_date)
                 self.logger.info(f'Processing date: {available_date}')
                 available_date=gt.intdate_transfer(available_date)
                 if index_type == '中证2000' and int(available_date) < 20230901:
@@ -324,7 +334,8 @@ class indexComponent_update:
                 else:
                     available_date2 = available_date
                 df_daily = pd.DataFrame()
-                index_code = dic_index[index_type]
+                outputpath_port_update = os.path.join(outputpath_port_update_base,
+                                                      str(index_code) + '_comp_' + target_date + '.csv')
                 outputpath_component_update = os.path.join(outputpath_component_update_base,
                                                            index_code + 'ComponentWeight_' + available_date + '.csv')
                 ic = indexComponent_prepare(available_date2)
@@ -344,11 +355,19 @@ class indexComponent_update:
                     other_columns=[i for i in df_daily.columns.tolist() if i!='valuation_date']
                     df_daily=df_daily[['valuation_date']+other_columns]
                     df_daily.to_csv(outputpath_component_update, index=False)
+                    df_port = df_daily[['code', 'weight']]
+                    df_port['valuation_date']=gt.strdate_transfer(target_date)
+                    df_port['portfolio_name']=str(index_code) + '_comp'
+                    df_port=df_port[['valuation_date','portfolio_name','code','weight']]
+                    df_port.to_csv(outputpath_port_update, index=False)
                     self.logger.info(f'Successfully saved {index_type} component data for date: {available_date}')
                     if self.is_sql == True:
                         now = datetime.now()
                         df_daily['update_time'] = now
+                        df_port['update_time']=now
                         capture_file_withdraw_output(sm.df_to_sql, df_daily,'organization',index_code)
+                        capture_file_withdraw_output(sm.df_to_sql, df_port, 'portfolio_name', str(index_code) + '_comp')
+
                 else:
                     self.logger.warning(f'{index_type}_component在{available_date}暂无数据')
 

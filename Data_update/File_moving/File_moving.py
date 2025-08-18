@@ -1,6 +1,6 @@
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd
@@ -88,8 +88,8 @@ class DataOther_sql:
         self.specialdate_sql()
         self.st_stock_sql()
 if __name__ == '__main__':
-    fm=DataOther_sql()
-    fm.Dataother_main()
+    DOS = DataOther_sql()
+    DOS.Dataother_main()
 
 
 

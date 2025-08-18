@@ -2,7 +2,7 @@ import datetime
 from datetime import date
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 import global_setting.global_dic as glv

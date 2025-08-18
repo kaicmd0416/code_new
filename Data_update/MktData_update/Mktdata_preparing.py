@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import global_setting.global_dic as glv
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 import yaml
@@ -303,5 +303,6 @@ class FutureDifference_prepare:
         df_index=gt.readcsv(inputpath2)
         return df_future,df_index
 if __name__ == '__main__':
-    cbp=BankMomentum_prepare('2025-05-06')
-    cbp.raw_BankMomentum_prepare()
+    # cbp=BankMomentum_prepare('2025-05-06')
+    # cbp.raw_BankMomentum_prepare()
+    pass

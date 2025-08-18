@@ -4,7 +4,7 @@ import global_setting.global_dic as glv
 from scipy.io import loadmat
 import numpy as np
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 class FactorData_prepare:
@@ -55,6 +55,24 @@ class FactorData_prepare:
 
     def jy_factor_exposure_update(self):  # available_date这里是YYYYMMDD格式
         inputpath_factor = glv.get('input_factor_jy')
+        inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(self.available_date) + '.mat')
+        try:
+            annots = loadmat(inputpath_factor)['lnmodel_active_daily']['factorexposure'][0][0]
+            barra_name, industry_name = gt.factor_name(inputpath_factor)
+            status = 1
+        except:
+            status = 0
+        if status == 1:
+            df_factor_exposure = pd.DataFrame(annots, columns=barra_name + industry_name)
+            df_factor_exposure.drop(columns=['country'], inplace=True)
+            df_factor_exposure = self.stock_pool_processing(df_factor_exposure)
+            df_factor_exposure['valuation_date'] = gt.strdate_transfer(self.available_date)
+            df_factor_exposure = df_factor_exposure[['valuation_date', 'code'] + df_factor_exposure.columns.tolist()[:-2]]
+        else:
+            df_factor_exposure = pd.DataFrame()
+        return df_factor_exposure
+    def jy_factor_exposure_update_old(self):  # available_date这里是YYYYMMDD格式
+        inputpath_factor = glv.get('input_factor_jy_old')
         inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(self.available_date) + '.mat')
         try:
             annots = loadmat(inputpath_factor)['lnmodel_active_daily']['factorexposure'][0][0]

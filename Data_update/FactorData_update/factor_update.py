@@ -6,7 +6,7 @@ from FactorData_update.factor_preparing import FactorData_prepare
 import sys
 import logging
 from datetime import datetime
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 import global_tools as gt
 import numpy as np
@@ -187,15 +187,18 @@ class FactorData_update:
         dic_index = self.index_dic_processing()
         index_name=dic_index[index_type]
         available_date2=gt.intdate_transfer(available_date)
-        if available_date2 <= '20240531':
+        if available_date2 <= '20200531':
             inputpath_factor = glv.get('input_factor_jy_old')
+            type='old'
         else:
             inputpath_factor = glv.get('input_factor_jy')
-
         inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(available_date2) + '.mat')
         fp=FactorData_prepare(available_date)
         try:
-            df_factor_exposure = fp.jy_factor_exposure_update()
+            if type!='old':
+               df_factor_exposure = fp.jy_factor_exposure_update()
+            else:
+                df_factor_exposure = fp.jy_factor_exposure_update_old()
             barra_name, industry_name = gt.factor_name(inputpath_factor)
             status = 1
         except:
@@ -285,7 +288,7 @@ def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
     fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2025-07-08','2025-07-08',True)
+    FactorData_history_main('2020-01-01','2025-07-14',True)
 
 
 

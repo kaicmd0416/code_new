@@ -1,6 +1,6 @@
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
 sys.path.append(path)
 from FactorData_update.factor_update import FactorData_update
 from MktData_update.MktData_update_main import MktData_update_main,CBData_update_main
@@ -30,6 +30,11 @@ def FactorData_history_main(start_date,end_date,is_sql):
 def MacroData_history_main(start_date,end_date,is_sql):
     MacroData_update_main(start_date, end_date, is_sql)
 if __name__ == '__main__':
-    start_date='2020-01-01'
-    end_date='2022-01-04'
-    ScoreData_history_main(start_date, end_date,True)
+    start_date = '2025-07-22'
+    end_date = '2025-07-22'
+    is_sql = True
+    # MarketData_history_main(start_date, end_date, is_sql)
+    ScoreData_history_main(start_date, end_date, is_sql)
+    # FactorData_history_main(start_date, end_date, is_sql)
+    # MacroData_history_main(start_date, end_date, is_sql)
+
