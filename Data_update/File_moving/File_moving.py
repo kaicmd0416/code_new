@@ -1,6 +1,6 @@
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd

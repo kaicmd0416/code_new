@@ -1,6 +1,6 @@
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 import global_setting.global_dic as glv
 import pandas as pd
 import yaml

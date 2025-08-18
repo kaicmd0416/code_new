@@ -5,7 +5,7 @@ from setup_logger.logger_setup import setup_logger
 from collections import defaultdict
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 # 添加警告记录器

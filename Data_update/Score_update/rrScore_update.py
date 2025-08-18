@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import global_setting.global_dic as glv
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 from setup_logger.logger_setup import setup_logger
@@ -80,7 +80,7 @@ class rrScore_update:
             date3=slice_df_score['valuation_date'].unique().tolist()[-1]
             self.raw_rr_time_checking(date3, date)
             slice_df_score = df_score[df_score['valuation_date'] == date3]
-            slice_df_score = gt.rr_score_processing(slice_df_score)
+            slice_df_score = gt.rank_score_processing(slice_df_score)
             slice_df_score['valuation_date'] = available_date
             slice_df_score2=slice_df_score.copy()
             slice_df_score2['score_name']=mode_name

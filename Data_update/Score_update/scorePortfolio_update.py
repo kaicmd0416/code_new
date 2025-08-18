@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import global_setting.global_dic as glv
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 from setup_logger.logger_setup import setup_logger
@@ -220,7 +220,7 @@ class scorePortfolio_update:
         for date in working_days_list:
             self.logger.info(f'Processing date: {date}')
             date2 = gt.intdate_transfer(date)
-            available_date = gt.last_weeks_lastday2(date)
+            available_date = gt.last_weeks_lastday(date)
             available_date = gt.intdate_transfer(available_date)
             daily_inputpath = gt.file_withdraw(inputpath_score, available_date)
             try:

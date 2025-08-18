@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import global_setting.global_dic as glv
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 from tools_func.tools_func import *

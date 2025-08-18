@@ -4,7 +4,7 @@ import global_setting.global_dic as glv
 from scipy.io import loadmat
 import numpy as np
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 class FactorData_prepare:

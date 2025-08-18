@@ -2,7 +2,7 @@ import global_setting.global_dic as glv
 from Time_tools.time_tools import time_tools
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd

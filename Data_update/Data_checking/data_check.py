@@ -4,7 +4,7 @@ import sys
 import global_setting.global_dic as glv
 from Time_tools.time_tools import time_tools
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_NEW')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 from setup_logger.logger_setup import setup_logger2
