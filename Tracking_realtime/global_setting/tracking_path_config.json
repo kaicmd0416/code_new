@@ -21,7 +21,7 @@
         },
         {
             "folder_type": "input_folder_2",
-            "path": "Portfolio",
+            "path": "Portfolio_new",
             "disk": "D"
         },
         {
@@ -36,12 +36,12 @@
         },
         {
             "folder_type": "input_folder_3",
-            "path": "Trading_data_test",
+            "path": "Trading_data_new",
             "disk": "D"
         },
         {
             "folder_type": "config_folder",
-            "path": "code_new\\Tracking_realtime\\global_setting",
+            "path": "code_new2\\Tracking_realtime\\global_setting",
             "disk": "D"
         }
     ],
@@ -125,14 +125,14 @@
             "data_type": "product_weight",
             "folder_name": "product_weight",
             "folder_type": "input_folder_2",
-            "database": "portfolio",
+            "database": "portfolio_new",
             "sql_sheet": "product_weight"
         },
         {
             "data_type": "portfolio_weight",
             "folder_name": "portfolio_weight",
             "folder_type": "input_folder_2",
-            "database": "portfolio",
+            "database": "portfolio_new",
             "sql_sheet": "portfolio"
         }
 

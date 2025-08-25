@@ -10,7 +10,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime
@@ -41,13 +41,13 @@ def tracking_realtime_main():
         # 在开盘前（9:00-9:30）清理实时数据表，确保数据新鲜度
         if time.hour == 9 and time.minute < 30:
             # 清理期货期权持仓表
-            gt.table_manager(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
+            gt.table_manager2(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
             # 清理持仓变化表
-            gt.table_manager(config_path, 'tracking_realtime', 'realtime_holdingchanging')
+            gt.table_manager2(config_path, 'tracking_realtime', 'realtime_holdingchanging')
             # 清理投资组合收益表
-            gt.table_manager(config_path, 'tracking_realtime', 'realtime_portfolioreturn')
+            gt.table_manager2(config_path, 'tracking_realtime', 'realtime_portfolioreturn')
             # 清理产品信息表
-            gt.table_manager(config_path, 'tracking_realtime', 'realtime_proinfo')
+            gt.table_manager2(config_path, 'tracking_realtime', 'realtime_proinfo')
         
         # 执行投资组合级别的跟踪计算
         pt = portfolio_tracking()
@@ -55,7 +55,6 @@ def tracking_realtime_main():
         
         # 定义需要跟踪的产品代码列表
         product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
-        
         # 循环执行每个产品的跟踪计算
         for product_code in product_list:
             try:
@@ -74,17 +73,17 @@ def tracking_realtime_main():
 # 程序入口点
 if __name__ == "__main__":
     tracking_realtime_main()
-    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
     # # 清理持仓变化表
-    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_holdingchanging')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_holdingchanging')
     # # 清理投资组合收益表
-    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_portfolioreturn')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_portfolioreturn')
     # # 清理产品信息表
-    # gt.table_manager(config_path, 'tracking_realtime', 'realtime_proinfo')
-    # gt.table_manager(config_path, 'tracking_realtime', 'history_futureoptionholding')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_proinfo')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'history_futureoptionholding')
     # # 清理持仓变化表
-    # gt.table_manager(config_path, 'tracking_realtime', 'history_holdingchanging')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'history_holdingchanging')
     # # 清理投资组合收益表
-    # gt.table_manager(config_path, 'tracking_realtime', 'history_portfolioreturn')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'history_portfolioreturn')
     # # 清理产品信息表
-    # gt.table_manager(config_path, 'tracking_realtime', 'history_proinfo')
+    # gt.table_manager2(config_path, 'tracking_realtime', 'history_proinfo')

@@ -12,7 +12,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime
@@ -73,7 +73,7 @@ class product_tracking:
         
         # 获取产品资产价值
         pi = prod_info(product_code)
-        self.asset_value = pi.assetvalue_withdraw()
+        self.asset_value,self.asset_value_yes = pi.assetvalue_withdraw()
         
         # 设置当前日期和时间
         today = datetime.date.today()
@@ -91,10 +91,13 @@ class product_tracking:
         返回：
             int: 方向数值（1表示多头，-1表示空头）
         """
+        x=str(x)
         if '空' in x:
             return -1
-        else:
+        elif '多' in x:
             return 1
+        else:
+            return 'error'
     
     def futureOption_processing(self, df):
         """
@@ -133,6 +136,7 @@ class product_tracking:
             # 处理持仓方向
             if 'direction' in df.columns:
                 df['direction'] = df['direction'].apply(lambda x: self.direction_prossing(x))
+                df=df[~(df['direction']=='error')]
             else:
                 df['direction'] = 1
             
@@ -282,7 +286,8 @@ class product_tracking:
         else:
             bond_profit = df_bond_info['portfolio_profit'].tolist()[0]
             bond_mktvalue = df_bond_info['portfolio_mktvalue'].tolist()[0]
-        return stock_profit,stock_mktvalue,indexfuture_profit,indexfuture_mktvalue,df_indexfuture,commfuture_profit,commfuture_mktvalue,df_commfuture, \
+        df_detail=pd.concat([df_indexfuture,df_commfuture,df_option])
+        return stock_profit,stock_mktvalue,indexfuture_profit,indexfuture_mktvalue,df_detail,commfuture_profit,commfuture_mktvalue,df_commfuture, \
             option_profit,option_mktvalue,df_option,etf_profit,etf_mktvalue,cb_profit,cb_mktvalue,bond_profit,bond_mktvalue
     
     def trading_action_processing(self):
@@ -346,32 +351,43 @@ class product_tracking:
             DataFrame: 产品信息数据框
         """
         # 获取各类资产分析结果
-        stock_profit, stock_mktvalue, indexfuture_profit, indexfuture_mktvalue, df_indexfuture, commfuture_profit, commfuture_mktvalue, df_commfuture, \
+        stock_profit, stock_mktvalue, indexfuture_profit, indexfuture_mktvalue, df_detail, commfuture_profit, commfuture_mktvalue, df_commfuture, \
             option_profit, option_mktvalue, df_option, etf_profit, etf_mktvalue, cb_profit, cb_mktvalue, bond_profit, bond_mktvalue = self.info_split(*self.partial_analysis())
         
         # 计算总收益和总市值
         total_profit = stock_profit + indexfuture_profit + commfuture_profit + option_profit + etf_profit + cb_profit + bond_profit
         total_mktvalue = stock_mktvalue + indexfuture_mktvalue + commfuture_mktvalue + option_mktvalue + etf_mktvalue + cb_mktvalue + bond_mktvalue
-        
+        proportion_stock=stock_mktvalue/self.asset_value
+        proportion_option=option_mktvalue/self.asset_value
+        proportion_future=indexfuture_mktvalue/self.asset_value
+        proportion_cb=cb_mktvalue/self.asset_value
+        leverage_ratio=total_mktvalue/self.asset_value_yes
+        product_return=total_profit/self.asset_value_yes
         # 创建产品信息数据框
         df_info = pd.DataFrame({
-            'asset_value': [self.asset_value],
-            'total_profit': [total_profit],
-            'total_mktvalue': [total_mktvalue],
-            'stock_profit': [stock_profit],
-            'stock_mktvalue': [stock_mktvalue],
-            'indexfuture_profit': [indexfuture_profit],
-            'indexfuture_mktvalue': [indexfuture_mktvalue],
-            'commfuture_profit': [commfuture_profit],
-            'commfuture_mktvalue': [commfuture_mktvalue],
-            'option_profit': [option_profit],
-            'option_mktvalue': [option_mktvalue],
-            'etf_profit': [etf_profit],
-            'etf_mktvalue': [etf_mktvalue],
-            'cb_profit': [cb_profit],
-            'cb_mktvalue': [cb_mktvalue],
-            'bond_profit': [bond_profit],
-            'bond_mktvalue': [bond_mktvalue],
+            '资产总值': [self.asset_value],
+            '总盈亏': [total_profit],
+            '总市值': [total_mktvalue],
+            '股票盈亏': [stock_profit],
+            '股票市值': [stock_mktvalue],
+            '股指期货盈亏': [indexfuture_profit],
+            '股指期货市值': [indexfuture_mktvalue],
+            '商品期货盈亏': [commfuture_profit],
+            '商品期货市值': [commfuture_mktvalue],
+            '期权盈亏': [option_profit],
+            '期权市值': [option_mktvalue],
+            'ETF_盈亏': [etf_profit],
+            'ETF市值': [etf_mktvalue],
+            '可转债盈亏': [cb_profit],
+            '可转债市值': [cb_mktvalue],
+            '国债盈亏': [bond_profit],
+            '国债市值': [bond_mktvalue],
+            '股票占比': [proportion_stock],
+            '期权占比': [proportion_option],
+            '期货占比': [proportion_future],
+            '可转债占比': [proportion_cb],
+            '杠杆率': [leverage_ratio],
+            '总资产预估收益率(bp)': [round(10000*product_return,2)],
         })
         df_info=df_info.T
         df_info.reset_index(inplace=True)
@@ -380,7 +396,7 @@ class product_tracking:
         df_info['product_code']=self.product_code
         df_info['simulation']=False
         df_info['update_time']=self.now
-        return df_info,df_indexfuture
+        return df_info,df_detail
 
     def productTracking_main(self):
         """
@@ -388,7 +404,7 @@ class product_tracking:
         功能：执行产品级别的完整计算流程，包括数据获取、分析、处理和保存
         """
         # 获取产品信息
-        df_info,df_indexfuture = self.product_info_processing()
+        df_info,df_detail = self.product_info_processing()
         
         # 获取交易行为数据
         df_action = self.trading_action_processing()
@@ -400,8 +416,8 @@ class product_tracking:
         if len(df_action)>0:
             sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
             sm3.df_to_sql(df_action, 'product_code', self.product_code)
-        if len(df_indexfuture) > 0:
-            df_indexfuture=df_indexfuture[['code','direction','quantity','delta','mkt_value','profit']]
+        if len(df_detail) > 0:
+            df_indexfuture=df_detail[['code','direction','quantity','delta','mkt_value','profit']]
             df_indexfuture['simulation']='False'
             df_indexfuture['product_code']=self.product_code
             df_indexfuture.rename(columns={'quantity':'HoldingQty','profit':'daily_profit'},inplace=True)
@@ -412,7 +428,7 @@ class product_tracking:
 
         return df_info, df_action, df_indexfuture
 if __name__ == '__main__':
-    pt=product_tracking('SLA626')
+    pt=product_tracking('SST132')
     #print(pt.product_info_processing())
     print(pt.productTracking_main())
 

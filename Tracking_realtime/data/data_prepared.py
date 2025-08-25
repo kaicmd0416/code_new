@@ -14,7 +14,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime as datetime
@@ -703,7 +703,6 @@ class security_position:
             
             if len(df_holding) != 0:
                 break
-        
         # 选择需要的列并进行资产分类
         df_holding = df_holding[['valuation_date', 'code', 'quantity', 'asset_type']]
         df_holding_yes = df_holding_yes[['code', 'quantity']]
@@ -821,12 +820,14 @@ class prod_info:
                     pass  # 如果不能转换为float则保持原值
         else:
             asset_value = float(asset_value)
+        asset_value_yes=asset_value
         asset_type = self.get_product_detail('type')
         index_type = self.get_product_detail('index')
         today = datetime.date.today()
         today = gt.strdate_transfer(today)
         if asset_type == '中性':
             asset_value = asset_value
+            asset_value_yes=asset_value_yes
         else:
             working_days_list = gt.working_days_list(available_date, today)
             working_days_list = working_days_list[1:]
@@ -834,12 +835,13 @@ class prod_info:
                 if days != today:
                     index_return = gt.indexData_withdraw(index_type, days, days, ['pct_chg'])
                     index_return = index_return['pct_chg'].tolist()[0]
+                    asset_value_yes = (1 + index_return) * asset_value_yes
                 else:
                     index_return = gt.indexData_withdraw(index_type, days, days, ['pct_chg'], True)
                     index_return = index_return['pct_chg'].tolist()[0]
                 index_return = float(index_return)
                 asset_value = (1 + index_return) * asset_value
-        return asset_value
+        return asset_value,asset_value_yes
 
     def assetvalue_withdraw(self):
         """
@@ -862,9 +864,9 @@ class prod_info:
                 inputpath) + f" Where product_code='{self.product_code}' And valuation_date='{available_date}'"
         df = gt.data_getting(inputpath, config_path)
         asset_value = df['NetAssetValue'].unique().tolist()[0]
-        asset_value = self.assetvalue_processing(asset_value, available_date)
+        asset_value,asset_value_yes = self.assetvalue_processing(asset_value, available_date)
 
-        return asset_value
+        return asset_value,asset_value_yes
 
 class weight_withdraw:
     """
@@ -989,5 +991,5 @@ def fill_quantity_with_pre_quantity(df):
 
 if __name__ == '__main__':
     # 测试权重获取功能
-    ww = weight_withdraw()
-    print(ww.product_withdraw('SLA626'))
+    ww =   futureoption_position('SST132')
+    print(ww.position_withdraw_other())

@@ -12,7 +12,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 
 import datetime
@@ -173,6 +173,7 @@ class portfolio_tracking:
         
         # 保存产品投资组合数据到数据库
         if len(df_prod) > 0:
+            df_prod['valuation_date']= self.date
             sm = gt.sqlSaving_main(inputpath_sql, 'productreturn', delete=True)
             sm.df_to_sql(df_prod)
 
@@ -181,6 +182,6 @@ if __name__ == '__main__':
     # 获取配置文件路径
     config_path = glv.get('config_path')
     # 清理实时期货期权持仓表
-    gt.table_manager2(config_path, 'trading_new', 'trading_renr')
+    gt.table_manager(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
     # pt = portfolio_tracking()
     # pt.portfolioTracking_main()
