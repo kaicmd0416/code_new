@@ -1,9 +1,10 @@
 proinfo:
     table_name: "realtime_proinfo"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
       - 'type'
     schema:
@@ -15,10 +16,11 @@ proinfo:
       update_time: { type: String, length: 50 }
 optionfuture_holding:
     table_name: "realtime_futureoptionholding"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
       - 'code'
     schema:
@@ -34,10 +36,11 @@ optionfuture_holding:
       update_time: { type: String, length: 50 }
 holding_changing:
     table_name: "realtime_holdingchanging"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
       - 'code'
     schema:
@@ -54,12 +57,12 @@ holding_changing:
       update_time: { type: String, length: 50 }
 portfolioreturn:
     table_name: "realtime_portfolioreturn"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "portfolio_name"
-      - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
       portfolio_name: { type: String, length: 50 }
@@ -68,10 +71,96 @@ portfolioreturn:
       update_time: { type: String, length: 50 }
 productreturn:
     table_name: "realtime_productstockreturn"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
+      - "product_code"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      Excess_Return_bp: { type: Float }
+      Portfolio_Return_bp: { type: Float }
+      update_time: { type: String, length: 50 }
+proinfo_daily:
+    table_name: "daily_proinfo"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "product_code"
+      - 'type'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      type: { type: String, length: 50 }
+      simulation: { type: String, length: 50 }
+      value: { type: Float }
+      update_time: { type: String, length: 50 }
+optionfuture_holding_daily:
+    table_name: "daily_futureoptionholding"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "product_code"
+      - 'code'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      simulation: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      code: { type: String, length: 50 }
+      direction: { type: String, length: 50 }
+      HoldingQty: { type: Float }
+      delta: { type: Float }
+      mkt_value: { type: Float }
+      daily_profit: { type: Float }
+      update_time: { type: String, length: 50 }
+holding_changing_daily:
+    table_name: "daily_holdingchanging"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "product_code"
+      - 'code'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      simulation: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      code: { type: String, length: 50 }
+      direction: { type: String, length: 50 }
+      type: { type: String, length: 50 }
+      action: { type: String, length: 50 }
+      HoldingQty: { type: Float }
+      HoldingQty_yes: { type: Float }
+      difference: { type: Float }
+      update_time: { type: String, length: 50 }
+portfolioreturn_daily:
+    table_name: "daily_portfolioreturn"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "portfolio_name"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      portfolio_name: { type: String, length: 50 }
+      Excess_Return_bp: { type: Float }
+      Portfolio_Return_bp: { type: Float }
+      update_time: { type: String, length: 50 }
+productreturn_daily:
+    table_name: "daily_productstockreturn"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
       - "product_code"
     schema:
       valuation_date: { type: String, length: 50 }
@@ -81,10 +170,11 @@ productreturn:
       update_time: { type: String, length: 50 }
 proinfo_his:
     table_name: "history_proinfo"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
       - 'type'
     schema:
@@ -96,10 +186,11 @@ proinfo_his:
       update_time: { type: String, length: 50 }
 optionfuture_holding_his:
     table_name: "history_futureoptionholding"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
       - 'code'
     schema:
@@ -115,10 +206,11 @@ optionfuture_holding_his:
       update_time: { type: String, length: 50 }
 holding_changing_his:
     table_name: "history_holdingchanging"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
       - 'code'
     schema:
@@ -135,12 +227,12 @@ holding_changing_his:
       update_time: { type: String, length: 50 }
 portfolioreturn_his:
     table_name: "history_portfolioreturn"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "portfolio_name"
-      - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
       portfolio_name: { type: String, length: 50 }
@@ -149,10 +241,11 @@ portfolioreturn_his:
       update_time: { type: String, length: 50 }
 productreturn_his:
     table_name: "history_productstockreturn"
-    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/tracking_realtime?autocommit=True"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
     chunk_size: 20000
     workers: 4
     private_keys:
+      - "valuation_date"
       - "product_code"
     schema:
       valuation_date: { type: String, length: 50 }

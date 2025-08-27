@@ -14,7 +14,7 @@ import os
 import sys
 
 # 添加全局工具函数路径到系统路径
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 
 import datetime as datetime
@@ -34,13 +34,16 @@ class futureoption_position:
     功能：处理期货和期权的持仓数据，包括数据标准化、分类、方向转换等
     """
     
-    def __init__(self, product_code):
+    def __init__(self,start_date,end_date,product_code,realtime):
         """
         初始化方法
         参数：
             product_code (str): 产品代码
         """
+        self.start_date=start_date
+        self.end_date=end_date
         self.product_code = product_code
+        self.realtime=realtime
     
     def standardize_column_names_future(self, df):
         """
@@ -160,7 +163,7 @@ class futureoption_position:
         else:
             return '空'
     
-    def position_withdraw_hy(self):
+    def position_withdraw_hy_realtime(self):
         """
         获取期货期权持仓数据
         功能：从本地文件或数据库获取指定产品的期货期权持仓数据
@@ -197,7 +200,7 @@ class futureoption_position:
         df_option = self.fill_quantity_with_pre_quantity(df_option)
         return df_future, df_option
     
-    def position_withdraw_renr(self):
+    def position_withdraw_renr_realtime(self):
         """
         获取期货期权持仓数据
         功能：从本地文件或数据库获取指定产品的期货期权持仓数据
@@ -234,7 +237,7 @@ class futureoption_position:
         df_option = self.fill_quantity_with_pre_quantity(df_option)
         return df_future, df_option
     
-    def position_withdraw_rrjx(self):
+    def position_withdraw_rrjx_realtime(self):
         """
         获取期货期权持仓数据
         功能：从本地文件或数据库获取指定产品的期货期权持仓数据
@@ -267,7 +270,7 @@ class futureoption_position:
         df_option.drop(columns='asset_type', inplace=True)
         return df_future, df_option
     
-    def position_withdraw_rr500(self):
+    def position_withdraw_rr500_realtime(self):
         """
         获取期货期权持仓数据
         功能：从本地文件或数据库获取指定产品的期货期权持仓数据
@@ -300,7 +303,7 @@ class futureoption_position:
         df_option.drop(columns='asset_type', inplace=True)
         return df_future, df_option
     
-    def position_withdraw_other(self):
+    def position_withdraw_other_realtime(self):
         """
         获取期货期权持仓数据
         功能：从本地文件或数据库获取指定产品的期货期权持仓数据
@@ -365,7 +368,59 @@ class futureoption_position:
         df_future.drop(columns='asset_type', inplace=True)
         df_option.drop(columns='asset_type', inplace=True)
         return df_future, df_option
-    
+
+    def position_withdraw_daily(self): #目前只支持sql
+        """
+        获取期货期权持仓数据
+        功能：从本地文件或数据库获取指定产品的期货期权持仓数据
+
+        返回：
+            DataFrame: 处理后的持仓数据
+        """
+        inputpath=glv.get('data_l4holding')
+        # 从数据库读取数据
+        yes=gt.last_workday_calculate(self.start_date)
+        inputpath_holding = str(
+            inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
+        df_holding = gt.data_getting(inputpath_holding, config_path)
+        # 选择需要的列并进行资产分类
+        df_holding = df_holding[(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
+        def direction_transfer(x):
+            if x =='long':
+                return 1
+            else:
+                return -1
+        df_holding['direction'] = df_holding['direction'].apply(lambda x: direction_transfer(x))
+        df_holding['quantity']=df_holding['quantity']*df_holding['direction']
+        # 先对quantity进行相加
+        df_quantity_sum = df_holding.groupby(['valuation_date','code'])['quantity'].sum().reset_index()
+        # 对其他列保留最后一个值
+        df_other_cols = df_holding.groupby(['valuation_date','code']).last().reset_index()
+        # 合并结果
+        df_holding = df_quantity_sum.merge(df_other_cols[['valuation_date','code','asset_type']], on=['valuation_date','code'], how='left')
+        # 按日期和代码排序
+        df_holding = df_holding.sort_values(['valuation_date', 'code'])
+        # 创建pre_quantity列，通过shift操作获取前一天对应code的quantity
+        df_holding['pre_quantity'] = df_holding.groupby('code')['quantity'].shift(1)
+        # 将pre_quantity的NaN值填充为0
+        df_holding['pre_quantity'] = df_holding['pre_quantity'].fillna(0)
+        # 重新排列列顺序
+        df_holding = df_holding[['valuation_date', 'code','quantity', 'pre_quantity','asset_type']]
+        df_holding=df_holding[~(df_holding['valuation_date']==yes)]
+        df_option = df_holding[df_holding['asset_type'] == 'option']
+        df_future = df_holding[df_holding['asset_type'] == 'future']
+        df_future.drop(columns='asset_type', inplace=True)
+        df_option.drop(columns='asset_type', inplace=True)
+        def direction_transfer2(x):
+            if x>0:
+                return '多'
+            else:
+                return '空'
+        df_future['direction']=df_future['quantity'].apply(lambda x: direction_transfer2(x))
+        df_option['direction'] = df_option['quantity'].apply(lambda x: direction_transfer2(x))
+        df_future = self.fill_quantity_with_pre_quantity(df_future)
+        df_option = self.fill_quantity_with_pre_quantity(df_option)
+        return df_future, df_option
     def fill_quantity_with_pre_quantity(self, df):
         """
         填充持仓数量为昨仓数量
@@ -383,7 +438,7 @@ class futureoption_position:
             df['quantity'] = df['quantity'].fillna(df['pre_quantity'])
         return df
     
-    def futureoption_withdraw(self):
+    def futureoption_withdraw_main(self):
         """
         根据产品代码调用不同的持仓数据获取方法
         功能：根据产品代码调用相应的持仓数据获取方法，并返回处理后的数据
@@ -391,16 +446,19 @@ class futureoption_position:
         返回：
             DataFrame: 处理后的持仓数据
         """
-        if self.product_code == 'SGS958':
-            df_future, df_option = self.position_withdraw_hy()
-        elif self.product_code == 'SLA626':
-            df_future, df_option = self.position_withdraw_renr()
-        elif self.product_code == 'SNY426':
-            df_future, df_option = self.position_withdraw_rrjx()
-        elif self.product_code == 'SSS044':
-            df_future, df_option = self.position_withdraw_rr500()
+        if self.realtime==True:
+            if self.product_code == 'SGS958':
+                df_future, df_option = self.position_withdraw_hy_realtime()
+            elif self.product_code == 'SLA626':
+                df_future, df_option = self.position_withdraw_renr_realtime()
+            elif self.product_code == 'SNY426':
+                df_future, df_option = self.position_withdraw_rrjx_realtime()
+            elif self.product_code == 'SSS044':
+                df_future, df_option = self.position_withdraw_rr500_realtime()
+            else:
+                df_future, df_option = self.position_withdraw_other_realtime()
         else:
-            df_future, df_option = self.position_withdraw_other()
+            df_future, df_option = self.position_withdraw_daily()
         return df_future, df_option
 
 class security_position:
@@ -409,13 +467,16 @@ class security_position:
     功能：处理股票、ETF、可转债的持仓数据，包括数据标准化、分类等
     """
     
-    def __init__(self, product_code):
+    def __init__(self,start_date,end_date,product_code,realtime):
         """
         初始化方法
         参数：
             product_code (str): 产品代码
         """
+        self.start_date=start_date
+        self.end_date=end_date
         self.product_code = product_code
+        self.realtime=realtime
     
     def pool_withdraw(self):
         """
@@ -519,7 +580,7 @@ class security_position:
         df = df[existing_columns]
         return df
     
-    def position_withdraw_hy(self):
+    def position_withdraw_hy_realtime(self):
         """
         获取股票持仓数据
         功能：从本地文件或数据库获取指定产品的股票持仓数据
@@ -554,7 +615,7 @@ class security_position:
         df_cb.drop(columns='asset_type', inplace=True)
         return df_stock, df_etf, df_cb
 
-    def position_withdraw_renr(self):
+    def position_withdraw_renr_realtime(self):
         """
         获取股票持仓数据
         功能：从本地文件或数据库获取指定产品的股票持仓数据
@@ -590,7 +651,7 @@ class security_position:
         df_cb.drop(columns='asset_type', inplace=True)
         return df_stock, df_etf, df_cb
 
-    def position_withdraw_rrjx(self):
+    def position_withdraw_rrjx_realtime(self):
         """
         获取股票持仓数据
         功能：从本地文件或数据库获取指定产品的股票持仓数据
@@ -626,7 +687,7 @@ class security_position:
         df_cb.drop(columns='asset_type', inplace=True)
         return df_stock, df_etf, df_cb
 
-    def position_withdraw_rr500(self):
+    def position_withdraw_rr500_realtime(self):
         """
         获取股票持仓数据
         功能：从本地文件或数据库获取指定产品的股票持仓数据
@@ -662,7 +723,7 @@ class security_position:
         df_cb.drop(columns='asset_type', inplace=True)
         return df_stock, df_etf, df_cb
     
-    def position_withdraw_other(self):
+    def position_withdraw_other_realtime(self):
         """
         获取股票持仓数据
         功能：从本地文件或数据库获取指定产品的股票持仓数据
@@ -716,8 +777,37 @@ class security_position:
         df_etf.drop(columns='asset_type', inplace=True)
         df_cb.drop(columns='asset_type', inplace=True)
         return df_stock, df_etf, df_cb
-    
-    def security_withdraw(self):
+    def position_withdraw_daily(self): #目前只支持sql
+        """
+        获取期货期权持仓数据
+        功能：从本地文件或数据库获取指定产品的期货期权持仓数据
+
+        返回：
+            DataFrame: 处理后的持仓数据
+        """
+        inputpath=glv.get('data_l4holding')
+        # 从数据库读取数据
+        yes=gt.last_workday_calculate(self.start_date)
+        inputpath_holding = str(
+            inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
+        df_holding = gt.data_getting(inputpath_holding, config_path)
+        # 选择需要的列并进行资产分类
+        df_holding = df_holding[~(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
+        # 创建pre_quantity列，通过shift操作获取前一天对应code的quantity
+        df_holding['pre_quantity'] = df_holding.groupby('code')['quantity'].shift(1)
+        # 将pre_quantity的NaN值填充为0
+        df_holding['pre_quantity'] = df_holding['pre_quantity'].fillna(0)
+        # 重新排列列顺序
+        df_holding = df_holding[['valuation_date', 'code','quantity', 'pre_quantity','asset_type']]
+        df_holding=df_holding[~(df_holding['valuation_date']==yes)]
+        df_stock = df_holding[df_holding['asset_type'] == 'stock']
+        df_etf = df_holding[df_holding['asset_type'] == 'etf']
+        df_cb = df_holding[df_holding['asset_type'] == 'cbond']
+        df_stock.drop(columns='asset_type', inplace=True)
+        df_etf.drop(columns='asset_type', inplace=True)
+        df_cb.drop(columns='asset_type', inplace=True)
+        return df_stock, df_etf, df_cb
+    def security_withdraw_main(self):
         """
         根据产品代码调用不同的持仓数据获取方法
         功能：根据产品代码调用相应的持仓数据获取方法，并返回处理后的数据
@@ -727,16 +817,19 @@ class security_position:
             DataFrame: 处理后的ETF数据
             DataFrame: 处理后的可转债数据
         """
-        if self.product_code == 'SGS958':
-            df_stock, df_etf, df_cb = self.position_withdraw_hy()
-        elif self.product_code == 'SLA626':
-            df_stock, df_etf, df_cb = self.position_withdraw_renr()
-        elif self.product_code == 'SNY426':
-            df_stock, df_etf, df_cb = self.position_withdraw_rrjx()
-        elif self.product_code == 'SSS044':
-            df_stock, df_etf, df_cb = self.position_withdraw_rr500()
+        if self.realtime==True:
+            if self.product_code == 'SGS958':
+                df_stock, df_etf, df_cb = self.position_withdraw_hy_realtime()
+            elif self.product_code == 'SLA626':
+                df_stock, df_etf, df_cb = self.position_withdraw_renr_realtime()
+            elif self.product_code == 'SNY426':
+                df_stock, df_etf, df_cb = self.position_withdraw_rrjx_realtime()
+            elif self.product_code == 'SSS044':
+                df_stock, df_etf, df_cb = self.position_withdraw_rr500_realtime()
+            else:
+                df_stock, df_etf, df_cb = self.position_withdraw_other_realtime()
         else:
-            df_stock, df_etf, df_cb = self.position_withdraw_other()
+            df_stock, df_etf, df_cb = self.position_withdraw_daily()
         return df_stock, df_etf, df_cb
 
 class prod_info:
@@ -744,35 +837,24 @@ class prod_info:
     产品信息处理类
     功能：处理产品信息，包括获取产品名称、可用日期、资产价值等
     """
-    
-    def __init__(self, product_code):
+
+    def __init__(self, start_date, end_date, product_code, realtime):
         """
         初始化方法
         参数：
             product_code (str): 产品代码
         """
+        self.start_date = start_date
+        self.end_date = end_date
         self.product_code = product_code
+        if realtime == True:
+            today = datetime.date.today()
+            date = gt.strdate_transfer(today)  # 当前日期字符串
+            self.start_date = date
+            self.end_date = date
+        self.realtime=realtime
     
-    def get_product_detail(self, field):
-        """
-        获取产品详细信息
-        功能：从产品配置文件中获取指定字段的产品信息
-        
-        参数：
-            field (str): 要获取的字段名
-            
-        返回：
-            dict: 产品详细信息
-        """
-        yaml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'project_config', 'product_detail.yaml')
-        with open(yaml_path, 'r', encoding='utf-8') as f:
-            data = yaml.safe_load(f)
-        if self.product_code not in data:
-            raise ValueError(f"Product code {self.product_code} not found in product_detail.yaml")
-        product_info = data[self.product_code]
-        if field not in product_info:
-            raise ValueError(f"Field '{field}' not found for product code {self.product_code}")
-        return product_info[field]
+
     
     def availableDate_withdraw(self):
         """
@@ -784,7 +866,7 @@ class prod_info:
         """
         if source == 'local':
             inputpath = glv.get('prod_info')
-            product_name = self.get_product_detail('name')
+            product_name = get_product_detail(self.product_code,'name')
             inputpath = os.path.join(inputpath, product_name)
             inputlist = os.listdir(inputpath)
             inputlist = [str(i)[:8] for i in inputlist]
@@ -821,8 +903,8 @@ class prod_info:
         else:
             asset_value = float(asset_value)
         asset_value_yes=asset_value
-        asset_type = self.get_product_detail('type')
-        index_type = self.get_product_detail('index')
+        asset_type = get_product_detail(self.product_code,'type')
+        index_type = get_product_detail(self.product_code,'index')
         today = datetime.date.today()
         today = gt.strdate_transfer(today)
         if asset_type == '中性':
@@ -843,7 +925,7 @@ class prod_info:
                 asset_value = (1 + index_return) * asset_value
         return asset_value,asset_value_yes
 
-    def assetvalue_withdraw(self):
+    def assetvalue_withdraw_realtime(self):
         """
         获取产品资产价值
         功能：从本地文件或数据库获取产品的资产价值，并进行处理
@@ -865,26 +947,49 @@ class prod_info:
         df = gt.data_getting(inputpath, config_path)
         asset_value = df['NetAssetValue'].unique().tolist()[0]
         asset_value,asset_value_yes = self.assetvalue_processing(asset_value, available_date)
+        df_final=pd.DataFrame()
+        df_final['valuation_date']=[gt.last_workday_calculate(self.start_date),self.end_date]
+        df_final['NetAssetValue']=[asset_value_yes,asset_value]
+        return df_final
 
-        return asset_value,asset_value_yes
+    def assetvalue_withdraw_daily(self):
+        """
+        获取产品资产价值
+        功能：从本地文件或数据库获取产品的资产价值，并进行处理
 
+        返回：
+            float: 处理后的资产价值
+        """
+        inputpath=glv.get('data_l4info')
+        yes = gt.last_workday_calculate(self.start_date)
+        inputpath = str(
+            inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}"
+        df = gt.data_getting(inputpath, config_path)
+        df=df[['valuation_date','NetAssetValue']]
+        return df
+    def assetvalue_withdraw(self):
+        if self.realtime==True:
+            df=self.assetvalue_withdraw_realtime()
+        else:
+            df=self.assetvalue_withdraw_daily()
+        return df
 class weight_withdraw:
     """
     权重数据处理类
     功能：处理权重数据，包括获取产品列表、获取单个产品权重等
     """
     
-    def __init__(self):
+    def __init__(self,start_date,end_date,realtime):
         """
         初始化方法
         """
-        today = datetime.date.today()
-        today = gt.strdate_transfer(today)
-        self.available_date = today
-        self.yes = gt.last_workday_calculate(self.available_date)
-        self.realtime = True
-    
-    def portfolio_list_getting(self, yes=False):
+        self.start_date = start_date
+        self.end_date = end_date
+        if realtime==False:
+            self.yes = gt.last_workday_calculate(start_date)
+        else:
+            self.yes=self.start_date
+    def portfolio_list_getting(self,date):
         """
         获取产品组合列表
         功能：从本地文件或数据库获取产品组合列表
@@ -896,16 +1001,9 @@ class weight_withdraw:
             list: 产品组合名称列表
         """
         inputpath = glv.get('portfolio_weight')
-        if yes == True:
-            available_date = self.yes
-        else:
-            available_date = self.available_date
-        if source == 'local':
-            portfolio_list = os.listdir(inputpath)
-        else:
-            inputpath = str(inputpath) + f" Where valuation_date='{available_date}'"
-            df = gt.data_getting(inputpath, config_path, update_time=False)
-            portfolio_list = df['portfolio_name'].unique().tolist()
+        inputpath = str(inputpath) + f" Where valuation_date='{date}'"
+        df = gt.data_getting(inputpath, config_path, update_time=False)
+        portfolio_list = df['portfolio_name'].unique().tolist()
         return portfolio_list
     
     def product_list_getting(self):
@@ -919,7 +1017,7 @@ class weight_withdraw:
         product_list = ['SGS958', 'SVU353', 'SNY426', 'SSS044', 'STH580', 'SST132', 'SLA626']
         return product_list
     
-    def portfolio_withdraw(self, portfolio_name, yes=False):
+    def portfolio_withdraw(self, portfolio_name):
         """
         获取单个产品组合权重
         功能：从本地文件或数据库获取指定产品组合的权重数据
@@ -932,20 +1030,15 @@ class weight_withdraw:
             DataFrame: 产品组合权重数据
         """
         inputpath = glv.get('portfolio_weight')
-        if yes == True:
-            available_date = self.yes
+        if portfolio_name==None:
+            inputpath = str(
+                inputpath) + f" Where valuation_date between '{self.yes}' and '{self.end_date}'"
         else:
-            available_date = self.available_date
-        if source == 'local':
-            inputpath = os.path.join(inputpath, portfolio_name)
-            inputpath = gt.file_withdraw(inputpath, gt.intdate_transfer(available_date))
-        else:
-            inputpath = str(inputpath) + f" Where valuation_date='{available_date}' And portfolio_name='{portfolio_name}'"
+            inputpath = str(inputpath) + f" Where valuation_date between '{self.yes}' and '{self.end_date}' and portfolio_name='{portfolio_name}'"
         df = gt.data_getting(inputpath, config_path)
-        df = df[['code', 'weight']]
         return df
     
-    def product_withdraw(self, product_code, yes=False):
+    def product_withdraw(self, product_code):
         """
         获取单个产品权重
         功能：从本地文件或数据库获取指定产品的权重数据
@@ -958,38 +1051,39 @@ class weight_withdraw:
             DataFrame: 产品权重数据
         """
         inputpath = glv.get('product_weight')
-        if yes == True:
-            available_date = self.yes
+        if product_code==None:
+            inputpath = str(
+                inputpath) + f" Where valuation_date between '{self.yes}' and '{self.end_date}'"
         else:
-            available_date = self.available_date
-        if source == 'local':
-            inputpath = os.path.join(inputpath, product_code)
-            inputpath = gt.file_withdraw(inputpath, gt.intdate_transfer(available_date))
-        else:
-            inputpath = str(inputpath) + f" Where valuation_date='{available_date}' And product_code='{product_code}'"
+            inputpath = str(
+                inputpath) + f" Where valuation_date between '{self.yes}' and '{self.end_date}' and product_code='{product_code}'"
         df = gt.data_getting(inputpath, config_path)
-        df = df[['code', 'weight']]
         return df
+def get_product_detail(product_code, field):
+    """
+    获取产品详细信息
+    功能：从产品配置文件中获取指定字段的产品信息
 
-def fill_quantity_with_pre_quantity(df):
-    """
-    填充持仓数量为昨仓数量
-    功能：如果持仓数量为空，则用昨仓数量填充
-    
     参数：
-        df (DataFrame): 数据框
-        
+        field (str): 要获取的字段名
+
     返回：
-        DataFrame: 填充后的数据框
+        dict: 产品详细信息
     """
-    if 'quantity' in df.columns and 'pre_quantity' in df.columns:
-        df['quantity'] = df['quantity'].replace([None, 'None', 'nan', '', np.nan], np.nan)
-        df['quantity'] = df['quantity'].astype(float)
-        df['quantity'] = df['quantity'].fillna(df['pre_quantity'])
-    return df
+    yaml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'project_config', 'product_detail.yaml')
+    with open(yaml_path, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+    if product_code not in data:
+        raise ValueError(f"Product code {product_code} not found in product_detail.yaml")
+    product_info = data[product_code]
+    if field not in product_info:
+        raise ValueError(f"Field '{field}' not found for product code {product_code}")
+    return product_info[field]
 
 
 if __name__ == '__main__':
     # 测试权重获取功能
-    ww =   futureoption_position('SST132')
-    print(ww.position_withdraw_other())
+    # inputpath=glv.get('config_path')
+    # gt.table_manager(inputpath,'data_prepared_new','data_l4holding_test')
+    ww =security_position('2025-08-22','2025-08-26','SLA626',realtime=False)
+    print(ww.security_withdraw_main())

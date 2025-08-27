@@ -41,7 +41,7 @@
         },
         {
             "folder_type": "config_folder",
-            "path": "code_new2\\Tracking_realtime\\global_setting",
+            "path": "code_new\\Tracking_realtime\\global_setting",
             "disk": "D"
         }
     ],
@@ -134,6 +134,16 @@
             "folder_type": "input_folder_2",
             "database": "portfolio_new",
             "sql_sheet": "portfolio"
+        },
+        {
+            "data_type": "data_l4holding",
+            "database": "data_prepared_new",
+            "sql_sheet": "data_l4holding"
+        },
+        {
+            "data_type": "data_l4info",
+            "database": "data_prepared_new",
+            "sql_sheet": "data_l4info"
         }
 
     ]

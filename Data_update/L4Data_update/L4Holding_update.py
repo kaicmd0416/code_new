@@ -83,7 +83,8 @@ class L4Holding_update:
             '数量' : 'quantity',
             '市价' : 'price',
             '单位成本' :'unit_cost',
-            '市值' : 'mkt_value'
+            '市值' : 'mkt_value',
+            '方向' :'direction'
         }
         # 处理列名：先转小写
         df.columns = df.columns.str.lower()
@@ -103,7 +104,7 @@ class L4Holding_update:
         df = df[columns_to_keep]
         df['asset_type']=type
         # 定义固定的列顺序
-        fixed_columns = ['valuation_date','product_code','asset_type','code','quantity','price','unit_cost','mkt_value']
+        fixed_columns = ['valuation_date','product_code','asset_type','code','quantity','price','unit_cost','mkt_value','direction']
         # 对于不存在的列，创建并填充空值
         for col in fixed_columns:
             if col not in df.columns:
