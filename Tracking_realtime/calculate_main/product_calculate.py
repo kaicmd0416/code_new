@@ -42,7 +42,7 @@ class product_tracking:
     功能：处理单个产品的完整计算流程，包括数据获取、处理、分析和结果输出
     """
     
-    def __init__(self, product_code):
+    def __init__(self, start_date,end_date,product_code,realtime):
         """
         初始化方法
         功能：初始化产品跟踪对象，获取所有必要的持仓数据和产品信息
@@ -51,10 +51,12 @@ class product_tracking:
             product_code (str): 产品代码
         """
         self.product_code = product_code
-        
+        self.start_date=start_date
+        self.end_date=end_date
+        self.realtime=realtime
         # 获取期货期权持仓数据
-        fp = futureoption_position(product_code)
-        self.df_future_ori, self.df_option_ori = fp.futureoption_withdraw()
+        fp = futureoption_position(start_date,end_date,product_code,realtime)
+        self.df_future_ori, self.df_option_ori = fp.futureoption_withdraw_main()
         
         # 处理期货数据，分离今日和昨日数据
         df_future, df_future_yes = self.df_processing(self.df_future_ori)
@@ -428,10 +430,17 @@ class product_tracking:
 
         return df_info, df_action, df_indexfuture
 if __name__ == '__main__':
-    pt=product_tracking('SST132')
-    #print(pt.product_info_processing())
-    print(pt.productTracking_main())
-
+    for product_code in ['SGS958', 'SVU353', 'SNY426', 'SSS044', 'STH580', 'SST132', 'SLA626']:
+        print(product_code)
+        for realtime in [False]:
+            print(realtime)
+            if realtime==True:
+                start_date=end_date='2025-08-27'
+            else:
+                start_date=end_date='2025-08-22'
+            fp = prod_info(start_date,end_date, product_code, realtime)
+            df= fp.assetvalue_withdraw()
+            print(df)
 
 
 

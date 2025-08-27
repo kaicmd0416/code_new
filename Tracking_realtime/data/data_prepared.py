@@ -192,6 +192,19 @@ class futureoption_position:
         # 选择需要的列并进行资产分类
         df_holding = df_holding[['valuation_date', 'code', 'direction', 'quantity', 'pre_quantity']]
         df_holding = self.df_classification(df_holding)
+        def direction_transfer(x):
+            if x =='多':
+                return 1
+            else:
+                return -1
+        df_holding['direction'] = df_holding['direction'].apply(lambda x: direction_transfer(x))
+        df_holding['quantity']=df_holding['quantity']*df_holding['direction']
+        # 先对quantity进行相加
+        df_quantity_sum = df_holding.groupby(['valuation_date','code'])['quantity'].sum().reset_index()
+        # 对其他列保留最后一个值
+        df_other_cols = df_holding.groupby(['valuation_date','code']).last().reset_index()
+        # 合并结果
+        df_holding = df_quantity_sum.merge(df_other_cols[['valuation_date','code','asset_type']], on=['valuation_date','code'], how='left')
         df_future = df_holding[df_holding['asset_type'] == 'future']
         df_option = df_holding[df_holding['asset_type'] == 'option']
         df_future.drop(columns='asset_type', inplace=True)
@@ -229,6 +242,19 @@ class futureoption_position:
         # 选择需要的列并进行资产分类
         df_holding = df_holding[['valuation_date', 'code', 'direction', 'quantity', 'pre_quantity']]
         df_holding = self.df_classification(df_holding)
+        def direction_transfer(x):
+            if x =='多':
+                return 1
+            else:
+                return -1
+        df_holding['direction'] = df_holding['direction'].apply(lambda x: direction_transfer(x))
+        df_holding['quantity']=df_holding['quantity']*df_holding['direction']
+        # 先对quantity进行相加
+        df_quantity_sum = df_holding.groupby(['valuation_date','code'])['quantity'].sum().reset_index()
+        # 对其他列保留最后一个值
+        df_other_cols = df_holding.groupby(['valuation_date','code']).last().reset_index()
+        # 合并结果
+        df_holding = df_quantity_sum.merge(df_other_cols[['valuation_date','code','asset_type']], on=['valuation_date','code'], how='left')
         df_future = df_holding[df_holding['asset_type'] == 'future']
         df_option = df_holding[df_holding['asset_type'] == 'option']
         df_future.drop(columns='asset_type', inplace=True)
@@ -264,10 +290,28 @@ class futureoption_position:
         # 选择需要的列并进行资产分类
         df_holding = df_holding[['valuation_date', 'code', 'direction', 'quantity', 'pre_quantity']]
         df_holding = self.df_classification(df_holding)
+
+        def direction_transfer(x):
+            if x == '多':
+                return 1
+            else:
+                return -1
+
+        df_holding['direction'] = df_holding['direction'].apply(lambda x: direction_transfer(x))
+        df_holding['quantity'] = df_holding['quantity'] * df_holding['direction']
+        # 先对quantity进行相加
+        df_quantity_sum = df_holding.groupby(['valuation_date', 'code'])['quantity'].sum().reset_index()
+        # 对其他列保留最后一个值
+        df_other_cols = df_holding.groupby(['valuation_date', 'code']).last().reset_index()
+        # 合并结果
+        df_holding = df_quantity_sum.merge(df_other_cols[['valuation_date', 'code', 'asset_type']],
+                                           on=['valuation_date', 'code'], how='left')
         df_future = df_holding[df_holding['asset_type'] == 'future']
         df_option = df_holding[df_holding['asset_type'] == 'option']
         df_future.drop(columns='asset_type', inplace=True)
         df_option.drop(columns='asset_type', inplace=True)
+        df_future = self.fill_quantity_with_pre_quantity(df_future)
+        df_option = self.fill_quantity_with_pre_quantity(df_option)
         return df_future, df_option
     
     def position_withdraw_rr500_realtime(self):
@@ -297,10 +341,28 @@ class futureoption_position:
         # 选择需要的列并进行资产分类
         df_holding = df_holding[['valuation_date', 'code', 'direction', 'quantity', 'pre_quantity']]
         df_holding = self.df_classification(df_holding)
+
+        def direction_transfer(x):
+            if x == '多':
+                return 1
+            else:
+                return -1
+
+        df_holding['direction'] = df_holding['direction'].apply(lambda x: direction_transfer(x))
+        df_holding['quantity'] = df_holding['quantity'] * df_holding['direction']
+        # 先对quantity进行相加
+        df_quantity_sum = df_holding.groupby(['valuation_date', 'code'])['quantity'].sum().reset_index()
+        # 对其他列保留最后一个值
+        df_other_cols = df_holding.groupby(['valuation_date', 'code']).last().reset_index()
+        # 合并结果
+        df_holding = df_quantity_sum.merge(df_other_cols[['valuation_date', 'code', 'asset_type']],
+                                           on=['valuation_date', 'code'], how='left')
         df_future = df_holding[df_holding['asset_type'] == 'future']
         df_option = df_holding[df_holding['asset_type'] == 'option']
         df_future.drop(columns='asset_type', inplace=True)
         df_option.drop(columns='asset_type', inplace=True)
+        df_future = self.fill_quantity_with_pre_quantity(df_future)
+        df_option = self.fill_quantity_with_pre_quantity(df_option)
         return df_future, df_option
     
     def position_withdraw_other_realtime(self):
@@ -321,54 +383,64 @@ class futureoption_position:
             raise ValueError
         
         target_date = datetime.date.today()
+        target_date_ori = gt.strdate_transfer(target_date)
         for i in range(2):
             target_date = gt.last_workday_calculate(target_date)
             last_day = gt.last_workday_calculate(target_date)
             target_date2 = gt.intdate_transfer(target_date)
             last_day2 = gt.intdate_transfer(last_day)
-            
+
             if source == 'local':
                 # 从本地文件读取数据
                 inputpath_holding = gt.file_withdraw(inputpath, target_date2)
                 inputpath_holding_yes = gt.file_wtidhraw(inputpath, last_day2)
                 df_holding = gt.data_getting(inputpath_holding, config_path)
                 df_holding_yes = gt.data_getting(inputpath_holding_yes, config_path)
+                df_holding=pd.concat([df_holding,df_holding_yes])
             else:
                 # 从数据库读取数据
                 inputpath_holding = str(
-                    inputpath) + f" Where product_code='{self.product_code}' And valuation_date='{target_date}'"
-                inputpath_holding_yes = str(
-                    inputpath) + f" Where product_code='{self.product_code}' And valuation_date='{last_day}'"
+                    inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{last_day}' and '{target_date}'"
                 df_holding = gt.data_getting(inputpath_holding, config_path)
-                df_holding_yes = gt.data_getting(inputpath_holding_yes, config_path)
-            
-            if len(df_holding) != 0:
+            if [last_day,last_day2] in df_holding['valuation_date'].unique().tolist():
                 break
-        
-        # 选择需要的列并进行资产分类
         df_holding = df_holding[(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
-        df_holding_yes = df_holding_yes[(df_holding_yes['asset_type'] == 'future') | (df_holding_yes['asset_type'] == 'option')]
-        df_holding = df_holding[['valuation_date', 'code', 'quantity', 'mkt_value']]
-        df_holding_yes = df_holding_yes[['code', 'quantity']]
-        df_holding_yes.columns = ['code', 'pre_quantity']
-        
         def direction_transfer(x):
-            if x > 0:
-                return '多'
+            if x == 'long':
+                return 1
             else:
-                return '空'
-        
-        df_holding['direction'] = df_holding['mkt_value'].apply(lambda x: direction_transfer(x))
-        df_holding = df_holding[['valuation_date', 'code', 'direction', 'quantity']]
-        df_holding = df_holding.merge(df_holding_yes, on='code', how='outer')
-        df_holding.fillna(0, inplace=True)
-        df_holding = self.df_classification(df_holding)
-        df_future = df_holding[df_holding['asset_type'] == 'future']
+                return -1
+
+        df_holding['direction'] = df_holding['direction'].apply(lambda x: direction_transfer(x))
+        df_holding['quantity'] = df_holding['quantity'] * df_holding['direction']
+        # 先对quantity进行相加
+        df_quantity_sum = df_holding.groupby(['valuation_date', 'code'])['quantity'].sum().reset_index()
+        # 对其他列保留最后一个值
+        df_other_cols = df_holding.groupby(['valuation_date', 'code']).last().reset_index()
+        # 合并结果
+        df_holding = df_quantity_sum.merge(df_other_cols[['valuation_date', 'code', 'asset_type']],
+                                           on=['valuation_date', 'code'], how='left')
+        # 按日期和代码排序
+        df_holding = df_holding.sort_values(['valuation_date', 'code'])
+        # 创建pre_quantity列，通过shift操作获取前一天对应code的quantity
+        df_holding['pre_quantity'] = df_holding.groupby('code')['quantity'].shift(1)
+        # 将pre_quantity的NaN值填充为0
+        df_holding['pre_quantity'] = df_holding['pre_quantity'].fillna(0)
+        # 重新排列列顺序
+        df_holding = df_holding[['valuation_date', 'code', 'quantity', 'pre_quantity', 'asset_type']]
+        df_holding = df_holding[(df_holding['valuation_date'] == target_date)]
         df_option = df_holding[df_holding['asset_type'] == 'option']
+        df_future = df_holding[df_holding['asset_type'] == 'future']
         df_future.drop(columns='asset_type', inplace=True)
         df_option.drop(columns='asset_type', inplace=True)
+        df_future = self.fill_quantity_with_pre_quantity(df_future)
+        df_option = self.fill_quantity_with_pre_quantity(df_option)
         return df_future, df_option
-
+    def future_option_split(self,x):
+        if '-' in x:
+            return 'option'
+        else:
+            return 'future'
     def position_withdraw_daily(self): #目前只支持sql
         """
         获取期货期权持仓数据
@@ -377,16 +449,22 @@ class futureoption_position:
         返回：
             DataFrame: 处理后的持仓数据
         """
-        inputpath=glv.get('data_l4holding')
+        if self.product_code in ['SNY426', 'SSS044']:
+             inputpath=glv.get('data_l4holding_future')
+        else:
+             inputpath=glv.get('data_l4holding')
         # 从数据库读取数据
         yes=gt.last_workday_calculate(self.start_date)
         inputpath_holding = str(
             inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
         df_holding = gt.data_getting(inputpath_holding, config_path)
         # 选择需要的列并进行资产分类
-        df_holding = df_holding[(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
+        if 'asset_type' in df_holding.columns:
+           df_holding = df_holding[(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
+        else:
+            df_holding['asset_type']=df_holding['code'].apply(lambda x: self.future_option_split(x))
         def direction_transfer(x):
-            if x =='long':
+            if x =='long' or x=='多':
                 return 1
             else:
                 return -1
@@ -411,13 +489,6 @@ class futureoption_position:
         df_future = df_holding[df_holding['asset_type'] == 'future']
         df_future.drop(columns='asset_type', inplace=True)
         df_option.drop(columns='asset_type', inplace=True)
-        def direction_transfer2(x):
-            if x>0:
-                return '多'
-            else:
-                return '空'
-        df_future['direction']=df_future['quantity'].apply(lambda x: direction_transfer2(x))
-        df_option['direction'] = df_option['quantity'].apply(lambda x: direction_transfer2(x))
         df_future = self.fill_quantity_with_pre_quantity(df_future)
         df_option = self.fill_quantity_with_pre_quantity(df_option)
         return df_future, df_option
@@ -490,9 +561,10 @@ class security_position:
         """
         today = datetime.date.today()
         today = gt.strdate_transfer(today)
-        df_etf = gt.etfData_withdraw(today, realtime=True)
-        df_stock = gt.stockData_withdraw(today, realtime=True)
-        df_cb = gt.cbData_withdraw(today, realtime=True)
+        yes = gt.last_workday_calculate(today)
+        df_etf = gt.etfData_withdraw(yes,yes)
+        df_stock = gt.stockData_withdraw(yes,yes)
+        df_cb = gt.cbData_withdraw(yes,yes)
         etf_pool = df_etf['code'].unique().tolist()
         stock_pool = df_stock['code'].unique().tolist()
         cb_pool = df_cb['code'].unique().tolist()
@@ -785,14 +857,20 @@ class security_position:
         返回：
             DataFrame: 处理后的持仓数据
         """
-        inputpath=glv.get('data_l4holding')
+        if self.product_code in ['SNY426', 'SSS044']:
+            inputpath=glv.get('data_l4holding_stock')
+        else:
+            inputpath=glv.get('data_l4holding')
         # 从数据库读取数据
         yes=gt.last_workday_calculate(self.start_date)
         inputpath_holding = str(
             inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
         df_holding = gt.data_getting(inputpath_holding, config_path)
         # 选择需要的列并进行资产分类
-        df_holding = df_holding[~(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
+        if 'asset_type' in df_holding.columns:
+            df_holding = df_holding[~(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
+        else:
+            df_holding = self.df_classification(df_holding)
         # 创建pre_quantity列，通过shift操作获取前一天对应code的quantity
         df_holding['pre_quantity'] = df_holding.groupby('code')['quantity'].shift(1)
         # 将pre_quantity的NaN值填充为0
@@ -800,6 +878,7 @@ class security_position:
         # 重新排列列顺序
         df_holding = df_holding[['valuation_date', 'code','quantity', 'pre_quantity','asset_type']]
         df_holding=df_holding[~(df_holding['valuation_date']==yes)]
+        df_holding = df_holding[df_holding['code'].str.strip().astype(bool)]
         df_stock = df_holding[df_holding['asset_type'] == 'stock']
         df_etf = df_holding[df_holding['asset_type'] == 'etf']
         df_cb = df_holding[df_holding['asset_type'] == 'cbond']
@@ -963,7 +1042,7 @@ class prod_info:
         inputpath=glv.get('data_l4info')
         yes = gt.last_workday_calculate(self.start_date)
         inputpath = str(
-            inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}"
+            inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
         df = gt.data_getting(inputpath, config_path)
         df=df[['valuation_date','NetAssetValue']]
         return df

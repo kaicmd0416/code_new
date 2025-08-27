@@ -166,6 +166,6 @@ class portfolio_tracking:
 
 
 if __name__ == '__main__':
-    pt=portfolio_tracking('2025-08-27','2025-08-27',realtime=True)
+    pt=portfolio_tracking('2025-08-22','2025-08-22',realtime=False)
     print(pt.portfolioTracking_main())
 

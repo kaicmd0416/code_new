@@ -141,6 +141,16 @@
             "sql_sheet": "data_l4holding"
         },
         {
+            "data_type": "data_l4holding_future",
+            "database": "data_prepared_new",
+            "sql_sheet": "futureholding"
+        },
+        {
+            "data_type": "data_l4holding_stock",
+            "database": "data_prepared_new",
+            "sql_sheet": "stockholding"
+        },
+        {
             "data_type": "data_l4info",
             "database": "data_prepared_new",
             "sql_sheet": "data_l4info"
