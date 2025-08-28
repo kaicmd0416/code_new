@@ -458,6 +458,8 @@ class futureoption_position:
         inputpath_holding = str(
             inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
         df_holding = gt.data_getting(inputpath_holding, config_path)
+        working_days_list=gt.working_days_list(yes,self.end_date)
+        df_holding=df_holding[df_holding['valuation_date'].isin(working_days_list)]
         # 选择需要的列并进行资产分类
         if 'asset_type' in df_holding.columns:
            df_holding = df_holding[(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
@@ -484,7 +486,7 @@ class futureoption_position:
         df_holding['pre_quantity'] = df_holding['pre_quantity'].fillna(0)
         # 重新排列列顺序
         df_holding = df_holding[['valuation_date', 'code','quantity', 'pre_quantity','asset_type']]
-        df_holding=df_holding[~(df_holding['valuation_date']==yes)]
+        #df_holding=df_holding[~(df_holding['valuation_date']==yes)]
         df_option = df_holding[df_holding['asset_type'] == 'option']
         df_future = df_holding[df_holding['asset_type'] == 'future']
         df_future.drop(columns='asset_type', inplace=True)
@@ -866,6 +868,8 @@ class security_position:
         inputpath_holding = str(
             inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
         df_holding = gt.data_getting(inputpath_holding, config_path)
+        working_days_list = gt.working_days_list(yes, self.end_date)
+        df_holding = df_holding[df_holding['valuation_date'].isin(working_days_list)]
         # 选择需要的列并进行资产分类
         if 'asset_type' in df_holding.columns:
             df_holding = df_holding[~(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
@@ -877,8 +881,8 @@ class security_position:
         df_holding['pre_quantity'] = df_holding['pre_quantity'].fillna(0)
         # 重新排列列顺序
         df_holding = df_holding[['valuation_date', 'code','quantity', 'pre_quantity','asset_type']]
-        df_holding=df_holding[~(df_holding['valuation_date']==yes)]
-        df_holding = df_holding[df_holding['code'].str.strip().astype(bool)]
+        #df_holding=df_holding[~(df_holding['valuation_date']==yes)]
+        #df_holding = df_holding[df_holding['code'].str.strip().astype(bool)]
         df_stock = df_holding[df_holding['asset_type'] == 'stock']
         df_etf = df_holding[df_holding['asset_type'] == 'etf']
         df_cb = df_holding[df_holding['asset_type'] == 'cbond']

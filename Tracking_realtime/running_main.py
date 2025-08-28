@@ -50,7 +50,7 @@ def tracking_realtime_main():
             gt.table_manager2(config_path, 'tracking_realtime', 'realtime_proinfo')
         
         # 执行投资组合级别的跟踪计算
-        pt = portfolio_tracking()
+        pt = portfolio_tracking(None,None,True)
         pt.portfolioTracking_main()
         
         # 定义需要跟踪的产品代码列表
@@ -59,7 +59,7 @@ def tracking_realtime_main():
         for product_code in product_list:
             try:
                 # 创建产品跟踪对象并执行跟踪计算
-                pt2 = product_tracking(product_code)
+                pt2 = product_tracking(None,None,product_code,True)
                 pt2.productTracking_main()
             except Exception as e:
                 # 如果某个产品更新失败，打印错误信息但不影响其他产品
@@ -69,10 +69,28 @@ def tracking_realtime_main():
         if time.hour >= 17:
             hs = historySql_saving()
             hs.historySql_main()
+def tracking_daily_update_main():
+    product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
+    today = datetime.date.today()
+    date = gt.strdate_transfer(today)
+    target_date=gt.last_workday_calculate(date)
+    pt = portfolio_tracking(target_date, target_date, False)
+    pt.portfolioTracking_main()
+    for product_code in product_list:
+        pt2 = product_tracking(target_date, target_date,  product_code, False)
+        pt2.productTracking_main()
+def tracking_history_update_main(product_list=[],start_date=None,end_date=None):
+    if product_list==[]:
+          product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
+    pt = portfolio_tracking(start_date, end_date, False)
+    pt.portfolioTracking_main()
+    for product_code in product_list:
+        pt2 = product_tracking(start_date, end_date,  product_code, False)
+        pt2.productTracking_main()
 
 # 程序入口点
 if __name__ == "__main__":
-    tracking_realtime_main()
+    tracking_history_update_main(product_list=[],start_date='2025-08-22',end_date='2025-08-26')
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
     # # 清理持仓变化表
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_holdingchanging')

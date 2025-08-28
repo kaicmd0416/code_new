@@ -11,7 +11,6 @@ proinfo:
       valuation_date: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       type: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       value: { type: Float }
       update_time: { type: String, length: 50 }
 optionfuture_holding:
@@ -25,7 +24,6 @@ optionfuture_holding:
       - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       direction: { type: String, length: 50 }
@@ -45,7 +43,6 @@ holding_changing:
       - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       direction: { type: String, length: 50 }
@@ -96,7 +93,6 @@ proinfo_daily:
       valuation_date: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       type: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       value: { type: Float }
       update_time: { type: String, length: 50 }
 optionfuture_holding_daily:
@@ -110,7 +106,6 @@ optionfuture_holding_daily:
       - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       direction: { type: String, length: 50 }
@@ -130,7 +125,6 @@ holding_changing_daily:
       - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       direction: { type: String, length: 50 }
@@ -181,7 +175,6 @@ proinfo_his:
       valuation_date: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       type: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       value: { type: Float }
       update_time: { type: String, length: 50 }
 optionfuture_holding_his:
@@ -195,7 +188,6 @@ optionfuture_holding_his:
       - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       direction: { type: String, length: 50 }
@@ -215,7 +207,6 @@ holding_changing_his:
       - 'code'
     schema:
       valuation_date: { type: String, length: 50 }
-      simulation: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       direction: { type: String, length: 50 }
