@@ -1033,6 +1033,7 @@ class prod_info:
         df_final=pd.DataFrame()
         df_final['valuation_date']=[gt.last_workday_calculate(self.start_date),self.end_date]
         df_final['NetAssetValue']=[asset_value_yes,asset_value]
+        df_final['RedemptionAmount','SubscriptionAmount','ProductNetValue','ProductAccumulatedNetValue']=0
         return df_final
 
     def assetvalue_withdraw_daily(self):
@@ -1048,7 +1049,8 @@ class prod_info:
         inputpath = str(
             inputpath) + f" Where product_code='{self.product_code}' And valuation_date between '{yes}' and '{self.end_date}'"
         df = gt.data_getting(inputpath, config_path)
-        df=df[['valuation_date','NetAssetValue']]
+        df=df[['valuation_date','NetAssetValue','RedemptionAmount','SubscriptionAmount','ProductNetValue','ProductAccumulatedNetValue']]
+        df.fillna(0,inplace=True)
         return df
     def assetvalue_withdraw(self):
         if self.realtime==True:
@@ -1142,6 +1144,33 @@ class weight_withdraw:
                 inputpath) + f" Where valuation_date between '{self.yes}' and '{self.end_date}' and product_code='{product_code}'"
         df = gt.data_getting(inputpath, config_path)
         return df
+class factorexposure_withdraw:
+    def __init__(self, start_date, end_date, realtime):
+        """
+        初始化方法
+        """
+        self.start_date = start_date
+        self.end_date = end_date
+        if realtime == True:
+            self.yes = gt.last_workday_calculate(start_date)
+            self.start_date=self.end_date=self.yes
+    def stock_exposure_withdraw(self):
+        inputpath=glv.get('data_stockexposure')
+        inputpath=str(inputpath)+f" Where valuation_date between '{self.start_date}' and '{self.end_date}'"
+        df = gt.data_getting(inputpath, config_path)
+        return df
+    def factorreturn_withdraw(self):
+        inputpath=glv.get('data_factorreturn')
+        inputpath=str(inputpath)+f" Where valuation_date between '{self.start_date}' and '{self.end_date}'"
+        df = gt.data_getting(inputpath, config_path)
+        return df
+    def index_exposure_withdraw(self):
+        df_final=pd.DataFrame()
+        for index_type in ['沪深300','中证500','中证1000','中证A500']:
+            df=gt.indexFactor_withdraw(index_type,self.start_date,self.end_date)
+            df['index_type']=index_type
+            df_final=pd.concat([df_final,df])
+        return df_final
 def get_product_detail(product_code, field):
     """
     获取产品详细信息

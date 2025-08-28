@@ -244,3 +244,26 @@ productreturn_his:
       Excess_Return_bp: { type: Float }
       Portfolio_Return_bp: { type: Float }
       update_time: { type: String, length: 50 }
+product_factor:
+    table_name: "daily_productfactor"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "product_code"
+      - "factor_name"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      factor_name: { type: String, length: 50 }
+      stock_exposure: { type: Float }
+      option_exposure: { type: Float }
+      future_exposure: { type: Float }
+      portfolio_exposure: { type: Float }
+      index_exposure: { type: Float }
+      difference: { type: Float }
+      ratio: { type: Float }
+      factor_return: { type: Float }
+      product_factor_return: { type: Float }
+      update_time: { type: String, length: 50 }

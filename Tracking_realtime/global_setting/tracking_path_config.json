@@ -136,6 +136,16 @@
             "sql_sheet": "portfolio"
         },
         {
+            "data_type": "data_stockexposure",
+            "database": "data_prepared_new",
+            "sql_sheet": "data_factorexposure"
+        },
+        {
+            "data_type": "data_factorreturn",
+            "database": "data_prepared_new",
+            "sql_sheet": "data_factorreturn"
+        },
+        {
             "data_type": "data_l4holding",
             "database": "data_prepared_new",
             "sql_sheet": "data_l4holding"
