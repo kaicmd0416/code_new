@@ -90,7 +90,85 @@ class historySql_saving:
             status = 'not_exist'
         
         return status
-    
+
+    def portfoliosplit_check(self):
+        """
+        检查期货期权持仓历史数据是否存在
+        功能：检查指定日期的期货期权持仓历史数据是否已存在
+
+        Returns:
+            str: 'exist'表示存在，'not_exist'表示不存在
+        """
+        # 查询历史表中的期货期权持仓数据
+        inputpath = f"Select * from tracking_realtime.history_portfoliosplit Where valuation_date='{self.date}'"
+        df_final = gt.data_getting(inputpath, config_path)
+
+        if len(df_final) > 0:
+            status = 'exist'
+        else:
+            status = 'not_exist'
+
+        return status
+
+    def portfoliosplit_saving(self):
+        """
+        保存投资组合收益历史数据
+        功能：从实时表读取投资组合收益数据并保存到历史表
+
+        Returns:
+            DataFrame: 保存的投资组合收益数据
+        """
+        # 从实时表查询投资组合收益数据
+        inputpath = f"Select * from tracking_realtime.realtime_portfoliosplit Where valuation_date='{self.date}'"
+        df_final = gt.data_getting(inputpath, config_path)
+
+        if len(df_final) > 0:
+            # 添加更新时间
+            df_final['update_time'] = self.now
+            # 保存到历史表
+            sm = gt.sqlSaving_main(inputpath_sql, 'portfolio_split_his', delete=True)
+            sm.df_to_sql(df_final)
+
+        return df_final
+    def signalsplit_check(self):
+        """
+        检查期货期权持仓历史数据是否存在
+        功能：检查指定日期的期货期权持仓历史数据是否已存在
+
+        Returns:
+            str: 'exist'表示存在，'not_exist'表示不存在
+        """
+        # 查询历史表中的期货期权持仓数据
+        inputpath = f"Select * from tracking_realtime.history_scoresplit Where valuation_date='{self.date}'"
+        df_final = gt.data_getting(inputpath, config_path)
+
+        if len(df_final) > 0:
+            status = 'exist'
+        else:
+            status = 'not_exist'
+
+        return status
+
+    def signalsplit_saving(self):
+        """
+        保存投资组合收益历史数据
+        功能：从实时表读取投资组合收益数据并保存到历史表
+
+        Returns:
+            DataFrame: 保存的投资组合收益数据
+        """
+        # 从实时表查询投资组合收益数据
+        inputpath = f"Select * from tracking_realtime.realtime_scoresplit Where valuation_date='{self.date}'"
+        df_final = gt.data_getting(inputpath, config_path)
+
+        if len(df_final) > 0:
+            # 添加更新时间
+            df_final['update_time'] = self.now
+            # 保存到历史表
+            sm = gt.sqlSaving_main(inputpath_sql, 'score_split_his', delete=True)
+            sm.df_to_sql(df_final)
+
+        return df_final
     def portfolioreturn_saving(self):
         """
         保存投资组合收益历史数据
@@ -275,11 +353,16 @@ class historySql_saving:
         status4 = self.proinfo_check()
         if status4 == 'not_exist':
             self.proinfo_saving()
-        
         # 检查并保存持仓变化历史数据
         status5 = self.holdingchanging_check()
         if status5 == 'not_exist':
             self.holdingchanging_saving()
+        status6=self.portfoliosplit_check()
+        if status6 == 'not_exist':
+            self.portfoliosplit_saving()
+        status7 = self.signalsplit_check()
+        if  status7 == 'not_exist':
+            self.signalsplit_saving()
 
 
 if __name__ == '__main__':

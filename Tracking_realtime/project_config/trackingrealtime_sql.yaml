@@ -267,3 +267,117 @@ product_factor:
       factor_return: { type: Float }
       product_factor_return: { type: Float }
       update_time: { type: String, length: 50 }
+portfolio_split_daily:
+    table_name: "daily_portfoliosplit"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "portfolio_name"
+      - "split_name"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      portfolio_name: { type: String, length: 50 }
+      split_name: { type: String, length: 50 }
+      contribution: { type: Float }
+      weight: { type: Float }
+      weight_difference: { type: Float }
+      portfolio_excess_return: { type: Float }
+      update_time: { type: String, length: 50 }
+portfolio_split_realtime:
+    table_name: "realtime_portfoliosplit"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "portfolio_name"
+      - "split_name"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      portfolio_name: { type: String, length: 50 }
+      split_name: { type: String, length: 50 }
+      contribution: { type: Float }
+      weight: { type: Float }
+      weight_difference: { type: Float }
+      portfolio_excess_return: { type: Float }
+      update_time: { type: String, length: 50 }
+portfolio_split_his:
+    table_name: "history_portfoliosplit"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "portfolio_name"
+      - "split_name"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      portfolio_name: { type: String, length: 50 }
+      split_name: { type: String, length: 50 }
+      contribution: { type: Float }
+      weight: { type: Float }
+      weight_difference: { type: Float }
+      portfolio_excess_return: { type: Float }
+      update_time: { type: String, length: 50 }
+score_split_daily:
+    table_name: "daily_scoresplit"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "score_name"
+      - "split_name"
+      - "index_type"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      score_name: { type: String, length: 50 }
+      split_name: { type: String, length: 50 }
+      index_type: { type: String, length: 50 }
+      contribution: { type: Float }
+      weight: { type: Float }
+      weight_difference: { type: Float }
+      portfolio_excess_return: { type: Float }
+      update_time: { type: String, length: 50 }
+score_split_realtime:
+    table_name: "realtime_scoresplit"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "score_name"
+      - "split_name"
+      - "index_type"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      score_name: { type: String, length: 50 }
+      split_name: { type: String, length: 50 }
+      index_type: { type: String, length: 50 }
+      contribution: { type: Float }
+      weight: { type: Float }
+      weight_difference: { type: Float }
+      portfolio_excess_return: { type: Float }
+      update_time: { type: String, length: 50 }
+score_split_his:
+    table_name: "history_scoresplit"
+    db_url: "mysql+pymysql://root:root@localhost:3306/tracking?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "score_name"
+      - "split_name"
+      - "index_type"
+    schema:
+      valuation_date: { type: String, length: 50 }
+      score_name: { type: String, length: 50 }
+      split_name: { type: String, length: 50 }
+      index_type: { type: String, length: 50 }
+      contribution: { type: Float }
+      weight: { type: Float }
+      weight_difference: { type: Float }
+      portfolio_excess_return: { type: Float }
+      update_time: { type: String, length: 50 }

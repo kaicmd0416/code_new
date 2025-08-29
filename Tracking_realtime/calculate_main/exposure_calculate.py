@@ -200,7 +200,6 @@ class exposure_tracking:
             df_portfolio_exposure['index_exposure'])
         df_portfolio_exposure=df_portfolio_exposure.merge(df_factorreturn_long, on=['factor_name','valuation_date'], how='left')
         df_portfolio_exposure['product_factor_return']=df_portfolio_exposure['difference']*df_portfolio_exposure['factor_return']
-        
         # 将inf值替换为None
         df_portfolio_exposure = df_portfolio_exposure.replace([np.inf, -np.inf], None)
         

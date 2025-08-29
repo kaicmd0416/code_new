@@ -1171,6 +1171,70 @@ class factorexposure_withdraw:
             df['index_type']=index_type
             df_final=pd.concat([df_final,df])
         return df_final
+class scoredata_withdraw:
+    def __init__(self, start_date, end_date, realtime):
+        """
+        初始化方法
+        """
+        self.start_date = start_date
+        self.end_date = end_date
+        if realtime == True:
+            today = datetime.date.today()
+            date = gt.strdate_transfer(today)  # 当前日期字符串
+            date=gt.last_workday_calculate(date)
+            self.start_date = date
+            self.end_date = date
+        else:
+            self.start_date=gt.last_workday_calculate(self.start_date)
+            self.end_date = gt.last_workday_calculate(self.end_date)
+    def portfolio_info_withdraw(self):
+        inputpath=glv.get('portfolio_info')
+        df=gt.data_getting(inputpath,config_path)
+        return df
+    def score_withdraw(self):
+        df_info=self.portfolio_info_withdraw()
+        score_type=df_info['base_score'].unique().tolist()
+        score_type=[i for i in score_type if '_' in  i and 'qj' not in i]
+
+        # 将score_type从列表转换为元组格式
+        score_type_tuple = tuple(score_type)
+        inputpath=glv.get('data_score')
+        inputpath=str(inputpath)+f" Where valuation_date between '{self.start_date}' and '{self.end_date}' and score_name in {score_type_tuple}"
+        df = gt.data_getting(inputpath, config_path)
+        df['valuation_date']=df['valuation_date'].apply(lambda x: gt.next_workday_calculate(x))
+        return df
+class mktdata_withdraw:
+    def __init__(self, start_date, end_date, realtime):
+        """
+        初始化方法
+        """
+        self.start_date = start_date
+        self.end_date = end_date
+        self.realtime=realtime
+        if realtime == True:
+            self.yes = gt.last_workday_calculate(start_date)
+            self.start_date=self.end_date=self.yes
+
+    def indexweight_withdraw(self):
+        df_final = pd.DataFrame()
+        working_days_list=gt.working_days_list(self.start_date,self.end_date)
+        for index_type in ['沪深300', '中证500', '中证1000', '中证A500']:
+            for available_date in working_days_list:
+                df = gt.index_weight_withdraw(index_type, available_date)
+                df['valuation_date']=available_date
+                df['index_type'] = index_type
+                df_final = pd.concat([df_final, df])
+        if self.realtime==True:
+            today = datetime.date.today()
+            date = gt.strdate_transfer(today)
+            df_final['valuation_date']=date
+        return df_final
+    def stockdata_withdraw(self):
+        df_final=gt.stockData_withdraw(self.start_date,self.end_date,['pct_chg'],self.realtime)
+        return df_final
+    def indexdata_withdraw(self):
+        df_final=gt.indexData_withdraw(None,self.start_date,self.end_date,['pct_chg'],self.realtime)
+        return df_final
 def get_product_detail(product_code, field):
     """
     获取产品详细信息
@@ -1194,8 +1258,10 @@ def get_product_detail(product_code, field):
 
 
 if __name__ == '__main__':
+    config_path=glv.get('config_path')
+    gt.table_manager(config_path,'portfolio_new','portfolio_info')
     # 测试权重获取功能
     # inputpath=glv.get('config_path')
     # gt.table_manager(inputpath,'data_prepared_new','data_l4holding_test')
-    ww =security_position('2025-08-22','2025-08-26','SLA626',realtime=False)
-    print(ww.security_withdraw_main())
+    # ww =scoredata_withdraw('2025-08-22','2025-08-26',realtime=False)
+    # print(ww.score_withdraw('rr_1954'))

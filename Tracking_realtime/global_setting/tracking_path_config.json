@@ -165,6 +165,19 @@
             "database": "data_prepared_new",
             "sql_sheet": "data_l4info"
         }
+        ,
+        {
+            "data_type": "portfolio_info",
+            "database": "portfolio_new",
+            "sql_sheet": "portfolio_info"
+        }
+        ,
+        {
+            "data_type": "data_score",
+            "database": "data_prepared_new",
+            "sql_sheet": "data_score"
+        }
+
 
     ]
 }

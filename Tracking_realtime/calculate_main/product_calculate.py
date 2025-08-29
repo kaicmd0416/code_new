@@ -71,10 +71,15 @@ class product_tracking:
         # 获取产品资产价值
         pi = prod_info(start_date,end_date,product_code,realtime)
         self.df_asset = pi.assetvalue_withdraw()
-        fw=factorexposure_withdraw(start_date,end_date,realtime)
-        self.df_stockexposure=fw.stock_exposure_withdraw()
-        self.df_indexexposure=fw.index_exposure_withdraw()
-        self.df_factorreturn=fw.factorreturn_withdraw()
+        if self.realtime==False:
+            fw = factorexposure_withdraw(start_date, end_date, realtime)
+            self.df_stockexposure = fw.stock_exposure_withdraw()
+            self.df_indexexposure = fw.index_exposure_withdraw()
+            self.df_factorreturn = fw.factorreturn_withdraw()
+        else:
+            self.df_stockexposure=pd.DataFrame()
+            self.df_indexexposure = pd.DataFrame()
+            self.df_factorreturn = pd.DataFrame()
         # 设置当前日期和时间
         today = datetime.date.today()
         self.date = gt.strdate_transfer(today)
@@ -331,7 +336,6 @@ class product_tracking:
             sm.df_to_sql(df_exposure, 'product_code', self.product_code)
         # 获取交易行为数据
         df_action = self.trading_action_processing()
-
         # 保存产品信息到数据库
         if len(df_output) > 0:
             if self.realtime==True:

@@ -16,8 +16,9 @@ import datetime
 import global_tools as gt
 import global_setting.global_dic as glv
 import numpy as np
-from data.data_prepared import weight_withdraw, prod_info,get_product_detail
-
+from data.data_prepared import weight_withdraw,scoredata_withdraw,get_product_detail,mktdata_withdraw
+from calculate_main.portfolio_split import portfolio_split_calculate
+from calculate_main.signal_split import score_split_calculate
 def sql_path():
     """
     获取SQL配置文件路径
@@ -39,13 +40,14 @@ class portfolio_tracking:
     功能：处理投资组合级别的完整计算流程，包括纸面投资组合和产品投资组合的分析
     """
     
-    def __init__(self,start_date,end_date,realtime):
+    def __init__(self,start_date,end_date,realtime,split):
         """
         初始化方法
         功能：初始化投资组合跟踪对象，设置日期和权重获取器
         """
         self.start_date=start_date
         self.end_date=end_date
+        self.split=split
         if realtime==True:
              today = datetime.date.today()
              date = gt.strdate_transfer(today)  # 当前日期字符串
@@ -53,6 +55,20 @@ class portfolio_tracking:
              self.end_date=date
         self.realtime=realtime
         self.ww = weight_withdraw(self.start_date,self.end_date,realtime)  # 权重数据获取器
+        if split==True:
+            sw=scoredata_withdraw(self.start_date,self.end_date,realtime)
+            self.df_score=sw.score_withdraw()
+            mw=mktdata_withdraw(self.start_date,self.end_date,realtime)
+            self.df_indexcomp=mw.indexweight_withdraw()
+            self.df_stockreturn=mw.stockdata_withdraw()
+            self.df_portinfo=sw.portfolio_info_withdraw()
+            self.df_indexreturn=mw.indexdata_withdraw()
+        else:
+            self.df_score=pd.DataFrame()
+            self.df_indexcomp=pd.DataFrame()
+            self.df_portinfo=pd.DataFrame()
+            self.df_stockreturn=pd.DataFrame()
+            self.df_indexreturn = pd.DataFrame()
         self.now = datetime.datetime.now().replace(tzinfo=None)  # 当前时间
     
     def index_type_decision(self, x):
@@ -113,6 +129,16 @@ class portfolio_tracking:
         df['index_type'] = df['portfolio_name'].apply(lambda x: get_product_detail(x,'index'))
         df = df[['valuation_date', 'code', 'weight', 'portfolio_name', 'index_type']]
         return df
+    def Split_main(self):
+        df_weight=self.paperportfolio_withdraw()
+        psc=portfolio_split_calculate(self.df_score,self.df_indexcomp,self.df_stockreturn,self.df_indexreturn,df_weight,self.df_portinfo)
+        df_portsplit=psc.portfolio_split_main()
+        df_portsplit['update_time']=self.now
+        ssc=score_split_calculate(self.df_score,self.df_indexcomp,self.df_stockreturn,self.df_indexreturn,self.df_portinfo)
+        df_signalsplit=ssc.score_split_main()
+        df_signalsplit['update_time'] = self.now
+        return df_portsplit,df_signalsplit
+
     def portfolioTracking_main(self):
         """
         投资组合跟踪主函数
@@ -124,9 +150,6 @@ class portfolio_tracking:
         portfolio_name_list = df_port_weight['portfolio_name'].unique().tolist()
         # 获取产品投资组合权重数据
         df_prod_weight = self.productportfolio_withdraw()
-
-
-
         # 合并所有投资组合数据
         df_cal = pd.concat([df_port_weight, df_prod_weight])
         df_cal=df_cal[~(df_cal['portfolio_name']=='ubp500')]
@@ -135,6 +158,10 @@ class portfolio_tracking:
             df_info, df_detail = gt.portfolio_analyse(df_cal,cost_stock=0,realtime=self.realtime)
         else:
             df_info, df_detail = gt.portfolio_analyse(df_cal, realtime=self.realtime)
+        if self.split==True:
+            df_portsplit,df_signalsplit=self.Split_main()
+        else:
+            df_portsplit,df_signalsplit=pd.DataFrame(),pd.DataFrame()
         df_info=df_info[df_info['valuation_date'].isin(working_days_list)]
         df_detail=df_detail[df_detail['valuation_date'].isin(working_days_list)]
         # 处理投资组合信息数据
@@ -163,9 +190,20 @@ class portfolio_tracking:
             else:
                 sm = gt.sqlSaving_main(inputpath_sql, 'productreturn_daily', delete=True)
             sm.df_to_sql(df_prod)
-
+        if len(df_portsplit)>0:
+            if self.realtime==True:
+                sm = gt.sqlSaving_main(inputpath_sql, 'portfolio_split_realtime', delete=True)
+            else:
+                sm = gt.sqlSaving_main(inputpath_sql, 'portfolio_split_daily', delete=True)
+            sm.df_to_sql(df_portsplit)
+        if len(df_signalsplit)>0:
+            if self.realtime==True:
+                sm = gt.sqlSaving_main(inputpath_sql, 'score_split_realtime', delete=True)
+            else:
+                sm = gt.sqlSaving_main(inputpath_sql, 'score_split_daily', delete=True)
+            sm.df_to_sql(df_signalsplit)
 
 if __name__ == '__main__':
-    pt=portfolio_tracking('2025-08-22','2025-08-22',realtime=False)
+    pt=portfolio_tracking('2025-08-22','2025-08-25',realtime=False,split=True)
     print(pt.portfolioTracking_main())
 

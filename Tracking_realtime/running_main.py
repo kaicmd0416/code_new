@@ -74,7 +74,7 @@ def tracking_daily_update_main():
     today = datetime.date.today()
     date = gt.strdate_transfer(today)
     target_date=gt.last_workday_calculate(date)
-    pt = portfolio_tracking(target_date, target_date, False)
+    pt = portfolio_tracking(target_date, target_date, False,True)
     pt.portfolioTracking_main()
     for product_code in product_list:
         pt2 = product_tracking(target_date, target_date,  product_code, False)
@@ -82,11 +82,11 @@ def tracking_daily_update_main():
 def tracking_history_update_main(product_list=[],start_date=None,end_date=None):
     if product_list==[]:
           product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
-    # pt = portfolio_tracking(start_date, end_date, False)
-    # pt.portfolioTracking_main()
-    for product_code in product_list:
-        pt2 = product_tracking(start_date, end_date,  product_code, False)
-        pt2.productTracking_main()
+    pt = portfolio_tracking(start_date, end_date, False,True)
+    pt.portfolioTracking_main()
+    # for product_code in product_list:
+    #     pt2 = product_tracking(start_date, end_date,  product_code, False)
+    #     pt2.productTracking_main()
 
 # 程序入口点
 if __name__ == "__main__":
