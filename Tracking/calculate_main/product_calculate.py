@@ -81,7 +81,8 @@ class product_tracking:
             self.df_indexexposure = pd.DataFrame()
             self.df_factorreturn = pd.DataFrame()
         # 设置当前日期和时间
-        self.data_checking()
+        if self.realtime==False:
+            self.data_checking()
         today = datetime.date.today()
         self.date = gt.strdate_transfer(today)
         self.now = datetime.datetime.now().replace(tzinfo=None)
@@ -301,6 +302,7 @@ class product_tracking:
             df_info['proportion_'+str(asset_type)] = df_info[str(asset_type)+'_mktvalue'] / df_info['NetAssetValue']
         if self.asset_type=='中性':
             df_info['indexfuture_excess_return']=df_info['indexfuture_excess_return']+2*df_info['indexfuture_index_return']
+
         df_info['leverage_ratio']=df_info['tracking_mktvalue']/df_info['NetAssetValue']
         df_info['tracking_product_return']=df_info['tracking_profit']/df_info['NetAssetValue_yes']
         df_info['NetAssetValue']=df_info['NetAssetValue']+df_info['RedemptionAmount']-df_info['SubscriptionAmount']
@@ -338,8 +340,8 @@ class product_tracking:
         功能：执行产品级别的完整计算流程，包括数据获取、分析、处理和保存
         """
         # 获取产品信息
+        df_info, df_detail, df_output, df_output2 = self.product_info_processing()
         if self.realtime==False:
-            df_info, df_detail, df_output, df_output2 = self.product_info_processing()
             et = exposure_tracking(df_detail, df_info, self.df_stockexposure, self.df_indexexposure,
                                    self.df_factorreturn, self.index_type)
             df_exposure = et.final_portfolio_exposure_processing()
@@ -349,29 +351,29 @@ class product_tracking:
             sm.df_to_sql(df_exposure, 'product_code', self.product_code)
         # 获取交易行为数据
         df_action = self.trading_action_processing()
-        # 保存产品信息到数据库
-        if len(df_output) > 0:
-            if self.realtime==True:
-                  sm = gt.sqlSaving_main(inputpath_sql, 'proinfo', delete=True)
-            else:
-                sm = gt.sqlSaving_main(inputpath_sql, 'proinfo_daily', delete=True)
-            sm.df_to_sql(df_output,'product_code',self.product_code)
-        if len(df_action)>0:
-            if self.realtime==True:
-                 sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
-            else:
-                sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing_daily', delete=True)
-            sm3.df_to_sql(df_action, 'product_code', self.product_code)
-        if len(df_output2) > 0:
-            if self.realtime==True:
-                sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding', delete=True)
-            else:
-                sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding_daily', delete=True)
-            sm.df_to_sql(df_output2,'product_code',self.product_code)
+        # # 保存产品信息到数据库
+        # if len(df_output) > 0:
+        #     if self.realtime==True:
+        #           sm = gt.sqlSaving_main(inputpath_sql, 'proinfo', delete=True)
+        #     else:
+        #         sm = gt.sqlSaving_main(inputpath_sql, 'proinfo_daily', delete=True)
+        #     sm.df_to_sql(df_output,'product_code',self.product_code)
+        # if len(df_action)>0:
+        #     if self.realtime==True:
+        #          sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
+        #     else:
+        #         sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing_daily', delete=True)
+        #     sm3.df_to_sql(df_action, 'product_code', self.product_code)
+        # if len(df_output2) > 0:
+        #     if self.realtime==True:
+        #         sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding', delete=True)
+        #     else:
+        #         sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding_daily', delete=True)
+        #     sm.df_to_sql(df_output2,'product_code',self.product_code)
 
         return df_output, df_action, df_output2
 if __name__ == '__main__':
-    pt=product_tracking('2025-08-27','2025-08-27','SNY426',False)
+    pt=product_tracking('2025-08-27','2025-08-27','SNY426',True)
     print(pt.product_info_processing())
     # for product_code in ['SGS958', 'SVU353', 'SNY426', 'SSS044', 'STH580', 'SST132', 'SLA626']:
     #     print(product_code)

@@ -678,7 +678,7 @@ class security_position:
             df_holding = gt.data_getting(inputpath_holding_today, config_path)
         
         # 选择需要的列并进行资产分类
-        df_holding = df_holding[['code', 'quantity', 'pre_quantity']]
+        df_holding = df_holding[['valuation_date','code', 'quantity', 'pre_quantity']]
         df_holding = gt.code_transfer(df_holding)
         df_holding = self.df_classification(df_holding)
         df_stock = df_holding[df_holding['asset_type'] == 'stock']
@@ -714,7 +714,7 @@ class security_position:
             df_holding = gt.data_getting(inputpath_holding_today, config_path)
         
         # 选择需要的列并进行资产分类
-        df_holding = df_holding[['code', 'quantity', 'pre_quantity']]
+        df_holding = df_holding[['valuation_date','code', 'quantity', 'pre_quantity']]
         df_holding = gt.code_transfer(df_holding)
         df_holding = self.df_classification(df_holding)
         df_stock = df_holding[df_holding['asset_type'] == 'stock']
@@ -750,7 +750,7 @@ class security_position:
             df_holding = gt.data_getting(inputpath_holding_today, config_path)
         
         # 选择需要的列并进行资产分类
-        df_holding = df_holding[['code', 'quantity', 'pre_quantity']]
+        df_holding = df_holding[['valuation_date','code', 'quantity', 'pre_quantity']]
         df_holding = gt.code_transfer(df_holding)
         df_holding = self.df_classification(df_holding)
         df_stock = df_holding[df_holding['asset_type'] == 'stock']
@@ -786,7 +786,7 @@ class security_position:
             df_holding = gt.data_getting(inputpath_holding_today, config_path)
         
         # 选择需要的列并进行资产分类
-        df_holding = df_holding[['code', 'quantity', 'pre_quantity']]
+        df_holding = df_holding[['valuation_date','code', 'quantity', 'pre_quantity']]
         df_holding = gt.code_transfer(df_holding)
         df_holding = self.df_classification(df_holding)
         df_stock = df_holding[df_holding['asset_type'] == 'stock']
@@ -1034,7 +1034,7 @@ class prod_info:
         df_final=pd.DataFrame()
         df_final['valuation_date']=[gt.last_workday_calculate(self.start_date),self.end_date]
         df_final['NetAssetValue']=[asset_value_yes,asset_value]
-        df_final['RedemptionAmount','SubscriptionAmount','ProductNetValue','ProductAccumulatedNetValue']=0
+        df_final[['RedemptionAmount','SubscriptionAmount','ProductNetValue','ProductAccumulatedNetValue']]=0
         return df_final
 
     def assetvalue_withdraw_daily(self):

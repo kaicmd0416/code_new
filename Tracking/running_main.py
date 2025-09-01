@@ -49,20 +49,22 @@ def tracking_realtime_main():
             gt.table_manager2(config_path, 'tracking_realtime', 'realtime_proinfo')
         
         # 执行投资组合级别的跟踪计算
-        pt = portfolio_tracking(None,None,True)
-        pt.portfolioTracking_main()
+        # pt = portfolio_tracking(None,None,True,True)
+        # pt.portfolioTracking_main()
         
         # 定义需要跟踪的产品代码列表
         product_list = product_code_getting()
         # 循环执行每个产品的跟踪计算
         for product_code in product_list:
-            try:
-                # 创建产品跟踪对象并执行跟踪计算
-                pt2 = product_tracking(None,None,product_code,True)
-                pt2.productTracking_main()
-            except Exception as e:
-                # 如果某个产品更新失败，打印错误信息但不影响其他产品
-                print(f"{product_code}更新有误: {str(e)}")
+            pt2 = product_tracking(None, None, product_code, True)
+            pt2.productTracking_main()
+            # try:
+            #     # 创建产品跟踪对象并执行跟踪计算
+            #     pt2 = product_tracking(None,None,product_code,True)
+            #     pt2.productTracking_main()
+            # except Exception as e:
+            #     # 如果某个产品更新失败，打印错误信息但不影响其他产品
+            #     print(f"{product_code}更新有误: {str(e)}")
         
         # 在收盘后（16:00后）执行历史数据保存
         if time.hour >= 17:
@@ -94,7 +96,7 @@ def tracking_history_update_main(product_list=[],start_date=None,end_date=None):
 
 # 程序入口点
 if __name__ == "__main__":
-    tracking_daily_update_main()
+    tracking_realtime_main()
     #tracking_history_update_main(product_list=['SSS044'],start_date='2025-08-29',end_date='2025-08-29')
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
     # # 清理持仓变化表
