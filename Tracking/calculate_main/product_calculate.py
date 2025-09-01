@@ -81,10 +81,23 @@ class product_tracking:
             self.df_indexexposure = pd.DataFrame()
             self.df_factorreturn = pd.DataFrame()
         # 设置当前日期和时间
+        self.data_checking()
         today = datetime.date.today()
         self.date = gt.strdate_transfer(today)
         self.now = datetime.datetime.now().replace(tzinfo=None)
-    
+    def data_checking(self):
+        working_days_list=gt.working_days_list(self.start_date,self.end_date)
+        df_port=pd.concat([self.df_future, self.df_option,self.df_stock, self.df_etf, self.df_cb])
+        valid_date=df_port['valuation_date'].unique().tolist()
+        date_list=list(set(working_days_list)-set(valid_date))
+        valid_date2=self.df_asset['valuation_date'].unique().tolist()
+        date_list2=list(set(working_days_list)-set(valid_date2))
+        if len(date_list2):
+            print(f"{self.product_code}缺失数据{date_list2}")
+            raise ValueError
+        if len(date_list):
+            print(f"{self.product_code}缺失数据{date_list}")
+            raise ValueError
     def direction_prossing(self, x):
         """
         处理持仓方向
@@ -358,8 +371,8 @@ class product_tracking:
 
         return df_output, df_action, df_output2
 if __name__ == '__main__':
-    pt=product_tracking('2025-08-22','2025-08-25','SST132',False)
-    print(pt.productTracking_main())
+    pt=product_tracking('2025-08-27','2025-08-27','SNY426',False)
+    print(pt.product_info_processing())
     # for product_code in ['SGS958', 'SVU353', 'SNY426', 'SSS044', 'STH580', 'SST132', 'SLA626']:
     #     print(product_code)
     #     for realtime in [False]:

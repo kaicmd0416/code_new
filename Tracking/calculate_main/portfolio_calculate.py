@@ -70,38 +70,7 @@ class portfolio_tracking:
             self.df_stockreturn=pd.DataFrame()
             self.df_indexreturn = pd.DataFrame()
         self.now = datetime.datetime.now().replace(tzinfo=None)  # 当前时间
-    
-    def index_type_decision(self, x):
-        """
-        指数类型判断
-        功能：根据投资组合名称判断对应的指数类型
-        
-        参数：
-            x (str): 投资组合名称
-            
-        返回：
-            str: 对应的指数类型，如果无法判断则返回None
-        """
-        if 'hs300' in x:
-            return '沪深300'
-        elif 'sz50' in x:
-            return '上证50'
-        elif 'zz500' in x:
-            return '中证500'
-        elif 'zzA500' in x:
-            return '中证A500'
-        elif 'zz1000' in x:
-            return '中证1000'
-        elif 'zz2000' in x:
-            return '中证2000'
-        elif 'gz2000' in x:
-            return '国证2000'
-        elif 'ubp500' in x:
-            return '中证500'
-        elif 'top' in x:
-            return '中证500'
-        else:
-            return None
+
     
     def paperportfolio_withdraw(self):
         """
@@ -112,7 +81,13 @@ class portfolio_tracking:
             DataFrame: 包含所有纸面投资组合权重数据的DataFrame
         """
         df = self.ww.portfolio_withdraw(None)
-        df['index_type'] = df['portfolio_name'].apply(lambda x: self.index_type_decision(x))
+        inputpath_info=glv.get('portfolio_info')
+        config_path = glv.get('path_config')
+        df_info=gt.data_getting(inputpath_info,config_path)
+        df_info=df_info[['score_name','index_type']]
+        df_info.rename(columns={'score_name':'portfolio_name'},inplace=True)
+        df=df.merge(df_info,on='portfolio_name',how='left')
+        df.fillna('中证500',inplace=True)
         df = df[['valuation_date', 'code', 'weight', 'portfolio_name', 'index_type']]
         return df
     
@@ -205,5 +180,5 @@ class portfolio_tracking:
 
 if __name__ == '__main__':
     pt=portfolio_tracking('2025-08-22','2025-08-25',realtime=False,split=True)
-    print(pt.portfolioTracking_main())
+    print(pt.paperportfolio_withdraw())
 

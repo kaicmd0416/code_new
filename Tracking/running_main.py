@@ -19,10 +19,9 @@ import global_setting.global_dic as glv
 from calculate_main.product_calculate import product_tracking
 from calculate_main.portfolio_calculate import portfolio_tracking
 from history_sql_saving import historySql_saving
-
+from data.data_prepared import product_code_getting
 # 获取配置文件路径
 config_path = glv.get('config_path')
-
 def tracking_realtime_main():
     """
     实时跟踪主函数
@@ -54,7 +53,7 @@ def tracking_realtime_main():
         pt.portfolioTracking_main()
         
         # 定义需要跟踪的产品代码列表
-        product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
+        product_list = product_code_getting()
         # 循环执行每个产品的跟踪计算
         for product_code in product_list:
             try:
@@ -70,27 +69,33 @@ def tracking_realtime_main():
             hs = historySql_saving()
             hs.historySql_main()
 def tracking_daily_update_main():
-    product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
+    product_list = product_code_getting()
     today = datetime.date.today()
     date = gt.strdate_transfer(today)
-    target_date=gt.last_workday_calculate(date)
-    pt = portfolio_tracking(target_date, target_date, False,True)
+    date2=gt.last_workday_calculate(date)
+    for i in range(2):
+       target_date=gt.last_workday_calculate(date)
+    pt = portfolio_tracking(target_date, date2, False,True)
     pt.portfolioTracking_main()
     for product_code in product_list:
-        pt2 = product_tracking(target_date, target_date,  product_code, False)
-        pt2.productTracking_main()
+        try:
+           pt2 = product_tracking(target_date, date2,  product_code, False)
+           pt2.productTracking_main()
+        except:
+            print(f"{product_code}在更新有误")
 def tracking_history_update_main(product_list=[],start_date=None,end_date=None):
     if product_list==[]:
-          product_list = ['SGS958', 'SLA626', 'SNY426', 'SSS044', 'SVU353', 'STH580', 'SST132']
-    pt = portfolio_tracking(start_date, end_date, False,True)
-    pt.portfolioTracking_main()
-    # for product_code in product_list:
-    #     pt2 = product_tracking(start_date, end_date,  product_code, False)
-    #     pt2.productTracking_main()
+          product_list = product_code_getting()
+    # pt = portfolio_tracking(start_date, end_date, False,True)
+    # pt.portfolioTracking_main()
+    for product_code in product_list:
+        pt2 = product_tracking(start_date, end_date,  product_code, False)
+        pt2.productTracking_main()
 
 # 程序入口点
 if __name__ == "__main__":
-    tracking_history_update_main(product_list=[],start_date='2025-08-22',end_date='2025-08-26')
+    tracking_daily_update_main()
+    #tracking_history_update_main(product_list=['SSS044'],start_date='2025-08-29',end_date='2025-08-29')
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
     # # 清理持仓变化表
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_holdingchanging')

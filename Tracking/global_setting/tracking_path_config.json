@@ -41,7 +41,7 @@
         },
         {
             "folder_type": "config_folder",
-            "path": "code_new\\Tracking_realtime\\global_setting",
+            "path": "code_new\\Tracking\\global_setting",
             "disk": "D"
         }
     ],
@@ -176,6 +176,12 @@
             "data_type": "data_score",
             "database": "data_prepared_new",
             "sql_sheet": "data_score"
+        }
+      ,
+        {
+            "data_type": "product_info",
+            "database": "portfolio_new",
+            "sql_sheet": "portfolioinfo_product"
         }
 
 

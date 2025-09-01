@@ -874,6 +874,7 @@ class security_position:
         if 'asset_type' in df_holding.columns:
             df_holding = df_holding[~(df_holding['asset_type'] == 'future') | (df_holding['asset_type'] == 'option')]
         else:
+            df_holding = gt.code_transfer(df_holding)
             df_holding = self.df_classification(df_holding)
         # 创建pre_quantity列，通过shift操作获取前一天对应code的quantity
         df_holding['pre_quantity'] = df_holding.groupby('code')['quantity'].shift(1)
@@ -1218,12 +1219,12 @@ class mktdata_withdraw:
     def indexweight_withdraw(self):
         df_final = pd.DataFrame()
         working_days_list=gt.working_days_list(self.start_date,self.end_date)
-        for index_type in ['沪深300', '中证500', '中证1000', '中证A500']:
-            for available_date in working_days_list:
-                df = gt.index_weight_withdraw(index_type, available_date)
-                df['valuation_date']=available_date
-                df['index_type'] = index_type
-                df_final = pd.concat([df_final, df])
+        for available_date in working_days_list:
+            df = gt.index_weight_withdraw(None, available_date)
+            df.rename(columns={'organization':'index_type'},inplace=True)
+            df['valuation_date'] = available_date
+            df['index_type'] = df['index_type'].apply(lambda x: gt.index_mapping(x,'chi_name'))
+            df_final = pd.concat([df_final, df])
         if self.realtime==True:
             today = datetime.date.today()
             date = gt.strdate_transfer(today)
@@ -1257,11 +1258,30 @@ def get_product_detail(product_code, field):
     return product_info[field]
 
 
+def product_code_getting():
+    """
+    获取所有产品代码列表
+    功能：从产品配置文件中读取所有产品代码并返回列表
+    
+    返回：
+        list: 所有产品代码的列表
+    """
+    yaml_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'project_config', 'product_detail.yaml')
+    with open(yaml_path, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+    
+    # 获取所有产品代码（yaml文件的顶级键）
+    product_codes = list(data.keys())
+    return product_codes
+
+
 if __name__ == '__main__':
-    config_path=glv.get('config_path')
-    gt.table_manager(config_path,'portfolio_new','portfolio_info')
+    # config_path=glv.get('config_path')
+    # gt.table_manager(config_path,'portfolio_new','portfolio_info')
     # 测试权重获取功能
     # inputpath=glv.get('config_path')
     # gt.table_manager(inputpath,'data_prepared_new','data_l4holding_test')
-    # ww =scoredata_withdraw('2025-08-22','2025-08-26',realtime=False)
-    # print(ww.score_withdraw('rr_1954'))
+    ww = security_position('2025-08-27', '2025-08-27','SNY426',realtime=False)
+    print(ww.position_withdraw_daily())
+    # ww =mktdata_withdraw('2025-08-22','2025-08-26',realtime=False)
+    # print(ww.indexweight_withdraw())

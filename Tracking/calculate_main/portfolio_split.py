@@ -21,7 +21,10 @@ class portfolio_split_calculate:
         self.df_weight=self.df_weight[self.df_weight['valuation_date'].isin(working_days_list)]
     def portfolio_performance_calculate(self,df):
         df.fillna(0, inplace=True)
-        df['weight2']=df['weight']/df['weight'].sum()
+        if df['weight'].sum()!=0:
+            df['weight2']=df['weight']/df['weight'].sum()
+        else:
+            df['weight2']=df['component_weight']/df['component_weight'].sum()
         df['excess_return'] = df['pct_chg'] -df['index_return']
         df['weight_difference'] = df['weight'].astype(float) - df['component_weight'].astype(float)
         df['contribution'] = df['excess_return'] * df['weight_difference']
