@@ -105,6 +105,7 @@ class exposure_tracking:
     def index_exposure_sum(self,df,df_exposure):
         heyue_list = df['code'].tolist()
         exposure_final = []
+        df_exposure2 = df_exposure.drop(columns=['valuation_date', 'index_type'])
         for heyue in heyue_list:
             proportion = df[df['code'] == heyue]['proportion'].tolist()[0]
             weight = df[df['code'] == heyue]['weight'].tolist()[0]
@@ -114,8 +115,10 @@ class exposure_tracking:
             df_index.fillna(0, inplace=True)
             df_index = df_index.astype(float)
             slice_exposure = np.multiply(np.array(df_index.values), (proportion * weight))
-            exposure_final.append(slice_exposure.tolist()[0])
-        df_exposure2=df_exposure.drop(columns=['valuation_date','index_type'])
+            if len(slice_exposure)==1:
+                 exposure_final.append(slice_exposure.tolist()[0])
+            else:
+                exposure_final.append(len(df_exposure2.columns.tolist())*[0])
         df_final = pd.DataFrame(exposure_final, columns=df_exposure2.columns.tolist())
         df_final['code'] = heyue_list
         df_final = df_final[['code'] + df_exposure2.columns.tolist()]

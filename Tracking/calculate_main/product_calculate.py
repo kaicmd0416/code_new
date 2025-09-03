@@ -192,6 +192,9 @@ class product_tracking:
             df_info, df_detail = gt.portfolio_analyse(df_port, cost_stock=0, cost_etf=0, cost_future=0, cost_option=0, cost_convertiblebond=0, realtime=True, weight_standardize=True)
         else:
             df_info, df_detail = gt.portfolio_analyse(df_port, weight_standardize=True)
+        df_info = df_info.replace([np.inf, -np.inf], np.nan)
+        df_info  = df_info.replace([None, 'None', 'nan', '', 'NaN', np.nan], np.nan)
+        df_info.fillna(0,inplace=True)
         return df_info, df_detail
     def df_transform(self,df):
         df2 = pd.DataFrame()
@@ -228,6 +231,9 @@ class product_tracking:
             else:
                  df_info_output[str(portfolio_name) + '_profit']=0
                  df_info_output[str(portfolio_name) + '_mktvalue'] = 0
+                 df_info_output[str(portfolio_name) + '_return'] = 0
+                 df_info_output[str(portfolio_name) + '_excess_return'] = 0
+                 df_info_output[str(portfolio_name) + '_index_return'] = 0
         return df_info_output,df_detail
     
     def trading_action_processing(self):
@@ -289,7 +295,12 @@ class product_tracking:
         # 获取各类资产分析结果
         df_info, df_detail=self.partial_analysis()
         df_info,df_detail= self.info_split(df_info, df_detail)
-        df_info=df_info.merge(self.df_asset,on='valuation_date',how='left')
+        status=0
+        try:
+            df_info=df_info.merge(self.df_asset,on='valuation_date',how='left')
+        except:
+            df_info['valuation_date']=gt.working_days_list(self.start_date,self.end_date)
+            df_info = df_info.merge(self.df_asset, on='valuation_date', how='left')
         df_info['NetAssetValue_yes']=df_info['NetAssetValue'].shift(1)
         working_days_list=gt.working_days_list(self.start_date,self.end_date)
         df_info=df_info[df_info['valuation_date'].isin(working_days_list)]
@@ -302,7 +313,6 @@ class product_tracking:
             df_info['proportion_'+str(asset_type)] = df_info[str(asset_type)+'_mktvalue'] / df_info['NetAssetValue']
         if self.asset_type=='中性':
             df_info['indexfuture_excess_return']=df_info['indexfuture_excess_return']+2*df_info['indexfuture_index_return']
-
         df_info['leverage_ratio']=df_info['tracking_mktvalue']/df_info['NetAssetValue']
         df_info['tracking_product_return']=df_info['tracking_profit']/df_info['NetAssetValue_yes']
         df_info['NetAssetValue']=df_info['NetAssetValue']+df_info['RedemptionAmount']-df_info['SubscriptionAmount']
@@ -321,9 +331,12 @@ class product_tracking:
             slice_df_info.columns = ['type', 'value']
             slice_df_info['valuation_date'] = days
             df_output=pd.concat([df_output,slice_df_info])
-        df_output=df_output[['valuation_date','type','value']]
-        df_output['product_code'] = self.product_code
-        df_output['update_time']=self.now
+        if len(df_output)>0:
+            df_output = df_output[['valuation_date', 'type', 'value']]
+            df_output['product_code'] = self.product_code
+            df_output['update_time'] = self.now
+        else:
+            df_output=pd.DataFrame()
         df_output2=df_detail[df_detail['portfolio_name'].isin(['indexfuture','option'])]
         df_output2 = df_output2[['valuation_date','code', 'quantity', 'delta', 'risk_mkt_value', 'profit', 'portfolio_name']]
         df_output2.rename(columns={'risk_mkt_value': 'mkt_value'}, inplace=True)
@@ -352,24 +365,24 @@ class product_tracking:
         # 获取交易行为数据
         df_action = self.trading_action_processing()
         # # 保存产品信息到数据库
-        # if len(df_output) > 0:
-        #     if self.realtime==True:
-        #           sm = gt.sqlSaving_main(inputpath_sql, 'proinfo', delete=True)
-        #     else:
-        #         sm = gt.sqlSaving_main(inputpath_sql, 'proinfo_daily', delete=True)
-        #     sm.df_to_sql(df_output,'product_code',self.product_code)
-        # if len(df_action)>0:
-        #     if self.realtime==True:
-        #          sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
-        #     else:
-        #         sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing_daily', delete=True)
-        #     sm3.df_to_sql(df_action, 'product_code', self.product_code)
-        # if len(df_output2) > 0:
-        #     if self.realtime==True:
-        #         sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding', delete=True)
-        #     else:
-        #         sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding_daily', delete=True)
-        #     sm.df_to_sql(df_output2,'product_code',self.product_code)
+        if len(df_output) > 0:
+            if self.realtime==True:
+                  sm = gt.sqlSaving_main(inputpath_sql, 'proinfo', delete=True)
+            else:
+                sm = gt.sqlSaving_main(inputpath_sql, 'proinfo_daily', delete=True)
+            sm.df_to_sql(df_output,'product_code',self.product_code)
+        if len(df_action)>0:
+            if self.realtime==True:
+                 sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing', delete=True)
+            else:
+                sm3 = gt.sqlSaving_main(inputpath_sql, 'holding_changing_daily', delete=True)
+            sm3.df_to_sql(df_action, 'product_code', self.product_code)
+        if len(df_output2) > 0:
+            if self.realtime==True:
+                sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding', delete=True)
+            else:
+                sm = gt.sqlSaving_main(inputpath_sql, 'optionfuture_holding_daily', delete=True)
+            sm.df_to_sql(df_output2,'product_code',self.product_code)
 
         return df_output, df_action, df_output2
 if __name__ == '__main__':

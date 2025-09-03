@@ -435,6 +435,8 @@ class futureoption_position:
         df_option.drop(columns='asset_type', inplace=True)
         df_future = self.fill_quantity_with_pre_quantity(df_future)
         df_option = self.fill_quantity_with_pre_quantity(df_option)
+        df_future['valuation_date']=self.start_date
+        df_option['valuation_date']=self.start_date
         return df_future, df_option
     def future_option_split(self,x):
         if '-' in x:
@@ -506,9 +508,11 @@ class futureoption_position:
             DataFrame: 填充后的数据框
         """
         if 'quantity' in df.columns and 'pre_quantity' in df.columns:
-            df['quantity'] = df['quantity'].replace([None, 'None', 'nan', '', np.nan], np.nan)
+            df['quantity'] = df['quantity'].replace([None, 'None', 'nan', '','NaN', np.nan], np.nan)
             df['quantity'] = df['quantity'].astype(float)
             df['quantity'] = df['quantity'].fillna(df['pre_quantity'])
+        if 'pre_quantity' not in df.columns:
+            df['pre_quantity']=df['quantity']
         return df
     
     def futureoption_withdraw_main(self):
@@ -850,6 +854,9 @@ class security_position:
         df_stock.drop(columns='asset_type', inplace=True)
         df_etf.drop(columns='asset_type', inplace=True)
         df_cb.drop(columns='asset_type', inplace=True)
+        df_stock['valuation_date'] = self.start_date
+        df_etf['valuation_date'] = self.start_date
+        df_cb['valuation_date'] = self.start_date
         return df_stock, df_etf, df_cb
     def position_withdraw_daily(self): #目前只支持sql
         """

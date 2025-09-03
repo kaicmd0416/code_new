@@ -48,9 +48,9 @@ def tracking_realtime_main():
             # 清理产品信息表
             gt.table_manager2(config_path, 'tracking_realtime', 'realtime_proinfo')
         
-        # 执行投资组合级别的跟踪计算
-        # pt = portfolio_tracking(None,None,True,True)
-        # pt.portfolioTracking_main()
+        #执行投资组合级别的跟踪计算
+        pt = portfolio_tracking(None,None,True,True)
+        pt.portfolioTracking_main()
         
         # 定义需要跟踪的产品代码列表
         product_list = product_code_getting()
@@ -75,7 +75,7 @@ def tracking_daily_update_main():
     today = datetime.date.today()
     date = gt.strdate_transfer(today)
     date2=gt.last_workday_calculate(date)
-    for i in range(2):
+    for i in range(3):
        target_date=gt.last_workday_calculate(date)
     pt = portfolio_tracking(target_date, date2, False,True)
     pt.portfolioTracking_main()
@@ -88,16 +88,17 @@ def tracking_daily_update_main():
 def tracking_history_update_main(product_list=[],start_date=None,end_date=None):
     if product_list==[]:
           product_list = product_code_getting()
-    # pt = portfolio_tracking(start_date, end_date, False,True)
-    # pt.portfolioTracking_main()
+    pt = portfolio_tracking(start_date, end_date, False,True)
+    pt.portfolioTracking_main()
     for product_code in product_list:
         pt2 = product_tracking(start_date, end_date,  product_code, False)
         pt2.productTracking_main()
 
 # 程序入口点
 if __name__ == "__main__":
-    tracking_realtime_main()
-    #tracking_history_update_main(product_list=['SSS044'],start_date='2025-08-29',end_date='2025-08-29')
+    #tracking_daily_update_main()
+    #tracking_realtime_main()
+    tracking_history_update_main(product_list=[],start_date='2025-08-29',end_date='2025-09-01')
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_futureoptionholding')
     # # 清理持仓变化表
     # gt.table_manager2(config_path, 'tracking_realtime', 'realtime_holdingchanging')
