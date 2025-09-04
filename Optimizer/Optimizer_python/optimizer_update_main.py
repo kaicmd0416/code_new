@@ -5,7 +5,7 @@ import yaml
 import re
 from datetime import date
 import datetime
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 from Optimizer_python.main.optimizer_main_python import Optimizer_main
@@ -167,6 +167,7 @@ def update_optimizer_main2(is_sql=True): #部署自动化
     check_data_completeness(target_date)
 
 if __name__ == '__main__':
+
     update_optimizer_main(is_sql=True)
     # portfolio_updating_auto(is_sql=True)
     # print(d)

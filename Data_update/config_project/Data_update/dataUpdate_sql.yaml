@@ -683,12 +683,14 @@ L4HoldingData:
       - "valuation_date"
       - 'product_code'
       - 'code'
+      - 'mkt_value'
     schema:
       valuation_date: { type: String, length: 50 }
       product_code: { type: String, length: 50 }
       code: { type: String, length: 50 }
       asset_type: { type: String, length: 50 }
       quantity: { type: Float }
+      direction: { type: String, length: 50 }
       price: { type: Float }
       unit_cost: { type: Float }
       mkt_value: { type: Float }
@@ -790,4 +792,28 @@ SpecialDay:
       valuation_date: { type: String, length: 50 }
       type: { type: String, length: 50 }
       year_month: { type: String, length: 50 }
+portfolio_info:
+    table_name: "portfolio_info"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/portfolio_new?autocommit=True "
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - "score_name"
+    schema:
+      mode_type: { type: String, length: 50 }
+      score_name: { type: String, length: 50 }
+      index_type: { type: String, length: 50 }
+      base_score: { type: String, length: 50 }
+index_mapping:
+    table_name: "index_info"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/data_prepared_new?autocommit=True "
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "index_code"
+    schema:
+      index_code: { type: String, length: 50 }
+      chi_name: { type: String, length: 50 }
+      short_name: { type: String, length: 50 }
 

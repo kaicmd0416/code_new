@@ -10,7 +10,7 @@ mpl.rcParams['axes.unicode_minus'] = False
 warnings.filterwarnings("ignore")
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 import global_setting.global_dic as glv

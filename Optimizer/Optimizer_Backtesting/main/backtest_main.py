@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import json
 import global_tools as gt

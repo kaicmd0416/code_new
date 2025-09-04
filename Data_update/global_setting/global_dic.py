@@ -1,58 +1,17 @@
-"""
-全局配置字典模块 (Global Configuration Dictionary Module)
-
-该模块负责管理整个数据更新系统的全局配置路径，通过读取Excel配置文件
-来动态构建各种数据类型的路径映射字典。
-主要功能包括：
-1. 配置文件路径查找
-2. 路径配置处理
-3. 全局路径字典初始化
-4. 路径获取接口
-
-作者: 数据更新团队
-创建时间: 2025年
-版本: 1.0
-"""
-
 import pandas as pd
 import os
 from pathlib import Path
-
 def get_top_dir_path(current_path, levels_up=2):
     """
     从当前路径向上退指定层数，获取顶层目录的完整路径。
-    
-    Args:
-        current_path (Path): 当前路径（Path对象）
-        levels_up (int): 向上退的层数，默认为2
-        
-    Returns:
-        Path: 顶层目录的完整路径（Path对象）
-        
-    Note:
-        用于定位项目的根目录位置
+    :param current_path: 当前路径（Path对象）
+    :param levels_up: 向上退的层数，默认为2
+    :return: 顶层目录的完整路径（Path对象）
     """
     for _ in range(levels_up):
         current_path = current_path.parent
     return current_path
-
 def config_path_finding():
-    """
-    查找配置文件路径
-    
-    通过向上遍历目录结构，查找包含'config'文件夹的路径。
-    
-    Args:
-        None
-        
-    Returns:
-        str: 配置文件所在目录的路径
-        
-    Note:
-        - 最多向上遍历10层目录
-        - 查找名为'config'的文件夹
-        - 返回config文件夹的父目录路径
-    """
     inputpath = os.path.split(os.path.realpath(__file__))[0]
     inputpath_output=None
     should_break=False
@@ -69,25 +28,7 @@ def config_path_finding():
                 inputpath_output=os.path.dirname(inputpath_output)
                 should_break=True
     return inputpath_output
-
 def config_path_processing():
-    """
-    处理配置文件路径
-    
-    读取Excel配置文件，构建各种数据类型的路径映射。
-    
-    Args:
-        None
-        
-    Returns:
-        pandas.DataFrame: 包含数据类型和对应路径的DataFrame
-        
-    Note:
-        - 读取'sub_folder'和'main_folder'两个工作表
-        - 根据MPON、RON、SON等标志构建完整路径
-        - 支持相对路径和绝对路径的配置
-        - 包含配置文件验证逻辑
-    """
     # 获取当前文件的磁盘
     current_drive = os.path.splitdrive(os.path.dirname(__file__))[0]
     # 获取当前文件的绝对路径
@@ -130,48 +71,17 @@ def config_path_processing():
     return df_sub
 
 def _init():
-    """
-    初始化全局路径字典
-    
-    读取配置文件并构建全局路径字典，供其他模块使用。
-    
-    Args:
-        None
-        
-    Returns:
-        dict: 数据类型到路径的映射字典
-        
-    Note:
-        - 将DataFrame转换为字典格式
-        - 设置全局变量inputpath_dic
-        - 在模块导入时自动执行
-    """
     df=config_path_processing()
     df.set_index('data_type',inplace=True,drop=True)
     global inputpath_dic
     inputpath_dic=df.to_dict()
     inputpath_dic=inputpath_dic.get('path')
     return inputpath_dic
-
 def get(name):
-    """
-    获取指定数据类型的路径
-    
-    Args:
-        name (str): 数据类型名称
-        
-    Returns:
-        str: 对应的路径，如果未找到则返回'not found'
-        
-    Note:
-        提供统一的路径获取接口
-    """
     try:
         return inputpath_dic[name]
     except:
         return 'not found'
-
-# 模块导入时自动初始化
 _init()
 # print(dic)
 # config_path_processing()

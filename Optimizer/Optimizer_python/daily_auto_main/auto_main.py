@@ -1,7 +1,7 @@
 from Optimizer_python.optimizer_update_main import update_optimizer_main,update_optimizer_main2
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 def main_part1():#交易日版

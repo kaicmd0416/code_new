@@ -82,7 +82,7 @@ class combineScore_update:
         code_list = df_final['code'].tolist()
         df_result['code'] = code_list_top + code_list
         df_result['valuation_date'] = available_date
-        df_result = gt.rr_score_processing(df_result)
+        df_result = gt.rank_score_processing(df_result)
         df_result = df_result[['valuation_date', 'code', 'final_score']]
         self.logger.info('Successfully processed scores')
         return df_result

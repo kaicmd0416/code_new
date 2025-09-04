@@ -28,27 +28,27 @@
         },
         {
             "folder_type": "output_folder",
-            "path": "Optimizer_python_data",
+            "path": "Optimizer_python_data_new",
             "disk": "D"
         },
         {
             "folder_type": "output_folder_result",
-            "path": "Optimizer_python_data\\optimizer_result",
+            "path": "Optimizer_python_data_new\\optimizer_result",
             "disk": "D"
         },
         {
             "folder_type": "output_folder_2",
-            "path": "Portfolio",
+            "path": "Portfolio_new",
             "disk": "D"
         },
         {
             "folder_type": "output_folder_3",
-            "path": "Trading_data",
+            "path": "Trading_data_new",
             "disk": "D"
         },
         {
             "folder_type": "config_folder",
-            "path": "code_new\\Optimizer\\Optimizer_project_config",
+            "path": "code_new2\\Optimizer\\Optimizer_project_config",
             "disk": "D"
         }
     ],

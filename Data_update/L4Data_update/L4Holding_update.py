@@ -12,6 +12,11 @@ from L4Data_update.L4Data_processing import L4Data_processing
 from setup_logger.logger_setup import setup_logger
 import io
 import contextlib
+
+
+
+
+from L4Data_update.L4Data_preparing import L4Data_preparing
 def capture_file_withdraw_output(func, *args, **kwargs):
     """捕获file_withdraw的输出并记录到日志"""
     logger = setup_logger('L4holding_update_sql')
@@ -84,7 +89,7 @@ class L4Holding_update:
             '市价' : 'price',
             '单位成本' :'unit_cost',
             '市值' : 'mkt_value',
-            '方向' :'direction'
+            '方向' : "direction"
         }
         # 处理列名：先转小写
         df.columns = df.columns.str.lower()
@@ -104,7 +109,7 @@ class L4Holding_update:
         df = df[columns_to_keep]
         df['asset_type']=type
         # 定义固定的列顺序
-        fixed_columns = ['valuation_date','product_code','asset_type','code','quantity','price','unit_cost','mkt_value','direction']
+        fixed_columns = ['valuation_date','product_code','asset_type','code','quantity','direction','price','unit_cost','mkt_value']
         # 对于不存在的列，创建并填充空值
         for col in fixed_columns:
             if col not in df.columns:
@@ -129,7 +134,7 @@ class L4Holding_update:
         """处理L4持仓数据"""
         if self.is_sql == True:
             inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'L4HoldingData')
+            sm=gt.sqlSaving_main(inputpath_configsql,'L4HoldingData',delete=True)
         self.logger.info(f"Starting L4 holding processing - Product: {self.product_name}, Date: {self.available_date}")
         status='save'
         product_name=self.product_name
@@ -192,7 +197,19 @@ class L4Holding_update:
             df_final.to_csv(result_path,index=False)
             self.logger.info(f"L4 holding processing completed, saved to: {result_path}")
             if self.is_sql == True:
-                capture_file_withdraw_output(sm.df_to_sql, df_final)
+                capture_file_withdraw_output(sm.df_to_sql, df_final,'product_code',self.product_code)
+
+
+if __name__ == '__main__':
+
+    lp = L4Data_preparing('SNY426', '20250826')
+    daily_df = lp.raw_L4_withdraw()
+    lu = L4Holding_update('SNY426', '2025-08-26', daily_df, is_sql=False)
+    lu.L4Holding_processing()
+    # result1 = lu.lp.process_future_sheet()
+    # result1=lu.output_df_normalization(result1,'future')
+    # print(result1[['code','quantity','mkt_value']])
+    #print(result1)
 
 
 

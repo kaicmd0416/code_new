@@ -288,7 +288,7 @@ def call_matlab_running_main(all_path, all_path_yes):
             "matlab": {
                 "function_name": "optimizer_matlab_func_v2",
                 "scripts_dir": "Optimizer_python/matlab",
-                "worker_count": 4,
+                "worker_count": 1,
                 "engine_count": 1
             },
             "logging": {

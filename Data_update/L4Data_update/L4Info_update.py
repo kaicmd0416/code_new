@@ -12,6 +12,7 @@ from L4Data_update.L4Data_processing import L4Data_processing
 from setup_logger.logger_setup import setup_logger
 import io
 import contextlib
+
 def capture_file_withdraw_output(func, *args, **kwargs):
     """捕获file_withdraw的输出并记录到日志"""
     logger = setup_logger('L4info_update_sql')

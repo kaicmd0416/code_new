@@ -53,6 +53,6 @@ def MktData_update_main2(start_date,end_date,is_sql):
         #FDDU.FutureDifference_update_main()
 if __name__ == '__main__':
     #CBData_update_main('2015-01-05', '2025-07-14',True)
-    MktData_update_main2('2025-08-17', '2025-08-17',True)
+    MktData_update_main2('2025-08-22', '2025-08-22',True)
     # MktData_update_main('2022-07-19','2025-07-14',True)
 

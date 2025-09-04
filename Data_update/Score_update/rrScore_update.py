@@ -33,7 +33,7 @@ class rrScore_update:
         today = date.today()
         today=gt.strdate_transfer(today)
         if target_date>today:
-            available_date2 = gt.last_weeks_lastday2(target_date)
+            available_date2 = gt.last_weeks_lastday(target_date)
             if target_date > available_date2 and score_date != available_date2:
                 self.logger.warning(f'请注意rr_score的最近更新日期是: {score_date} 上周最后一个工作日的日期是 {available_date2}, 已经自动用上上周的score进行更新！')
         
@@ -97,8 +97,12 @@ class rrScore_update:
                     slice_df_score2['update_time'] = now
                     capture_file_withdraw_output(sm.df_to_sql, slice_df_score,'score_name','rr_'+str(mode_type))
                     capture_file_withdraw_output(sm.df_to_sql, slice_df_score2,'score_name',mode_name)
-
-
+    def portfolio_info_saving(self):
+        inputpath=glv.get('output_portfolio_info')
+        df=pd.read_excel(inputpath)
+        inputpath_configsql = glv.get('config_sql')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'portfolio_info')
+        capture_file_withdraw_output(sm.df_to_sql,df)
 
     def rr_update_main(self):
         self.logger.info('\nStarting RR score update main process...')
@@ -107,6 +111,7 @@ class rrScore_update:
         mode_type_using_list = df_config[df_config['score_type2'] == 'rr']['score_mode'].tolist()
         for mode_type in mode_type_using_list:
             self.raw_rr_updating(mode_type)
+        self.portfolio_info_saving()
         self.logger.info('Completed RR score update process')
 
 

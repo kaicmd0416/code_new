@@ -88,8 +88,12 @@ class tools_func:
         # 查找以00,60,30,68,83开头的6位数字
         pattern = r'(?:00|60|30|68|83)\d{4}'
         match = re.search(pattern, input_string)
+        pattern2=r'H\d{5}'
+        match2 = re.search(pattern2, input_string)
         if match:
             return match.group(0)
+        elif match2:
+            return match2.group(0)
         else:
             return " "
 

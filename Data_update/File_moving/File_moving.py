@@ -82,12 +82,22 @@ class DataOther_sql:
         inputpath_configsql = glv.get('config_sql')
         sm = gt.sqlSaving_main(inputpath_configsql, 'SpecialDay')
         capture_file_withdraw_output(sm.df_to_sql, df_final)
+    def index_mapping(self):
+        inputpath = os.path.join(self.inputpath, 'index_mapping.xlsx')
+        df = pd.read_excel(inputpath)
+        inputpath_configsql = glv.get('config_sql')
+        sm = gt.sqlSaving_main(inputpath_configsql, 'index_mapping')
+        capture_file_withdraw_output(sm.df_to_sql, df)
+        return df
     def Dataother_main(self):
         self.valuationData_sql()
         self.stockuni_sql()
         self.specialdate_sql()
         self.st_stock_sql()
+        self.index_mapping()
 if __name__ == '__main__':
+    FM=File_moving()
+    FM.file_moving_update_main()
     DOS = DataOther_sql()
     DOS.Dataother_main()
 

@@ -11,7 +11,7 @@ from Optimizer_python.data_prepare.data_prepare import cross_section_data_prepar
 from Optimizer_python.weight_processing.weight_constraint import weight_constraint
 warnings.filterwarnings("ignore")
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 def config_path_finding():

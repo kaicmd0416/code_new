@@ -5,7 +5,7 @@ from datetime import datetime
 import global_setting.global_dic as glv
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 from Optimizer_python.utils_log.logger import setup_logger, setup_check_logger

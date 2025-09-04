@@ -1,7 +1,7 @@
 from Optimizer_python.Optimizer.optimizer_V5 import Optimizer_python
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd

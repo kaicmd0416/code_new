@@ -77,6 +77,7 @@ def L4_update_main(is_sql):
     logger.info('\n' + '*'*50 + '\nL4 UPDATE MAIN PROCESS\n' + '*'*50)
     logger.info("Starting L4 update main process")
     product_code_list=valid_productCode_withdraw()
+    print(product_code_list)
     target_date=target_date_decision_L4()
     target_date2 = target_date
     for i in range(3):
@@ -109,4 +110,5 @@ def L4_history_main(mode,product_name_list,start_date,end_date,is_sql):
     logger.info("L4 history update process completed")
 
 if __name__ == '__main__':
-    L4_history_main('all',[], '2023-12-13','2025-08-13',True)
+    L4_update_main(is_sql=True)
+    #L4_history_main('all',[], '2025-08-01','2025-08-26',True)

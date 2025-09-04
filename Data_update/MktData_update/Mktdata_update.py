@@ -366,8 +366,7 @@ class indexComponent_update:
                         df_daily['update_time'] = now
                         df_port['update_time']=now
                         capture_file_withdraw_output(sm.df_to_sql, df_daily,'organization',index_code)
-                        capture_file_withdraw_output(sm.df_to_sql, df_port, 'portfolio_name', str(index_code) + '_comp')
-
+                        capture_file_withdraw_output(sm2.df_to_sql, df_port, 'portfolio_name', str(index_code) + '_comp')
                 else:
                     self.logger.warning(f'{index_type}_component在{available_date}暂无数据')
 
