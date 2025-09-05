@@ -7,7 +7,7 @@
             "database1": {
                 "host": "rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com",
                 "port": 3306,
-                "user": "kai",
+                "user": "wc",
                 "password": "Abcd1234#",
                 "charset": "utf8mb4"
             },
@@ -48,7 +48,7 @@
         },
         {
             "folder_type": "config_folder",
-            "path": "code_new2\\Optimizer\\Optimizer_project_config",
+            "path": "code_new\\Optimizer\\Optimizer_project_config",
             "disk": "D"
         }
     ],
@@ -176,6 +176,16 @@
             "data_type": "factor_constraint",
             "folder_name": "factor_constraint_config.xlsx",
             "folder_type": "config_folder"
+        },
+        {
+            "data_type": "mode_dic",
+            "sql_sheet": "portfolio_info",
+            "database": "portfolio_new"
+        },
+        {
+            "data_type": "trading_config",
+            "sql_sheet": "portfolioinfo_product",
+            "database": "portfolio_new"
         }
     ]
 } 

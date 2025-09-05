@@ -4,26 +4,11 @@ import pandas as pd
 import global_setting.global_dic as glv
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import json
 import global_tools as gt
-def config_path_finding():
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
-            break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
-                break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                should_break=True
-    return inputpath_output
+from score_name_withdraw import mode_dic_withdraw
 def source_getting():
     """
     获取数据源配置
@@ -41,9 +26,8 @@ def source_getting():
         print(f"获取配置出错: {str(e)}")
         source = 'local'
     return source,config_path
-global global_config_path,source,config_path
+global source,config_path
 source,config_path= source_getting()
-global_config_path=config_path_finding()
 class portfolio_analysis:
     def __init__(self,df_index_return,df_stock_return,index_type,df_code,df_weight,score_name,top_number,inputpath_backtesting):
         self.df_index_return=df_index_return
@@ -70,8 +54,7 @@ class portfolio_analysis:
         slice_df_index=self.df_index_return[self.df_index_return['valuation_date']==target_date]
         return slice_df_index
     def portfolio_index_finding(self,score_name):
-        inputpath_mode_dic=os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
-        df_mode=pd.read_excel(inputpath_mode_dic)
+        df_mode=mode_dic_withdraw()
         base_score=df_mode[df_mode['score_name']==score_name]['base_score'].tolist()[0]
         return base_score
     def score_withdraw(self,target_date):

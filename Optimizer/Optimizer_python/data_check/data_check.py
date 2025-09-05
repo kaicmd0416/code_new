@@ -5,43 +5,22 @@ from datetime import datetime
 import global_setting.global_dic as glv
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 from Optimizer_python.utils_log.logger import setup_logger, setup_check_logger
 import yaml
 from sqlalchemy import create_engine
-
+from score_name_withdraw import mode_dic_withdraw
 # Setup loggers for this module
 logger = setup_logger('data_check')
 check_logger = setup_check_logger('data_check')
 
-def config_path_finding():
-    """Find the config directory path"""
-    logger.info("Finding config path...")
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
-            break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
-                break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                should_break=True
-    logger.info(f"Config path found: {inputpath_output}")
-    return inputpath_output
 
 def get_all_portfolio_names():
     """Get all portfolio names from mode dictionary"""
     logger.info("Getting all portfolio names from mode dictionary...")
-    config_path = config_path_finding()
-    inputpath = os.path.join(config_path, 'Score_config\\mode_dictionary.xlsx')
-    df = pd.read_excel(inputpath)
+    df = mode_dic_withdraw()
     portfolio_names = df['score_name'].tolist()
     logger.info(f"Found {len(portfolio_names)} portfolio names")
     return portfolio_names

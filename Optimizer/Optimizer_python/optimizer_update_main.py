@@ -1,3 +1,4 @@
+import json
 import os
 import pandas as pd
 import sys
@@ -5,7 +6,7 @@ import yaml
 import re
 from datetime import date
 import datetime
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 from Optimizer_python.main.optimizer_main_python import Optimizer_main
@@ -14,59 +15,22 @@ import global_setting.global_dic as glv
 from call_matlab_opt import call_matlab_running_main
 from Optimizer_Backtesting.updating.portfolio_updating import portfolio_updating_auto
 from Optimizer_python.data_check.data_check import check_data_completeness
-def config_path_finding():
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
-            break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
-                break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                should_break=True
-    return inputpath_output
-global global_config_path
-global_config_path=config_path_finding()
+from score_name_withdraw import mode_dic_withdraw
 def score_name_withdraw():
     # 初始化两个空列表来存储所有score和opt_type
     all_scores = []
     all_opt_types = []
-
-    # 循环处理每个时间点
-    for i in ['time_1', 'time_2', 'time_3']:
-        inputpath_mode_dic = os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
-        df_mode_dic = pd.read_excel(inputpath_mode_dic)
-        df_mode_dic['score_type'] = df_mode_dic['score_name'].apply(lambda x: str(x)[:4])
-
-        # 根据不同的时间点筛选数据
-        if i == 'time_1':
-            df_mode_dic = df_mode_dic[df_mode_dic['score_type'] == 'vp02']
-        elif i == 'time_2':
-            df_mode_dic = df_mode_dic[df_mode_dic['score_type'] == 'vp01']
-        elif i == 'time_3':
-            df_mode_dic = df_mode_dic[(df_mode_dic['score_type'] == 'fm01') | (df_mode_dic['score_type'] == 'fm03') | (df_mode_dic['score_type'] == 'comb')]
-        else:
-            df_mode_dic = pd.DataFrame()
-
-        # 如果DataFrame为空，则跳过
-        if len(df_mode_dic) == 0:
-            continue
-
-        # 获取当前时间点的score和opt_type列表
-        score_list = df_mode_dic['score_name'].tolist()
-        # opt_type_list = df_mode_dic['base_score'].tolist()
-
-        # 将当前列表追加到总的列表中
-        all_scores.extend(score_list)
-        # all_opt_types.extend(opt_type_list)
-
+    df_mode_dic=mode_dic_withdraw()
+    score_list = df_mode_dic['score_name'].tolist()
+    # opt_type_list = df_mode_dic['base_score'].tolist()
+    # 将当前列表追加到总的列表中
+    all_scores.extend(score_list)
+    # all_opt_types.extend(opt_type_list)
     return all_scores
-
+def score_name_withdraw2():
+    df_mode_dic = mode_dic_withdraw()
+    score_list = df_mode_dic['score_name'].tolist()
+    return score_list
 def target_date_decision():
     if gt.is_workday_auto() == True:
         today = date.today()
@@ -148,12 +112,6 @@ def update_optimizer_main_manual():
         else:
             print('没有符合条件的score_name，请检查配置文件和score')
             break  # 如果没有符合条件的score_name，退出循环
-def score_name_withdraw2():
-    inputpath_mode_dic = glv.get('mode_dic')
-    df_mode_dic = pd.read_excel(inputpath_mode_dic)
-    df_mode_dic['score_type'] = df_mode_dic['score_name'].apply(lambda x: str(x)[:4])
-    score_list = df_mode_dic['score_name'].tolist()
-    return score_list
 def update_optimizer_main2(is_sql=True): #部署自动化
     score_name_list=score_name_withdraw2()
     target_date = target_date_decision()
@@ -167,15 +125,15 @@ def update_optimizer_main2(is_sql=True): #部署自动化
     check_data_completeness(target_date)
 
 if __name__ == '__main__':
-
-    update_optimizer_main(is_sql=True)
+    update_optimizer_main2(is_sql=True)
+    #update_optimizer_main(is_sql=True)
     # portfolio_updating_auto(is_sql=True)
     # print(d)
     # update_optimizer_main_manual()
     # today = date.today()
     # next_day = gt.next_workday_calculate(today)
     # print(next_day)
-    pass
+    #pass
 
 
 

@@ -3,36 +3,13 @@ import datetime
 import global_setting.global_dic as glv
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 import pandas as pd
 from Optimizer_python.utils_log.logger import setup_logger
-
 # Setup logger for this module
 logger = setup_logger('portfolio_history')
-
-def config_path_finding():
-    logger.info("Finding config path...")
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
-            break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
-                break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                should_break=True
-    logger.info(f"Config path found: {inputpath_output}")
-    return inputpath_output
-
-global global_config_path
-global_config_path=config_path_finding()
 
 def history_config_withdraw():
     logger.info("Withdrawing history configuration...")
@@ -103,18 +80,11 @@ def portfolio_updating(df_config,is_sql):
     
     logger.info("Portfolio history updating completed")
 
-def all_score_name_list_withdraw():
-    logger.info("Withdrawing all score names...")
-    inputpath=os.path.join(global_config_path,'Score_config\\mode_dictionary.xlsx')
-    df=pd.read_excel(inputpath)
-    score_name_list=df['score_name'].tolist()
-    logger.info(f"Found {len(score_name_list)} score names")
-    return score_name_list
 
 def all_portfolio_updating(start_date,end_date,is_sql):
     logger.info(f"Starting all portfolio updating from {start_date} to {end_date}")
-    score_name_list=all_score_name_list_withdraw()
-    portfolio_updating(score_name_list, start_date, end_date,is_sql)
+    df_config=history_config_withdraw()
+    portfolio_updating(df_config,is_sql)
     logger.info("All portfolio updating completed")
 
 if __name__ == '__main__':

@@ -11,27 +11,10 @@ from Optimizer_python.data_prepare.data_prepare import cross_section_data_prepar
 from Optimizer_python.weight_processing.weight_constraint import weight_constraint
 warnings.filterwarnings("ignore")
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
-def config_path_finding():
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
-            break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
-                break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                should_break=True
-    return inputpath_output
-global global_config_path
-global_config_path=config_path_finding()
+from score_name_withdraw import mode_dic_withdraw
 class Optimizer_python:
     def __init__(self,target_date,df_st, df_stock_universe):
         available_date=gt.last_workday_calculate(target_date)
@@ -47,8 +30,7 @@ class Optimizer_python:
         self.df_cov=dp.factor_cov_withdraw()
         self.df_specificrisk=dp.factor_risk_withdraw()
     def optimizer_args_processing(self,optimizer_args,score_name):
-        inputpath_modedic = os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
-        df_mode_dic = pd.read_excel(inputpath_modedic)
+        df_mode_dic = mode_dic_withdraw(False)
         slice_df_mode_dic=df_mode_dic.iloc[df_mode_dic[df_mode_dic['score_name']==score_name].index]
         score_type=slice_df_mode_dic['base_score'].tolist()[0]
         index_type=slice_df_mode_dic['index_type'].tolist()[0]

@@ -2,38 +2,17 @@ import global_setting.global_dic as glv
 import pandas as pd
 import sys
 import os
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 import os
-def config_path_finding():
-    inputpath = os.path.split(os.path.realpath(__file__))[0]
-    inputpath_output=None
-    should_break=False
-    for i in range(10):
-        if should_break:
-            break
-        inputpath = os.path.dirname(inputpath)
-        input_list = os.listdir(inputpath)
-        for input in input_list:
-            if should_break:
-                break
-            if str(input)=='config':
-                inputpath_output=os.path.join(inputpath,input)
-                should_break=True
-    return inputpath_output
-global global_config_path
-global_config_path=config_path_finding()
+from datetime import date
+from score_name_withdraw import mode_dic_withdraw
 def trading_portfolio_withdraw():
-    inputpath_trading = os.path.join(global_config_path,'trading_config\config_product.xlsx')
-    xls = pd.ExcelFile(inputpath_trading)
-    index_list = xls.sheet_names
-    product_names = index_list[1:]
-    final_list=[]
-    for product_name in product_names:
-        df=pd.read_excel(inputpath_trading,sheet_name=product_name)
-        score_name_list=df['score_name'].tolist()
-        final_list=list(set(final_list)|set(score_name_list))
+    inputpath=glv.get('trading_config')
+    config_path=glv.get('config_path')
+    df=gt.data_getting(inputpath,config_path)
+    final_list=df['portfolio_name'].unique().tolist()
     return final_list
 def exposure_proportion_checking(df1):
     df=df1.copy()
@@ -104,9 +83,8 @@ def portfolio_Error_raising(target_date,is_sql):
         sm = gt.sqlSaving_main(inputpath_configsql, 'Portfolio_check')
     outputpath=os.path.join(outputpath,'PortfolioCheck_'+str(target_date2)+'.xlsx')
     inputpath_check=glv.get('output_check')
-    inputpath_dic=os.path.join(global_config_path,'Score_config\mode_dictionary.xlsx')
     trading_list=trading_portfolio_withdraw()
-    df_dic=pd.read_excel(inputpath_dic)
+    df_dic=mode_dic_withdraw()
     portfolio_list=df_dic['score_name'].tolist()
     df_final=pd.DataFrame()
     for portfolio in portfolio_list:
