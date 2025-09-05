@@ -35,6 +35,22 @@ Portfolio_product:
       index_type: { type: String, length: 50 }
       weight: { type: Float }
       update_time: { type: String, length: 50 }
+product_info:
+    table_name: "product_info"
+    db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/portfolio_new?autocommit=True"
+    chunk_size: 20000
+    workers: 4
+    private_keys:
+      - "valuation_date"
+      - 'product_code'
+    schema:
+      valuation_date: { type: String, length: 50 }
+      product_code: { type: String, length: 50 }
+      product_name: { type: String, length: 50 }
+      other_name: { type: String, length: 50 }
+      product_discription: { type: String, length: 50 }
+      index_type: { type: String, length: 50 }
+      update_time: { type: String, length: 50 }
 Product_holding:
     table_name: "product_holding"
     db_url: "mysql+pymysql://wc:Abcd1234#@rm-bp1o6we7s3o1h76x1to.mysql.rds.aliyuncs.com:3306/portfolio_new?autocommit=True"

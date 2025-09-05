@@ -38,7 +38,7 @@
         },
         {
             "folder_type": "config",
-            "path": "code_new\\Trading\\global_setting",
+            "path": "code_new2\\Trading\\global_setting",
             "disk": "D"
         }
     ],
@@ -48,7 +48,7 @@
             "folder_name": "portfolio_weight",
             "folder_type": "input_folder",
             "sql_sheet": "portfolio",
-            "database": "portfolio"
+            "database": "portfolio_new"
         },
         {
             "data_type": "portfolio_holding",

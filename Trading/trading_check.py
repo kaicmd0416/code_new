@@ -22,7 +22,7 @@
 import pandas as pd
 import os
 import sys
-path = os.getenv('GLOBAL_TOOLSFUNC')
+path = os.getenv('GLOBAL_TOOLSFUNC_new')
 sys.path.append(path)
 import global_tools as gt
 import datetime
@@ -40,7 +40,7 @@ def target_date_decision():
     Returns:
         str: 目标日期字符串，格式为'YYYY-MM-DD'
     """
-    if gt.is_workday2() == True:
+    if gt.is_workday_auto() == True:
         today = date.today()
         next_day = gt.next_workday_calculate(today)
         critical_time = '20:00'
@@ -64,8 +64,8 @@ def renrHolding_check():
     """
     target_date=target_date_decision()
     target_date=gt.intdate_transfer(target_date)
-    inputpath = 'D:\Trading_data\\trading_order\仁睿'
     inputpath2 = 'D:\Trading_data_test\\trading_order\仁睿价值精选1号'
+    inputpath = 'D:\Trading_data_new\\trading_order\仁睿'
     inputpath = os.path.join(inputpath, 'renr_'+str(target_date)+'_trading_list.csv')
     inputpath2 = os.path.join(inputpath2, '仁睿价值精选1号_'+str(target_date)+'_trading_list.csv')
     df=gt.readcsv(inputpath)
@@ -94,8 +94,8 @@ def xyHolding_check():
     """
     target_date=target_date_decision()
     target_date=gt.intdate_transfer(target_date)
-    inputpath = 'D:\Trading_data\\trading_order\宣夜'
     inputpath2 = 'D:\Trading_data_test\\trading_order\宣夜惠盈1号'
+    inputpath = 'D:\Trading_data_new\\trading_order\宣夜'
     inputpath = os.path.join(inputpath, 'xy_'+str(target_date)+'_trading_list.csv')
     inputpath2 = os.path.join(inputpath2, '宣夜惠盈1号_'+str(target_date)+'_trading_list.csv')
     df = pd.read_csv(inputpath, header=None)

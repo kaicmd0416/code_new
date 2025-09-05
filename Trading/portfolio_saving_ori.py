@@ -27,7 +27,7 @@ import pandas as pd
 import global_setting.global_dic as glv
 import sys
 from datetime import datetime
-path = os.getenv('GLOBAL_TOOLSFUNC_new')
+path = os.getenv('GLOBAL_TOOLSFUNC')
 sys.path.append(path)
 import global_tools as gt
 from data_prepared import data_prepared
@@ -55,8 +55,8 @@ class portfolio_saving_main:
             target_date (str): 目标日期，格式为'YYYY-MM-DD'
             realtime (bool): 是否为实时模式，默认为False
         """
-        self.realtime=realtime
         self.dp=data_prepared(target_date,realtime)
+        self.realtime=realtime
         if realtime==True:
              self.target_date=gt.strdate_transfer(datetime.today())
         else:
@@ -79,9 +79,9 @@ class portfolio_saving_main:
         sheet_names = excel_file.sheet_names
         detail_name = sheet_names[0]
         df_info = pd.read_excel(inputpath_config, detail_name)
-        df_info['valuation_date'] = self.target_date
-        df_info['update_time'] = current_time
         df_final = pd.DataFrame()
+        df_info['valuation_date']=self.target_date
+        df_info['update_time']=current_time
         for sheet_name in sheet_names[1:]:
             slice_df_info = df_info[df_info['product_name'] == sheet_name]
             slice_df_info = slice_df_info[['product_name', 'index_type', 'product_code']]
@@ -150,6 +150,7 @@ class portfolio_saving_main:
         inputpath_configsql = glv.get('config_sql')
         outputpath_local=glv.get('productTarget_weight_local')
         sm = gt.sqlSaving_main(inputpath_configsql, 'Product_weight',delete=True)
+
         for product_code in product_code_list:
             outputpath_local_daily=os.path.join(outputpath_local,product_code)
             gt.folder_creator2(outputpath_local_daily)
@@ -235,23 +236,19 @@ class portfolio_saving_main:
         # df_holding = self.PortfolioHolinng_saving()
         # self.ProductWeight_saving(df_info)
         # self.ProductHolding_saving(df_info, df_holding)
-        print('------------------------PortfolioInfo------------------------------------')
         try:
             df_info=self.PortfolioInfo_saving()
         except:
             print('PortfolioInfo更新有误')
-        print('----------------------ProductWeight--------------------------------------')
         try:
             self.ProductWeight_saving(df_info)
         except:
             print('ProductWeight更新有误')
-        print('-------------------------PortfolioHoling-----------------------------------')
         if self.realtime==False:
             try:
                 df_holding = self.PortfolioHolinng_saving()
             except:
                 print('PortfolioHoling更新有误')
-            print('----------------------ProductHolding--------------------------------------')
             try:
                 self.ProductHolding_saving(df_info, df_holding)
             except:
