@@ -65,6 +65,16 @@
             "database": "data_prepared_new",
             "sql_sheet": "futureholding_temp"
         },
+      {
+            "data_type": "future_info_jinxin",
+            "database": "data_prepared_new",
+            "sql_sheet": "futureholding_temp"
+        },
+      {
+            "data_type": "stock_info_jinxin",
+            "database": "data_prepared_new",
+            "sql_sheet": "stockholding_temp"
+        },
         {
             "data_type": "stock_info_xy",
             "folder_name": "data_product\\product_info\\宣夜惠盈1号\\stock",
@@ -79,6 +89,7 @@
             "database": "data_prepared_new",
             "sql_sheet": "futureholding_temp"
    },
+
         {
             "data_type": "stock_info_renr",
             "folder_name": "data_product\\product_info\\仁睿价值精选1号\\stock",
@@ -183,7 +194,11 @@
             "database": "portfolio_new",
             "sql_sheet": "portfolioinfo_product"
         }
-
-
+      ,
+        {
+            "data_type": "product_mapping",
+            "database": "portfolio_new",
+            "sql_sheet": "product_info"
+        }
     ]
 }

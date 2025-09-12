@@ -57,22 +57,23 @@ class product_tracking:
         if self.realtime==True:
             today = datetime.date.today()
             date = gt.strdate_transfer(today)
-            self.start_date=self.end_date=date
+            self.start_date=date
+            self.end_date=date
         # 获取期货期权持仓数据
-        fp = futureoption_position(start_date,end_date,product_code,realtime)
+        fp = futureoption_position(self.start_date,self.end_date,product_code,realtime)
         self.df_future, self.df_option = fp.futureoption_withdraw_main()
         # 处理期货数据，分离今日和昨日数据
         self.df_indexFuture, self.df_commFuture, self.df_bond = self.future_split(self.df_future)
         # 获取股票ETF可转债持仓数据
-        sp = security_position(start_date,end_date,product_code,realtime)
+        sp = security_position(self.start_date,self.end_date,product_code,realtime)
         self.df_stock, self.df_etf, self.df_cb = sp.security_withdraw_main()
-        self.asset_type=get_product_detail(self.product_code,'type')
-        self.index_type = get_product_detail(self.product_code, 'index')
+        self.asset_type=get_product_detail(self.product_code,None,'type')
+        self.index_type = get_product_detail(self.product_code, None,'index')
         # 获取产品资产价值
-        pi = prod_info(start_date,end_date,product_code,realtime)
+        pi = prod_info(self.start_date,self.end_date,product_code,realtime)
         self.df_asset = pi.assetvalue_withdraw()
         if self.realtime==False:
-            fw = factorexposure_withdraw(start_date, end_date, realtime)
+            fw = factorexposure_withdraw(self.start_date, self.end_date, realtime)
             self.df_stockexposure = fw.stock_exposure_withdraw()
             self.df_indexexposure = fw.index_exposure_withdraw()
             self.df_factorreturn = fw.factorreturn_withdraw()
@@ -283,6 +284,7 @@ class product_tracking:
         df_final=df_final[~(df_final['action']=='不变')]
         df_final['product_code']=self.product_code
         df_final.rename(columns={'quantity':'HoldingQty','pre_quantity':'HoldingQty_yes'},inplace=True)
+        df_final['update_time']=self.now
         return df_final
     def product_info_processing(self):
         """
@@ -296,12 +298,12 @@ class product_tracking:
         df_info, df_detail=self.partial_analysis()
         df_info,df_detail= self.info_split(df_info, df_detail)
         status=0
+        self.df_asset['NetAssetValue_yes']=self.df_asset['NetAssetValue'].shift(1)
         try:
             df_info=df_info.merge(self.df_asset,on='valuation_date',how='left')
         except:
             df_info['valuation_date']=gt.working_days_list(self.start_date,self.end_date)
             df_info = df_info.merge(self.df_asset, on='valuation_date', how='left')
-        df_info['NetAssetValue_yes']=df_info['NetAssetValue'].shift(1)
         working_days_list=gt.working_days_list(self.start_date,self.end_date)
         df_info=df_info[df_info['valuation_date'].isin(working_days_list)]
         df_detail = df_detail[df_detail['valuation_date'].isin(working_days_list)]

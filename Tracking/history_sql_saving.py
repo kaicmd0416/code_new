@@ -60,7 +60,7 @@ class historySql_saving:
             DataFrame: 保存的期货期权持仓数据
         """
         # 从实时表查询期货期权持仓数据
-        inputpath = f"Select * from tracking_realtime.realtime_futureoptionholding Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_futureoptionholding Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -81,7 +81,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的期货期权持仓数据
-        inputpath = f"Select * from tracking_realtime.history_futureoptionholding Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_futureoptionholding Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -100,7 +100,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的期货期权持仓数据
-        inputpath = f"Select * from tracking_realtime.history_portfoliosplit Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_portfoliosplit Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
 
         if len(df_final) > 0:
@@ -119,7 +119,7 @@ class historySql_saving:
             DataFrame: 保存的投资组合收益数据
         """
         # 从实时表查询投资组合收益数据
-        inputpath = f"Select * from tracking_realtime.realtime_portfoliosplit Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_portfoliosplit Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
 
         if len(df_final) > 0:
@@ -139,7 +139,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的期货期权持仓数据
-        inputpath = f"Select * from tracking_realtime.history_scoresplit Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_scoresplit Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
 
         if len(df_final) > 0:
@@ -158,7 +158,7 @@ class historySql_saving:
             DataFrame: 保存的投资组合收益数据
         """
         # 从实时表查询投资组合收益数据
-        inputpath = f"Select * from tracking_realtime.realtime_scoresplit Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_scoresplit Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
 
         if len(df_final) > 0:
@@ -178,7 +178,7 @@ class historySql_saving:
             DataFrame: 保存的投资组合收益数据
         """
         # 从实时表查询投资组合收益数据
-        inputpath = f"Select * from tracking_realtime.realtime_portfolioreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_portfolioreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -199,7 +199,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的投资组合收益数据
-        inputpath = f"Select * from tracking_realtime.history_portfolioreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_portfolioreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -218,7 +218,7 @@ class historySql_saving:
             DataFrame: 保存的产品收益数据
         """
         # 从实时表查询产品收益数据
-        inputpath = f"Select * from tracking_realtime.realtime_productstockreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_productstockreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -239,7 +239,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的产品收益数据
-        inputpath = f"Select * from tracking_realtime.history_productstockreturn Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_productstockreturn Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -258,7 +258,7 @@ class historySql_saving:
             DataFrame: 保存的产品信息数据
         """
         # 从实时表查询产品信息数据
-        inputpath = f"Select * from tracking_realtime.realtime_proinfo Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_proinfo Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -279,7 +279,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的产品信息数据
-        inputpath = f"Select * from tracking_realtime.history_proinfo Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_proinfo Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -298,7 +298,7 @@ class historySql_saving:
             DataFrame: 保存的持仓变化数据
         """
         # 从实时表查询持仓变化数据
-        inputpath = f"Select * from tracking_realtime.realtime_holdingchanging Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.realtime_holdingchanging Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:
@@ -319,7 +319,7 @@ class historySql_saving:
             str: 'exist'表示存在，'not_exist'表示不存在
         """
         # 查询历史表中的持仓变化数据
-        inputpath = f"Select * from tracking_realtime.history_holdingchanging Where valuation_date='{self.date}'"
+        inputpath = f"Select * from tracking_new.history_holdingchanging Where valuation_date='{self.date}'"
         df_final = gt.data_getting(inputpath, config_path)
         
         if len(df_final) > 0:

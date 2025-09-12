@@ -16,7 +16,7 @@ import datetime
 import global_tools as gt
 import global_setting.global_dic as glv
 import numpy as np
-from data.data_prepared import weight_withdraw,scoredata_withdraw,get_product_detail,mktdata_withdraw
+from data.data_prepared import weight_withdraw,scoredata_withdraw,product_info_withdraw,mktdata_withdraw
 from calculate_main.portfolio_split import portfolio_split_calculate
 from calculate_main.signal_split import score_split_calculate
 def sql_path():
@@ -100,13 +100,23 @@ class portfolio_tracking:
             DataFrame: 包含所有产品投资组合权重数据的DataFrame
         """
         df = self.ww.product_withdraw(None)
+        df_prod=product_info_withdraw()
+        df_prod=df_prod[['valuation_date','product_code','index_type']]
+        df_prod.rename(columns={'product_code':'portfolio_name'},inplace=True)
         df.rename(columns={'product_code':'portfolio_name'},inplace=True)
-        df['index_type'] = df['portfolio_name'].apply(lambda x: get_product_detail(x,'index'))
+        df=df.merge(df_prod,on=['valuation_date','portfolio_name'],how='left')
         df = df[['valuation_date', 'code', 'weight', 'portfolio_name', 'index_type']]
         return df
     def Split_main(self):
+        df_portinfo=self.df_portinfo.copy()
         df_weight=self.paperportfolio_withdraw()
-        psc=portfolio_split_calculate(self.df_score,self.df_indexcomp,self.df_stockreturn,self.df_indexreturn,df_weight,self.df_portinfo)
+        df_weight['portfolio_name2']=df_weight['portfolio_name'].apply(lambda x: x[-2:])
+        df_weight=df_weight[df_weight['portfolio_name2'].isin(['HB','LB'])]
+        df_portinfo['portfolio_name2'] = df_portinfo['score_name'].apply(lambda x: x[-2:])
+        df_portinfo = df_portinfo[df_portinfo['portfolio_name2'].isin(['HB', 'LB'])]
+        df_weight.drop(columns='portfolio_name2',inplace=True)
+        df_portinfo.drop(columns='portfolio_name2', inplace=True)
+        psc=portfolio_split_calculate(self.df_score,self.df_indexcomp,self.df_stockreturn,self.df_indexreturn,df_weight,df_portinfo)
         df_portsplit=psc.portfolio_split_main()
         df_portsplit['update_time']=self.now
         ssc=score_split_calculate(self.df_score,self.df_indexcomp,self.df_stockreturn,self.df_indexreturn,self.df_portinfo)
